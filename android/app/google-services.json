@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "849097551029",
+    "project_id": "impal-a78d2",
+    "storage_bucket": "impal-a78d2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:849097551029:android:397e6a309eb8f317dce2fc",
+        "android_client_info": {
+          "package_name": "com.nutriguide"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "849097551029-poltl1jkarp02fddmvopeti4qipgcnmm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nutriguide",
+            "certificate_hash": "f020f2b6bbb693f31a1bf6b7c23fbfbd2af24825"
+          }
+        },
+        {
+          "client_id": "849097551029-r084ltudf5uh6madoa461b3gens94u7t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBb3PdcYT6oCa-X_RhxDpBBFo64WZt1oRg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "849097551029-n69pvr3pbhdblkf20u0qbobohrqokt6u.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "849097551029-3e4jnt7k5vg8mqa319290n02nqakudlc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.nutriguide"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
