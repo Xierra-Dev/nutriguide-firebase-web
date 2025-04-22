@@ -1,2 +1,0 @@
-C:/Users/naufa/OneDrive/Dokumen/GitHub/nutriguide-firebase/android/app/.cxx/RelWithDebInfo/5q4c414h/arm64-v8a/CMakeFiles/edit_cache.dir
-C:/Users/naufa/OneDrive/Dokumen/GitHub/nutriguide-firebase/android/app/.cxx/RelWithDebInfo/5q4c414h/arm64-v8a/CMakeFiles/rebuild_cache.dir

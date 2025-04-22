@@ -1,2 +1,0 @@
-C:/Users/naufa/OneDrive/Dokumen/GitHub/nutriguide/android/app/.cxx/Debug/392f6c6g/x86/CMakeFiles/edit_cache.dir
-C:/Users/naufa/OneDrive/Dokumen/GitHub/nutriguide/android/app/.cxx/Debug/392f6c6g/x86/CMakeFiles/rebuild_cache.dir
