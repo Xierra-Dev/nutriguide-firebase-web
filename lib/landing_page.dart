@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'login_page.dart';
 import 'register_page.dart';
 import 'services/themealdb_service.dart';
-import 'permission/notifications_permission.dart';
 import 'core/constants/font_sizes.dart';
 import 'core/constants/dimensions.dart';
 import 'core/constants/colors.dart';
@@ -58,7 +57,6 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
   AnimationController? _controller;
   Animation<double>? _animation;
 
-  NotificationsServices notificationsServices = NotificationsServices();
 
   @override
   void initState() {
@@ -74,7 +72,6 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
     );
 
     _loadRandomMealImage();
-    notificationsServices.requestNotificationPermission();
 
     _imageChangeTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       _loadRandomMealImage();

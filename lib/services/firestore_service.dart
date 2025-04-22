@@ -8,7 +8,6 @@ import '../models/planned_recipe.dart';
 import '../models/nutrition_goals.dart';
 import 'package:dash_chat_2/dash_chat_2.dart' as dash;
 import '../models/notification.dart';
-import '../services/notification_service.dart';
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -343,22 +342,6 @@ class FirestoreService {
           'totalFat': recipe.nutritionInfo.totalFat,
         },
       });
-
-      // Schedule notification reminder
-      if (mealType != 'Snacks') {
-        try {
-          await NotificationService().scheduleMealReminder(
-            recipeId: recipe.id,
-            recipeName: recipe.title,
-            mealType: mealType,
-            mealDate: normalizedDate,
-          );
-          print('Notification scheduled for ${recipe.title} on $normalizedDate');
-        } catch (e) {
-          print('Failed to schedule notification: $e');
-          // Continue execution even if notification scheduling fails
-        }
-      }
 
       print('Successfully added planned recipe: ${recipe.title} for $mealType on $normalizedDate');
     } catch (e) {
