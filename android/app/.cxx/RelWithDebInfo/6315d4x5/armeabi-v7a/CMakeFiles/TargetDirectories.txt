@@ -1,0 +1,2 @@
+C:/Users/naufa/OneDrive/Dokumen/GitHub/nutriguide/android/app/.cxx/RelWithDebInfo/6315d4x5/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/naufa/OneDrive/Dokumen/GitHub/nutriguide/android/app/.cxx/RelWithDebInfo/6315d4x5/armeabi-v7a/CMakeFiles/rebuild_cache.dir

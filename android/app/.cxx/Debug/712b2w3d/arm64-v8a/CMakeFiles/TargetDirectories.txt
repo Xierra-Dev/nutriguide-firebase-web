@@ -1,0 +1,2 @@
+D:/nutriguide-firebase/android/app/.cxx/Debug/712b2w3d/arm64-v8a/CMakeFiles/edit_cache.dir
+D:/nutriguide-firebase/android/app/.cxx/Debug/712b2w3d/arm64-v8a/CMakeFiles/rebuild_cache.dir
