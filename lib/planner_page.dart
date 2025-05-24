@@ -903,88 +903,125 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
                       showDialog(
                         context: context,
                         builder: (BuildContext dialogContext) {
+                          final isWeb = ResponsiveHelper.screenWidth(context) > 800;
                           return Dialog(
-                            backgroundColor: Colors.transparent, // Membuat latar dialog transparan
+                            backgroundColor: Colors.transparent,
                             child: Container(
-                              width: MediaQuery.of(context).size.width * 0.9,
-                              height: MediaQuery.of(context).size.height * 0.3,
-                              padding: EdgeInsets.all(24),
+                              width: isWeb ? 450 : MediaQuery.of(context).size.width * 0.9,
+                              padding: EdgeInsets.all(isWeb ? 32 : 24),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1E1E1E), // Warna latar belakang gelap
-                                borderRadius: BorderRadius.circular(28), // Sudut yang lebih bulat
+                                color: const Color(0xFF1E1E1E),
+                                borderRadius: BorderRadius.circular(28),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                ],
                               ),
                               child: Column(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  SizedBox(height: 9,),
-                                  const Text(
+                                  Container(
+                                    width: isWeb ? 80 : 60,
+                                    height: isWeb ? 80 : 60,
+                                    decoration: BoxDecoration(
+                                      color: Colors.red.withOpacity(0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.delete_outline_rounded,
+                                      color: Colors.red,
+                                      size: isWeb ? 40 : 30,
+                                    ),
+                                  ),
+                                  SizedBox(height: isWeb ? 24 : 16),
+                                  Text(
                                     'Delete All Meals',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 20,
+                                      fontSize: isWeb ? 24 : 20,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  const SizedBox(height: 21.5),
-                                  const Text(
+                                  SizedBox(height: isWeb ? 16 : 12),
+                                  Text(
                                     'Are you sure you want to delete all meals for this day?\nThis action can\'t be undone',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       color: Colors.white70,
-                                      fontSize: 14.5,
+                                      fontSize: isWeb ? 16 : 14.5,
+                                      height: 1.5,
                                     ),
                                   ),
-                                  const SizedBox(height: 37),
+                                  SizedBox(height: isWeb ? 32 : 24),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       // Cancel Button
                                       Expanded(
-                                        child: ElevatedButton(
-                                          onPressed: () {
-                                            Navigator.of(dialogContext).pop();
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.transparent,
-                                            foregroundColor: Colors.white,
-                                            elevation: 0,
-                                            padding: EdgeInsets.symmetric(vertical: 12),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(25),
-                                              side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                                        child: SizedBox(
+                                          height: isWeb ? 50 : 45,
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.of(dialogContext).pop();
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.transparent,
+                                              foregroundColor: Colors.white,
+                                              elevation: 0,
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: isWeb ? 14 : 12
+                                              ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(25),
+                                                side: BorderSide(
+                                                  color: Colors.white.withOpacity(0.2),
+                                                  width: 1.5,
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                          child: const Text(
-                                            'Cancel',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
+                                            child: Text(
+                                              'Cancel',
+                                              style: TextStyle(
+                                                fontSize: isWeb ? 16 : 14,
+                                                fontWeight: FontWeight.w600,
+                                                letterSpacing: 0.5,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(width: 12),
+                                      SizedBox(width: isWeb ? 16 : 12),
                                       // Delete Button
                                       Expanded(
-                                        child: ElevatedButton(
-                                          onPressed: () {
-                                            Navigator.of(dialogContext).pop();
-                                            Navigator.of(context).pop();
-                                            _deletePlannedMealByDay(dayName);
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                            foregroundColor: Colors.white,
-                                            elevation: 0,
-                                            padding: EdgeInsets.symmetric(vertical: 12),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(25),
+                                        child: SizedBox(
+                                          height: isWeb ? 50 : 45,
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.of(dialogContext).pop();
+                                              Navigator.of(context).pop();
+                                              _deletePlannedMealByDay(dayName);
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                              foregroundColor: Colors.white,
+                                              elevation: 0,
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: isWeb ? 14 : 12
+                                              ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(25),
+                                              ),
                                             ),
-                                          ),
-                                          child: const Text(
-                                            'Delete',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
+                                            child: Text(
+                                              'Delete',
+                                              style: TextStyle(
+                                                fontSize: isWeb ? 16 : 14,
+                                                fontWeight: FontWeight.w600,
+                                                letterSpacing: 0.5,
+                                              ),
                                             ),
                                           ),
                                         ),

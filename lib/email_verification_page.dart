@@ -120,6 +120,8 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
   }
 
   void _showVerificationSuccessDialog() {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -131,10 +133,18 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
               borderRadius: BorderRadius.circular(Dimensions.radiusL),
             ),
             child: Container(
-              padding: EdgeInsets.all(Dimensions.paddingL),
+              width: isWeb ? 500 : null,
+              padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingL),
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.1),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -147,23 +157,30 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                       return Transform.scale(
                         scale: value,
                         child: Container(
-                          width: 100,
-                          height: 100,
+                          width: isWeb ? 140 : 100,
+                          height: isWeb ? 140 : 100,
                           decoration: BoxDecoration(
                             color: AppColors.success.withOpacity(0.1),
                             shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.success.withOpacity(0.2),
+                                blurRadius: 20,
+                                spreadRadius: 5,
+                              ),
+                            ],
                           ),
                           child: Icon(
                             Icons.check_circle,
                             color: AppColors.success,
-                            size: Dimensions.iconXL,
+                            size: isWeb ? 80 : Dimensions.iconXL,
                           ),
                         ),
                       );
                     },
                   ),
 
-                  SizedBox(height: Dimensions.spacingL),
+                  SizedBox(height: isWeb ? Dimensions.paddingXL : Dimensions.spacingL),
 
                   // Success Title with Animation
                   FadeTransition(
@@ -175,26 +192,34 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                       'Email Verified!',
                       style: TextStyle(
                         color: AppColors.success,
-                        fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.heading3),
+                        fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                          context, 
+                          isWeb ? FontSizes.heading2 : FontSizes.heading3
+                        ),
                         fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
                       ),
                       textAlign: TextAlign.center,
                     ),
                   ),
 
-                  SizedBox(height: Dimensions.spacingM),
+                  SizedBox(height: isWeb ? Dimensions.spacingL : Dimensions.spacingM),
 
                   // Success Message
                   Text(
                     'Your email has been successfully verified.\nYou can now login to your account.',
                     style: TextStyle(
                       color: AppColors.textSecondary,
-                      fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
+                      fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                        context, 
+                        isWeb ? FontSizes.heading3 : FontSizes.body
+                      ),
+                      height: 1.5,
                     ),
                     textAlign: TextAlign.center,
                   ),
 
-                  SizedBox(height: Dimensions.spacingXL),
+                  SizedBox(height: isWeb ? Dimensions.paddingXL * 2 : Dimensions.spacingXL),
 
                   // Login Button with Animation
                   SlideTransition(
@@ -206,8 +231,8 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                       curve: Interval(0.5, 1.0, curve: Curves.easeOut),
                     )),
                     child: Container(
-                      width: double.infinity,
-                      height: 50,
+                      width: isWeb ? 300 : double.infinity,
+                      height: isWeb ? 60 : 50,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -239,18 +264,38 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(Dimensions.radiusL),
                           ),
-                        ),
-                        child: Text(
-                          'Login Now',
-                          style: TextStyle(
-                            fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.button),
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isWeb ? Dimensions.paddingXL : Dimensions.paddingL,
+                            vertical: isWeb ? Dimensions.paddingM : Dimensions.paddingS,
                           ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.login_rounded,
+                              color: Colors.white,
+                              size: isWeb ? 24 : 20,
+                            ),
+                            SizedBox(width: Dimensions.paddingM),
+                            Text(
+                              'Login Now',
+                              style: TextStyle(
+                                fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                                  context, 
+                                  isWeb ? FontSizes.heading3 : FontSizes.button
+                                ),
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
+                  SizedBox(height: isWeb ? Dimensions.spacingM : Dimensions.spacingS),
                 ],
               ),
             ),

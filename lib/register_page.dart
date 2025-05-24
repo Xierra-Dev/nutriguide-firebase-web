@@ -789,7 +789,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           Container(
             padding: EdgeInsets.all(isWeb ? 3 : 2),
             decoration: BoxDecoration(
-              color: isMet ? AppColors.primary.withOpacity(0.8) : Colors.white24,
+              color: isMet ? AppColors.success.withOpacity(0.8) : Colors.white24,
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -802,7 +802,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           Text(
             text,
             style: TextStyle(
-              color: isMet ? AppColors.primary : Colors.white70,
+              color: isMet ? AppColors.success : Colors.white70,
               fontSize: isWeb ? 14 : 12,
             ),
           ),
@@ -957,11 +957,11 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           padding: EdgeInsets.all(isWeb ? 25 : 20),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white,
+            color: Colors.white.withOpacity(0.15),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.2),
-                blurRadius: 15,
+                color: AppColors.primary.withOpacity(0.3),
+                blurRadius: 20,
                 spreadRadius: 5,
               ),
             ],

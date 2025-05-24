@@ -294,11 +294,11 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           padding: EdgeInsets.all(isWeb ? 25 : 20),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white,
+            color: Colors.white.withOpacity(0.15),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.2),
-                blurRadius: 15,
+                color: AppColors.primary.withOpacity(0.3),
+                blurRadius: 20,
                 spreadRadius: 5,
               ),
             ],
@@ -439,7 +439,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF2C3E50),
+              color: Color.fromARGB(255, 255, 255, 255),
               letterSpacing: 0.5,
             ),
           ),

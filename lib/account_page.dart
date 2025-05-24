@@ -620,349 +620,334 @@ class _AccountPageState extends State<AccountPage> {
   void _showChangePasswordDialog() {
     final mediaQuery = MediaQuery.of(context);
     final screenWidth = mediaQuery.size.width;
-    final screenHeight = mediaQuery.size.height;
-
-    // Tetapkan textScaleFactor ke 1.0 agar tidak terpengaruh pengaturan font HP
-    const double textScaleFactor = 1.0;
-
-    final double baseWidth = 375; // iPhone 12 Pro width as base
-    final double widthRatio = screenWidth / baseWidth;
-    final double scaleFactor = widthRatio.clamp(0.8, 1.2);
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
 
     showDialog(
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.5),
-      builder:
-          (context) => MediaQuery(
-            data: mediaQuery.copyWith(textScaler: TextScaler.linear(textScaleFactor)),
-            child: Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24.0),
-              ),
-              backgroundColor: const Color(0xFF2C2C2C),
-              child: IntrinsicWidth(
-                child: Container(
-                  width: screenWidth * 0.95,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 20,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Key Change Icon
-                      Align(
-                        alignment: Alignment.center,
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.deepOrange.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.key_rounded,
-                            color: Colors.deepOrange,
-                            size: 32,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: screenHeight * 0.0225),
-                      // Title
-                      Text(
-                        'Change Password',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 23,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      SizedBox(height: screenHeight * 0.0175),
-                      // Description
-                      Text(
-                        'Please enter your current password and new password.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey,
-                          height: 1.5,
-                        ),
-                      ),
-                      SizedBox(height: screenHeight * 0.0225),
-                      // Current Password Field
-                      _buildAdaptivePasswordField(
-                        'Current Password',
-                        _currentPasswordController,
-                        scaleFactor,
-                        textScaleFactor,
-                      ),
-                      SizedBox(height: screenHeight * 0.0175),
-                      // New Password Field
-                      _buildAdaptivePasswordField(
-                        'New Password',
-                        _newPasswordController,
-                        scaleFactor,
-                        textScaleFactor,
-                      ),
-                      SizedBox(height: screenHeight * 0.0175),
-                      // Confirm New Password Field
-                      _buildAdaptivePasswordField(
-                        'Confirm New Password',
-                        _confirmNewPasswordController,
-                        scaleFactor,
-                        textScaleFactor,
-                      ),
-                      SizedBox(height: screenHeight * 0.0425),
-                      // Buttons
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.grey[800],
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: screenWidth * 0.05),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: changePassword,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.deepOrange[800],
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: Text(
-                                'Change',
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: screenWidth * 0.04),
-                        ],
-                      ),
-                    ],
+      builder: (context) => MediaQuery(
+        data: mediaQuery.copyWith(textScaler: TextScaler.linear(1.0)),
+        child: Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28.0),
+          ),
+          backgroundColor: const Color(0xFF2C2C2C),
+          child: Container(
+            width: isWeb ? 450 : screenWidth * 0.95,
+            padding: EdgeInsets.all(isWeb ? 32 : 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    width: isWeb ? 80 : 60,
+                    height: isWeb ? 80 : 60,
+                    padding: EdgeInsets.all(isWeb ? 20 : 16),
+                    decoration: BoxDecoration(
+                      color: Colors.deepOrange.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.key_rounded,
+                      color: Colors.deepOrange,
+                      size: isWeb ? 40 : 32,
+                    ),
                   ),
                 ),
-              ),
+                SizedBox(height: isWeb ? 24 : 20),
+                Text(
+                  'Change Password',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: isWeb ? 24 : 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                SizedBox(height: isWeb ? 16 : 12),
+                Text(
+                  'Please enter your current password and new password.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: isWeb ? 16 : 14.5,
+                    color: Colors.grey,
+                    height: 1.5,
+                  ),
+                ),
+                SizedBox(height: isWeb ? 24 : 20),
+                _buildPasswordField(
+                  'Current Password',
+                  _currentPasswordController,
+                  isWeb,
+                ),
+                SizedBox(height: isWeb ? 16 : 12),
+                _buildPasswordField(
+                  'New Password',
+                  _newPasswordController,
+                  isWeb,
+                ),
+                SizedBox(height: isWeb ? 16 : 12),
+                _buildPasswordField(
+                  'Confirm New Password',
+                  _confirmNewPasswordController,
+                  isWeb,
+                ),
+                SizedBox(height: isWeb ? 32 : 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: isWeb ? 50 : 45,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[800],
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(
+                              vertical: isWeb ? 14 : 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                              side: BorderSide(
+                                color: Colors.white.withOpacity(0.2),
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              fontSize: isWeb ? 16 : 14,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: isWeb ? 16 : 12),
+                    Expanded(
+                      child: SizedBox(
+                        height: isWeb ? 50 : 45,
+                        child: ElevatedButton(
+                          onPressed: changePassword,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepOrange[800],
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(
+                              vertical: isWeb ? 14 : 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                          ),
+                          child: Text(
+                            'Change',
+                            style: TextStyle(
+                              fontSize: isWeb ? 16 : 14,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
+        ),
+      ),
     );
   }
 
-  Widget _buildAdaptivePasswordField(
-    String label,
-    TextEditingController controller,
-    double scaleFactor,
-    double textScaleFactor,
-  ) {
-    return StatefulBuilder(
-      builder: (context, setState) {
-        return TextField(
-          controller: controller,
-          obscureText: !_isPasswordVisible,
-          decoration: InputDecoration(
-            labelText: label,
-            labelStyle: TextStyle(
-              color: Colors.white,
-              fontSize:
-                  14 * textScaleFactor, // Pastikan textScaleFactor tetap 1.0
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(50),
-              borderSide: const BorderSide(color: Colors.grey),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(50),
-              borderSide: const BorderSide(color: Colors.deepOrange),
-            ),
-            suffixIcon: Padding(
-              padding: EdgeInsets.only(right: 12.5 * scaleFactor),
-              child: IconButton(
-                icon: Icon(
-                  _isPasswordVisible ? MdiIcons.eyeOff : MdiIcons.eye,
-                  color: Colors.deepOrange,
-                  size: 24 * scaleFactor,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _isPasswordVisible = !_isPasswordVisible;
-                  });
-                },
-              ),
-            ),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 25 * scaleFactor,
-              vertical: 12 * scaleFactor,
-            ),
+  Widget _buildPasswordField(String label, TextEditingController controller, bool isWeb) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: !_isPasswordVisible,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: isWeb ? 16 : 14.5,
+        ),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(
+            color: Colors.grey,
+            fontSize: isWeb ? 14 : 13,
           ),
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 15 * textScaleFactor, // Skala teks tetap konstan
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(25),
+            borderSide: BorderSide.none,
           ),
-        );
-      },
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: isWeb ? 24 : 20,
+            vertical: isWeb ? 20 : 16,
+          ),
+          suffixIcon: IconButton(
+            icon: Icon(
+              _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+              color: Colors.grey,
+              size: isWeb ? 24 : 20,
+            ),
+            onPressed: () {
+              setState(() {
+                _isPasswordVisible = !_isPasswordVisible;
+              });
+            },
+          ),
+        ),
+      ),
     );
   }
 
   Future<void> confirmLogout(BuildContext context) async {
     final mediaQuery = MediaQuery.of(context);
     final screenWidth = mediaQuery.size.width;
-    final screenHeight = mediaQuery.size.height;
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
 
     bool? loggedOut = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.5),
-      builder:
-          (context) => MediaQuery(
-            data: MediaQuery.of(
-              context,
-            ).copyWith(textScaler: TextScaler.linear(1.0)), // Override text scale factor
-            child: Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24.0),
-              ),
-              backgroundColor: const Color(0xFF2C2C2C),
-              child: SingleChildScrollView(
-                child: IntrinsicWidth(
+      builder: (context) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+        child: Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28.0),
+          ),
+          backgroundColor: const Color(0xFF2C2C2C),
+          child: Container(
+            width: isWeb ? 450 : screenWidth * 0.925,
+            padding: EdgeInsets.all(isWeb ? 32 : 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Align(
+                  alignment: Alignment.center,
                   child: Container(
-                    width: screenWidth * 0.925,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 20,
+                    width: isWeb ? 80 : 60,
+                    height: isWeb ? 80 : 60,
+                    padding: EdgeInsets.all(isWeb ? 20 : 16),
+                    decoration: BoxDecoration(
+                      color: Colors.deepOrange[800]!.withOpacity(0.1),
+                      shape: BoxShape.circle,
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Align(
-                          alignment: Alignment.center,
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.deepOrange[800]!.withOpacity(0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.logout,
-                              color: Colors.deepOrange[800],
-                              size: 32,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: screenHeight * 0.0225),
-                        Text(
-                          'Log Out',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        SizedBox(height: screenHeight * 0.0175),
-                        Text(
-                          'Are you sure you want to log out of the application?',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.grey,
-                            height: 1.5,
-                          ),
-                        ),
-                        SizedBox(height: screenHeight * 0.0425),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed:
-                                    () => Navigator.of(context).pop(true),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.deepOrange[800],
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(50),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                child: const Text(
-                                  'Log Out',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: screenWidth * 0.04),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed:
-                                    () => Navigator.of(context).pop(false),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey[800],
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(50),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                child: const Text(
-                                  'Cancel',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                    child: Icon(
+                      Icons.logout,
+                      color: Colors.deepOrange[800],
+                      size: isWeb ? 40 : 32,
                     ),
                   ),
                 ),
-              ),
+                SizedBox(height: isWeb ? 24 : 20),
+                Text(
+                  'Log Out',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: isWeb ? 24 : 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                SizedBox(height: isWeb ? 16 : 12),
+                Text(
+                  'Are you sure you want to log out of the application?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: isWeb ? 16 : 14.5,
+                    color: Colors.grey,
+                    height: 1.5,
+                  ),
+                ),
+                SizedBox(height: isWeb ? 32 : 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: isWeb ? 50 : 45,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[800],
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(
+                              vertical: isWeb ? 14 : 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                              side: BorderSide(
+                                color: Colors.white.withOpacity(0.2),
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              fontSize: isWeb ? 16 : 14,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: isWeb ? 16 : 12),
+                    Expanded(
+                      child: SizedBox(
+                        height: isWeb ? 50 : 45,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepOrange[800],
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(
+                              vertical: isWeb ? 14 : 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                          ),
+                          child: Text(
+                            'Log Out',
+                            style: TextStyle(
+                              fontSize: isWeb ? 16 : 14,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
+        ),
+      ),
     );
 
     if (loggedOut ?? false) {
@@ -987,139 +972,180 @@ class _AccountPageState extends State<AccountPage> {
   Future<void> confirmDeleteAccount(BuildContext context) async {
     final mediaQuery = MediaQuery.of(context);
     final screenWidth = mediaQuery.size.width;
-    final screenHeight = mediaQuery.size.height;
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
 
     bool? confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.5),
-      builder:
-          (context) => MediaQuery(
-            data: MediaQuery.of(
-              context,
-            ).copyWith(textScaler: TextScaler.linear(1.0)), // Override text scale factor
-            child: Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24.0),
-              ),
-              backgroundColor: const Color(0xFF2C2C2C),
-              child: SingleChildScrollView(
-                child: IntrinsicWidth(
+      builder: (context) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+        child: Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28.0),
+          ),
+          backgroundColor: const Color(0xFF2C2C2C),
+          child: Container(
+            width: isWeb ? 450 : screenWidth * 0.925,
+            padding: EdgeInsets.all(isWeb ? 32 : 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Align(
+                  alignment: Alignment.center,
                   child: Container(
-                    width: screenWidth * 0.925,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 20,
+                    width: isWeb ? 80 : 60,
+                    height: isWeb ? 80 : 60,
+                    padding: EdgeInsets.all(isWeb ? 20 : 16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      shape: BoxShape.circle,
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Align(
-                          alignment: Alignment.center,
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.warning_rounded,
-                              color: Colors.red,
-                              size: 32,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: screenHeight * 0.0225),
-                        const Text(
-                          'Delete Account',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        SizedBox(height: screenHeight * 0.0175),
-                        const Text(
-                          'Are you sure you want to delete your account? This action cannot be undone.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.grey,
-                            height: 1.5,
-                          ),
-                        ),
-                        SizedBox(height: screenHeight * 0.0225),
-                        _buildAdaptivePasswordField(
-                          'Current Password',
-                          _currentPasswordController,
-                          1.0,
-                          1.0,
-                        ),
-                        SizedBox(height: screenHeight * 0.0425),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed:
-                                    () => Navigator.of(context).pop(true),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(50),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                child: const Text(
-                                  'Delete',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: screenWidth * 0.04),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed:
-                                    () => Navigator.of(context).pop(false),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey[800],
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(50),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                child: const Text(
-                                  'Cancel',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                    child: Icon(
+                      Icons.warning_rounded,
+                      color: Colors.red,
+                      size: isWeb ? 40 : 32,
                     ),
                   ),
                 ),
-              ),
+                SizedBox(height: isWeb ? 24 : 20),
+                Text(
+                  'Delete Account',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: isWeb ? 24 : 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                SizedBox(height: isWeb ? 16 : 12),
+                Text(
+                  'Are you sure you want to delete your account? This action cannot be undone.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: isWeb ? 16 : 14.5,
+                    color: Colors.grey,
+                    height: 1.5,
+                  ),
+                ),
+                SizedBox(height: isWeb ? 24 : 20),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(25),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.1),
+                      width: 1,
+                    ),
+                  ),
+                  child: TextField(
+                    controller: _currentPasswordController,
+                    obscureText: !_isPasswordVisible,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isWeb ? 16 : 14.5,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Current Password',
+                      labelStyle: TextStyle(
+                        color: Colors.grey,
+                        fontSize: isWeb ? 14 : 13,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: isWeb ? 24 : 20,
+                        vertical: isWeb ? 20 : 16,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                          color: Colors.grey,
+                          size: isWeb ? 24 : 20,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: isWeb ? 32 : 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: isWeb ? 50 : 45,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[800],
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(
+                              vertical: isWeb ? 14 : 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                              side: BorderSide(
+                                color: Colors.white.withOpacity(0.2),
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              fontSize: isWeb ? 16 : 14,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: isWeb ? 16 : 12),
+                    Expanded(
+                      child: SizedBox(
+                        height: isWeb ? 50 : 45,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(
+                              vertical: isWeb ? 14 : 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                          ),
+                          child: Text(
+                            'Delete',
+                            style: TextStyle(
+                              fontSize: isWeb ? 16 : 14,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
+        ),
+      ),
     );
 
     if (confirmed ?? false) {
@@ -1169,6 +1195,7 @@ class _AccountPageState extends State<AccountPage> {
     _newEmailController.dispose();
     _currentPasswordController.dispose();
     _newPasswordController.dispose();
+    _confirmNewPasswordController.dispose();
     super.dispose();
   }
 }

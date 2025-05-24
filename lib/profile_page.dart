@@ -1164,127 +1164,132 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
   }
 
   void _showLogoutDialog() {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+
     showDialog(
       context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.5),
       builder: (BuildContext context) {
         return Dialog(
-          backgroundColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28.0),
+          ),
+          backgroundColor: const Color(0xFF2C2C2C),
           child: Container(
-            padding: EdgeInsets.all(Dimensions.paddingL),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(Dimensions.radiusL),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
+            width: isWeb ? 450 : MediaQuery.of(context).size.width * 0.925,
+            padding: EdgeInsets.all(isWeb ? 32 : 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(
-                  padding: EdgeInsets.all(Dimensions.paddingM),
-                  decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.logout_rounded,
-                    color: AppColors.error,
-                    size: Dimensions.iconXL,
-                  ),
-                ),
-                SizedBox(height: Dimensions.spacingL),
-                Text(
-                  'Logout',
-                  style: TextStyle(
-                    color: AppColors.text,
-                    fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.heading3),
-                    fontWeight: FontWeight.bold,
+                Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    width: isWeb ? 80 : 60,
+                    height: isWeb ? 80 : 60,
+                    padding: EdgeInsets.all(isWeb ? 20 : 16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.logout_rounded,
+                      color: Colors.red,
+                      size: isWeb ? 40 : 32,
+                    ),
                   ),
                 ),
-                SizedBox(height: Dimensions.spacingM),
+                SizedBox(height: isWeb ? 24 : 20),
                 Text(
-                  'Are you sure you want to logout?',
+                  'Log Out',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
+                    fontSize: isWeb ? 24 : 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
                   ),
                 ),
-                SizedBox(height: Dimensions.spacingXL),
+                SizedBox(height: isWeb ? 16 : 12),
+                Text(
+                  'Are you sure you want to log out of the application?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: isWeb ? 16 : 14.5,
+                    color: Colors.grey,
+                    height: 1.5,
+                  ),
+                ),
+                SizedBox(height: isWeb ? 32 : 24),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Expanded(
-                      child: TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                            vertical: Dimensions.paddingM,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(Dimensions.radiusM),
-                            side: BorderSide(
-                              color: AppColors.error.withOpacity(0.5),
+                      child: SizedBox(
+                        height: isWeb ? 50 : 45,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[800],
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(
+                              vertical: isWeb ? 14 : 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                              side: BorderSide(
+                                color: Colors.white.withOpacity(0.2),
+                                width: 1.5,
+                              ),
                             ),
                           ),
-                        ),
-                        child: Text(
-                          'Cancel',
-                          style: TextStyle(
-                            color: AppColors.error,
-                            fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
-                            fontWeight: FontWeight.w600,
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              fontSize: isWeb ? 16 : 14,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(width: Dimensions.spacingM),
+                    SizedBox(width: isWeb ? 16 : 12),
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          Navigator.of(context).pop();
-                          await _authService.signOut();
-                          if (mounted) {
-                            Navigator.pushReplacement(
-                              context,
-                              SlideRightRoute(page: const LandingPage()),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.error,
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                            vertical: Dimensions.paddingM,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(Dimensions.radiusM),
-                          ),
-                          elevation: 2,
-                          shadowColor: AppColors.error.withOpacity(0.5),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.logout_rounded,
-                              size: Dimensions.iconM,
-                              color: Colors.white,
+                      child: SizedBox(
+                        height: isWeb ? 50 : 45,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            Navigator.of(context).pop();
+                            await _authService.signOut();
+                            if (mounted) {
+                              Navigator.pushReplacement(
+                                context,
+                                SlideRightRoute(page: const LandingPage()),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(
+                              vertical: isWeb ? 14 : 12,
                             ),
-                            SizedBox(width: Dimensions.paddingXS),
-                            Text(
-                              'Logout',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
-                                fontWeight: FontWeight.w600,
-                              ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
                             ),
-                          ],
+                          ),
+                          child: Text(
+                            'Log Out',
+                            style: TextStyle(
+                              fontSize: isWeb ? 16 : 14,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
                         ),
                       ),
                     ),
