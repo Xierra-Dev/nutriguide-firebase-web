@@ -361,8 +361,8 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                                 _buildActionButtons(),
                               ],
                             ),
+                            ),
                           ),
-                        ),
                       ),
                       SliverPersistentHeader(
                         pinned: true,
@@ -377,7 +377,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                               Tab(
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  children: [
+                            children: [
                                     Icon(Icons.insights_rounded),
                                     SizedBox(width: Dimensions.paddingS),
                                     Text('Insights'),
@@ -421,11 +421,11 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
       children: [
         Stack(
           children: [
-            Container(
+                              Container(
               width: isWeb ? 150 : 120,
               height: isWeb ? 150 : 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -439,11 +439,11 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                     color: AppColors.primary.withOpacity(0.2),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
-                  ),
+                                ),
                 ],
               ),
-              child: _buildProfileImage(),
-            ),
+                                  child: _buildProfileImage(),
+                                ),
             Positioned(
               bottom: 0,
               right: 0,
@@ -472,24 +472,24 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
               ),
             ),
           ],
-        ),
-        SizedBox(height: Dimensions.paddingM),
-        AppText(
-          _authService.currentUser?.displayName ?? 'User',
+                              ),
+                              SizedBox(height: Dimensions.paddingM),
+                              AppText(
+                                _authService.currentUser?.displayName ?? 'User',
           fontSize: isWeb ? FontSizes.heading2 : FontSizes.heading3,
-          color: AppColors.text,
-          fontWeight: FontWeight.bold,
+                                color: AppColors.text,
+                                fontWeight: FontWeight.bold,
           textAlign: TextAlign.center,
-        ),
-        if (userData?['username'] != null && userData!['username'].isNotEmpty) ...[
+                              ),
+                              if (userData?['username'] != null && userData!['username'].isNotEmpty) ...[
           SizedBox(height: Dimensions.paddingXS),
           AppText(
             '@${userData!['username']}',
             fontSize: isWeb ? FontSizes.body : FontSizes.caption,
             color: AppColors.primary,
-            fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.bold,
             textAlign: TextAlign.center,
-          ),
+                                  ),
         ],
         if (userData?['bio'] != null && userData!['bio'].isNotEmpty) ...[
           SizedBox(height: Dimensions.paddingS),
@@ -498,20 +498,20 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             padding: EdgeInsets.symmetric(
               horizontal: Dimensions.paddingM,
               vertical: Dimensions.paddingS,
-            ),
+                                    ),
             decoration: BoxDecoration(
               color: AppColors.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(Dimensions.radiusM),
             ),
-            child: AppText(
-              '"${userData!['bio']}"',
+                                  child: AppText(
+                                    '"${userData!['bio']}"',
               fontSize: isWeb ? FontSizes.body : FontSizes.caption,
               color: AppColors.text,
               textAlign: TextAlign.center,
               fontStyle: FontStyle.italic,
-            ),
-          ),
-        ],
+                                  ),
+                                ),
+                              ],
       ],
     );
   }
@@ -526,9 +526,9 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
         children: [
           _buildActionButton(
             onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ProfileEditPage()),
-            ),
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const ProfileEditPage()),
+                                ),
             icon: Icons.edit_rounded,
             label: 'Edit Profile',
             color: AppColors.primary,
@@ -559,11 +559,11 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                     color: AppColors.error,
                     isDestructive: true,
                     compact: true,
-                  ),
-                ),
-              ],
-            ),
-          ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
         ],
       ),
     );
@@ -594,12 +594,12 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             border: Border.all(
               color: color.withOpacity(0.2),
               width: 1,
-            ),
-          ),
+                          ),
+                        ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
-            children: [
+                    children: [
               Icon(
                 icon,
                 color: color,
@@ -619,8 +619,8 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+          ),
+        ],
           ),
         ),
       ),
@@ -640,19 +640,19 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
         ],
       ),
       child: GestureDetector(
-        onTap: () {
-          if (userData?['profilePictureUrl'] != null) {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return Dialog(
-                  backgroundColor: Colors.transparent,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Stack(
-                        alignment: Alignment.topRight,
-                        children: [
+      onTap: () {
+        if (userData?['profilePictureUrl'] != null) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return Dialog(
+                backgroundColor: Colors.transparent,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Stack(
+                      alignment: Alignment.topRight,
+                      children: [
                           Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(Dimensions.radiusM),
@@ -665,68 +665,68 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                               ],
                             ),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(Dimensions.radiusM),
-                              child: Image.network(
-                                userData!['profilePictureUrl'],
-                                fit: BoxFit.cover,
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Container(
-                                    width: MediaQuery.of(context).size.width * 0.8,
-                                    height: MediaQuery.of(context).size.width * 0.8,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.surface,
-                                      borderRadius: BorderRadius.circular(Dimensions.radiusM),
-                                    ),
-                                    child: Center(
-                                      child: CircularProgressIndicator(
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: MediaQuery.of(context).size.width * 0.8,
-                                    height: MediaQuery.of(context).size.width * 0.8,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.surface,
-                                      borderRadius: BorderRadius.circular(Dimensions.radiusM),
-                                    ),
-                                    child: Icon(
-                                      Icons.error_outline,
-                                      size: Dimensions.iconXL,
-                                      color: AppColors.error,
-                                    ),
-                                  );
-                                },
+                          borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                          child: Image.network(
+                            userData!['profilePictureUrl'],
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Container(
+                                width: MediaQuery.of(context).size.width * 0.8,
+                                height: MediaQuery.of(context).size.width * 0.8,
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                                ),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: MediaQuery.of(context).size.width * 0.8,
+                                height: MediaQuery.of(context).size.width * 0.8,
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                                ),
+                                child: Icon(
+                                  Icons.error_outline,
+                                  size: Dimensions.iconXL,
+                                  color: AppColors.error,
+                                ),
+                              );
+                            },
                               ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Container(
+                            padding: EdgeInsets.all(Dimensions.paddingXS),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.5),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.close,
+                              color: AppColors.surface,
+                              size: Dimensions.iconM,
                             ),
                           ),
-                          IconButton(
-                            icon: Container(
-                              padding: EdgeInsets.all(Dimensions.paddingXS),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.5),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.close,
-                                color: AppColors.surface,
-                                size: Dimensions.iconM,
-                              ),
-                            ),
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          }
-        },
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        }
+      },
         child: Container(
           width: 120,
           height: 120,
@@ -746,24 +746,24 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             ),
           ),
           child: ClipOval(
-            child: userData?['profilePictureUrl'] != null
-                ? Image.network(
-                    userData!['profilePictureUrl'],
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primary,
+      child: userData?['profilePictureUrl'] != null
+          ? Image.network(
+        userData!['profilePictureUrl'],
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              color: AppColors.primary,
                           strokeWidth: 2,
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
                       return Icon(Icons.person,
                           size: Dimensions.iconXL, color: AppColors.primary.withOpacity(0.5));
-                    },
-                  )
+        },
+      )
                 : Icon(Icons.person,
                     size: Dimensions.iconXL, color: AppColors.primary.withOpacity(0.5)),
           ),
@@ -793,10 +793,10 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
               borderRadius: BorderRadius.circular(Dimensions.radiusL),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withOpacity(0.1),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
-                ),
+              ),
               ],
             ),
             child: Column(
@@ -818,21 +818,21 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                     ),
                     SizedBox(width: Dimensions.paddingM),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AppText(
-                            'Your daily nutrition goals',
-                            fontSize: isWeb ? FontSizes.heading2 : FontSizes.heading3,
-                            color: AppColors.text,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          SizedBox(height: Dimensions.paddingXS),
-                          AppText(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  'Your daily nutrition goals',
+                  fontSize: isWeb ? FontSizes.heading2 : FontSizes.heading3,
+                  color: AppColors.text,
+                  fontWeight: FontWeight.bold,
+                ),
+                SizedBox(height: Dimensions.paddingXS),
+                AppText(
                             'Track your progress',
-                            fontSize: isWeb ? FontSizes.body : FontSizes.caption,
-                            color: AppColors.textSecondary,
-                          ),
+                  fontSize: isWeb ? FontSizes.body : FontSizes.caption,
+                  color: AppColors.textSecondary,
+                ),
                         ],
                       ),
                     ),
@@ -942,10 +942,10 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                             return Transform.scale(
                               scale: val,
                               child: Image.asset(
-                                'assets/images/no-activity.png',
-                                width: 125,
-                                height: 125,
-                                fit: BoxFit.contain,
+                          'assets/images/no-activity.png',
+                          width: 125,
+                          height: 125,
+                          fit: BoxFit.contain,
                               ),
                             );
                           },
@@ -982,24 +982,24 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                     return Transform.scale(
                       scale: val,
                       child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(Dimensions.radiusM),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withOpacity(0.1),
                               blurRadius: 10,
                               offset: const Offset(0, 5),
-                            ),
+                    ),
                           ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
                               padding: EdgeInsets.all(Dimensions.paddingS),
-                              child: Row(
-                                children: [
+                        child: Row(
+                          children: [
                                   Container(
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
@@ -1013,81 +1013,81 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                                     ),
                                     child: CircleAvatar(
                                       radius: 15,
-                                      backgroundImage: NetworkImage(userData?['profilePictureUrl'] ?? ''),
-                                    ),
+                              backgroundImage: NetworkImage(userData?['profilePictureUrl'] ?? ''),
+                            ),
                                   ),
                                   SizedBox(width: Dimensions.paddingS),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        AppText(
-                                          _authService.currentUser?.displayName ?? 'User',
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                AppText(
+                                  _authService.currentUser?.displayName ?? 'User',
                                           fontSize: FontSizes.caption,
-                                          color: AppColors.text,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        AppText(
-                                          'a moment ago',
+                                  color: AppColors.text,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                AppText(
+                                  'a moment ago',
                                           fontSize: FontSizes.small,
-                                          color: AppColors.textSecondary,
-                                        ),
-                                      ],
+                                  color: AppColors.textSecondary,
+                                ),
+                              ],
                                     ),
-                                  ),
-                                ],
-                              ),
                             ),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    RecipePageRoute(recipe: recipe),
-                                  );
-                                },
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    Hero(
-                                      tag: 'recipe-${recipe.id}',
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              RecipePageRoute(recipe: recipe),
+                            );
+                          },
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Hero(
+                                tag: 'recipe-${recipe.id}',
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.vertical(
                                           bottom: Radius.circular(Dimensions.radiusM),
                                         ),
-                                        child: Image.network(
-                                          recipe.image,
-                                          fit: BoxFit.cover,
+                                child: Image.network(
+                                  recipe.image,
+                                  fit: BoxFit.cover,
                                         ),
-                                      ),
-                                    ),
-                                    Container(
-                                      decoration: BoxDecoration(
+                                ),
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
                                         borderRadius: BorderRadius.vertical(
                                           bottom: Radius.circular(Dimensions.radiusM),
                                         ),
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            Colors.transparent,
-                                            Colors.black.withOpacity(0.7),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.black.withOpacity(0.7),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Positioned(
                                       top: Dimensions.paddingS,
                                       right: Dimensions.paddingS,
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
                                           horizontal: Dimensions.paddingS,
                                           vertical: Dimensions.paddingXS,
-                                        ),
-                                        decoration: BoxDecoration(
+                                  ),
+                                  decoration: BoxDecoration(
                                           color: AppColors.primary.withOpacity(0.9),
-                                          borderRadius: BorderRadius.circular(Dimensions.radiusS),
-                                        ),
+                                    borderRadius: BorderRadius.circular(Dimensions.radiusS),
+                                  ),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
@@ -1101,63 +1101,63 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                                               'Made it',
                                               fontSize: FontSizes.small,
                                               color: Colors.white,
-                                              fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.bold,
                                             ),
                                           ],
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
+                                  ),
+                                ),
+                              ),
+                              Positioned(
                                       bottom: Dimensions.paddingS,
                                       left: Dimensions.paddingS,
                                       right: Dimensions.paddingS,
-                                      child: Column(
+                                child: Column(
                                         mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          AppText(
-                                            recipe.title.toUpperCase(),
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    AppText(
+                                      recipe.title.toUpperCase(),
                                             fontSize: FontSizes.caption,
                                             color: Colors.white,
-                                            fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.bold,
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
-                                          ),
-                                          if (recipe.area != null)
-                                            Padding(
-                                              padding: EdgeInsets.only(top: 2),
-                                              child: AppText(
-                                                recipe.area!,
-                                                fontSize: FontSizes.small,
-                                                color: Colors.white.withOpacity(0.8),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          if (recipe.category != null)
-                                            Padding(
-                                              padding: EdgeInsets.only(top: 2),
-                                              child: AppText(
-                                                recipe.category!,
-                                                fontSize: FontSizes.small,
-                                                color: Colors.white.withOpacity(0.8),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                        ],
-                                      ),
                                     ),
+                                    if (recipe.area != null)
+                                      Padding(
+                                              padding: EdgeInsets.only(top: 2),
+                                        child: AppText(
+                                          recipe.area!,
+                                                fontSize: FontSizes.small,
+                                                color: Colors.white.withOpacity(0.8),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    if (recipe.category != null)
+                                      Padding(
+                                              padding: EdgeInsets.only(top: 2),
+                                        child: AppText(
+                                          recipe.category!,
+                                                fontSize: FontSizes.small,
+                                                color: Colors.white.withOpacity(0.8),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    );
-                  },
+                    ],
+                        ),
+                  ),
                 );
+              },
+    );
               },
             ),
     );
@@ -1189,16 +1189,16 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                     width: isWeb ? 80 : 60,
                     height: isWeb ? 80 : 60,
                     padding: EdgeInsets.all(isWeb ? 20 : 16),
-                    decoration: BoxDecoration(
+                  decoration: BoxDecoration(
                       color: Colors.red.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.logout_rounded,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.logout_rounded,
                       color: Colors.red,
                       size: isWeb ? 40 : 32,
-                    ),
                   ),
+                ),
                 ),
                 SizedBox(height: isWeb ? 24 : 20),
                 Text(
@@ -1229,67 +1229,67 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                       child: SizedBox(
                         height: isWeb ? 50 : 45,
                         child: ElevatedButton(
-                          onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () => Navigator.of(context).pop(),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey[800],
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            padding: EdgeInsets.symmetric(
+                          padding: EdgeInsets.symmetric(
                               vertical: isWeb ? 14 : 12,
-                            ),
-                            shape: RoundedRectangleBorder(
+                          ),
+                          shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),
-                              side: BorderSide(
+                            side: BorderSide(
                                 color: Colors.white.withOpacity(0.2),
                                 width: 1.5,
-                              ),
-                            ),
-                          ),
-                          child: Text(
-                            'Cancel',
-                            style: TextStyle(
-                              fontSize: isWeb ? 16 : 14,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.5,
                             ),
                           ),
                         ),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                              fontSize: isWeb ? 16 : 14,
+                            fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                          ),
+                        ),
                       ),
+                    ),
                     ),
                     SizedBox(width: isWeb ? 16 : 12),
                     Expanded(
                       child: SizedBox(
                         height: isWeb ? 50 : 45,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            Navigator.of(context).pop();
-                            await _authService.signOut();
-                            if (mounted) {
-                              Navigator.pushReplacement(
-                                context,
-                                SlideRightRoute(page: const LandingPage()),
-                              );
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          Navigator.of(context).pop();
+                          await _authService.signOut();
+                          if (mounted) {
+                            Navigator.pushReplacement(
+                              context,
+                              SlideRightRoute(page: const LandingPage()),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
+                          foregroundColor: Colors.white,
                             elevation: 0,
-                            padding: EdgeInsets.symmetric(
+                          padding: EdgeInsets.symmetric(
                               vertical: isWeb ? 14 : 12,
-                            ),
-                            shape: RoundedRectangleBorder(
+                          ),
+                          shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),
-                            ),
+                        ),
                           ),
                           child: Text(
                             'Log Out',
-                            style: TextStyle(
+                              style: TextStyle(
                               fontSize: isWeb ? 16 : 14,
-                              fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w600,
                               letterSpacing: 0.5,
+                              ),
                             ),
-                          ),
                         ),
                       ),
                     ),

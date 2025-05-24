@@ -1772,10 +1772,7 @@ class _HomePageState extends State<HomePage> {
             scrollDirection: Axis.horizontal,
             itemCount: 3,
             itemBuilder: (context, index) {
-              return RecipeCardSkeleton(
-                width: ResponsiveHelper.screenWidth(context) * 0.525,
-                height: ResponsiveHelper.screenHeight(context) * 0.3
-              );
+              return const RecipeCardSkeleton();
             },
           ),
         ),

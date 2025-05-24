@@ -96,136 +96,138 @@ class _SkeletonLoadingState extends State<SkeletonLoading> with SingleTickerProv
 }
 
 class RecipeCardSkeleton extends StatelessWidget {
-  final double width;
-  final double height;
+  final double? width;
+  final double? height;
 
   const RecipeCardSkeleton({
     super.key,
-    required this.width,
-    required this.height,
+    this.width,
+    this.height,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+    final cardWidth = width ?? (isWeb ? 280.0 : ResponsiveHelper.screenWidth(context) * 0.525);
+    final cardHeight = height ?? (isWeb ? 320.0 : ResponsiveHelper.screenHeight(context) * 0.3);
+    
     return Container(
-      width: width,
-      height: height,
-      margin: EdgeInsets.only(
-        left: Dimensions.paddingS,
-        bottom: Dimensions.paddingS,
+      width: cardWidth,
+      height: cardHeight,
+      margin: EdgeInsets.symmetric(
+        horizontal: isWeb ? Dimensions.paddingS : Dimensions.paddingXS,
+        vertical: Dimensions.paddingXS,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(Dimensions.radiusM),
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.black.withOpacity(0.3),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Stack(
+      child: Column(
         children: [
-          // Background image placeholder
-          Positioned.fill(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(Dimensions.radiusM),
-              child: SkeletonLoading(
-                width: width,
-                height: height,
-                borderRadius: Dimensions.radiusM,
-              ),
-            ),
-          ),
-          
-          // Gradient overlay
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(Dimensions.radiusM),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.7),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          
-          // Content
-          Padding(
-            padding: EdgeInsets.all(Dimensions.paddingM),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
+          // Image area with area tag and more button
+          ClipRRect(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+            child: Stack(
               children: [
-                // Top row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SkeletonLoading(
-                      width: width * 0.3,
-                      height: 20,
-                      borderRadius: Dimensions.radiusS,
-                    ),
-                    SkeletonLoading(
-                      width: 32,
-                      height: 32,
-                      borderRadius: 16,
-                    ),
-                  ],
+                SkeletonLoading(
+                  width: cardWidth,
+                  height: isWeb ? 180 : 160,
+                  borderRadius: 0,
                 ),
-                // Bottom info
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SkeletonLoading(
-                      width: width * 0.8,
-                      height: 20,
-                      borderRadius: Dimensions.radiusS,
-                    ),
-                    SizedBox(height: Dimensions.paddingXS),
-                    SkeletonLoading(
-                      width: width * 0.6,
-                      height: 16,
-                      borderRadius: Dimensions.radiusS,
-                    ),
-                    SizedBox(height: Dimensions.paddingS),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            SkeletonLoading(
-                              width: 16,
-                              height: 16,
-                              borderRadius: 8,
-                            ),
-                            SizedBox(width: Dimensions.paddingXS),
-                            SkeletonLoading(
-                              width: 40,
-                              height: 16,
-                              borderRadius: Dimensions.radiusS,
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            SkeletonLoading(
-                              width: 16,
-                              height: 16,
-                              borderRadius: 8,
-                            ),
-                            SizedBox(width: Dimensions.paddingXS),
-                            SkeletonLoading(
-                              width: 20,
-                              height: 16,
-                              borderRadius: Dimensions.radiusS,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
+                // Area tag
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: SkeletonLoading(
+                    width: 80,
+                    height: 28,
+                    borderRadius: 20,
+                  ),
+                ),
+                // More button
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: SkeletonLoading(
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                  ),
                 ),
               ],
+            ),
+          ),
+          // Content area
+          Expanded(
+            child: Container(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title
+                  SkeletonLoading(
+                    width: cardWidth * 0.85,
+                    height: isWeb ? 20 : 18,
+                    borderRadius: Dimensions.radiusS,
+                  ),
+                  SizedBox(height: 4),
+                  SkeletonLoading(
+                    width: cardWidth * 0.6,
+                    height: isWeb ? 20 : 18,
+                    borderRadius: Dimensions.radiusS,
+                  ),
+                  const Spacer(),
+                  // Bottom stats
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Time
+                      Row(
+                        children: [
+                          SkeletonLoading(
+                            width: 16,
+                            height: 16,
+                            borderRadius: 8,
+                          ),
+                          SizedBox(width: 4),
+                          SkeletonLoading(
+                            width: 45,
+                            height: 14,
+                            borderRadius: Dimensions.radiusS,
+                          ),
+                        ],
+                      ),
+                      // Health score
+                      Row(
+                        children: [
+                          SkeletonLoading(
+                            width: 16,
+                            height: 16,
+                            borderRadius: 8,
+                          ),
+                          SizedBox(width: 4),
+                          SkeletonLoading(
+                            width: 28,
+                            height: 14,
+                            borderRadius: Dimensions.radiusS,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -239,73 +241,130 @@ class RecipeFeedSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = ResponsiveHelper.screenWidth(context) - 32;
+    final width = ResponsiveHelper.screenWidth(context);
+    final isWeb = width > 800;
+    final cardWidth = isWeb ? width * 0.3 : width - 32;
+    final cardHeight = isWeb ? 320.0 : 240.0;
+
     return Container(
-      height: 250,
       margin: EdgeInsets.symmetric(
+        horizontal: isWeb ? Dimensions.paddingL : Dimensions.paddingM,
         vertical: Dimensions.paddingS,
-        horizontal: Dimensions.paddingM,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(Dimensions.radiusM),
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.black.withOpacity(0.3),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: EdgeInsets.all(Dimensions.paddingM),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
           children: [
-            // Top row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                SkeletonLoading(
-                  width: width * 0.3,
-                  height: 24,
-                  borderRadius: Dimensions.radiusM,
-                ),
-                SkeletonLoading(
-                  width: 38,
-                  height: 38,
-                  borderRadius: 19,
-                ),
-              ],
+            // Image placeholder
+            SkeletonLoading(
+              width: cardWidth,
+              height: cardHeight,
+              borderRadius: 0.0,
             ),
-            // Spacer
-            const Spacer(),
-            // Bottom info
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SkeletonLoading(
-                  width: width * 0.9,
-                  height: 28,
-                  borderRadius: Dimensions.radiusM,
-                ),
-                SizedBox(height: Dimensions.paddingXS),
-                SkeletonLoading(
-                  width: width * 0.7,
-                  height: 24,
-                  borderRadius: Dimensions.radiusM,
-                ),
-                SizedBox(height: Dimensions.paddingM),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SkeletonLoading(
-                      width: width * 0.4,
-                      height: 20,
-                      borderRadius: Dimensions.radiusM,
-                    ),
-                    SkeletonLoading(
-                      width: width * 0.3,
-                      height: 20,
-                      borderRadius: Dimensions.radiusM,
-                    ),
+            // Gradient overlay
+            Container(
+              width: cardWidth,
+              height: cardHeight,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.8),
                   ],
                 ),
-              ],
+              ),
+            ),
+            // Content
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SkeletonLoading(
+                        width: 100,
+                        height: 32,
+                        borderRadius: 20,
+                      ),
+                      SkeletonLoading(
+                        width: 32,
+                        height: 32,
+                        borderRadius: 16,
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  // Title
+                  SkeletonLoading(
+                    width: cardWidth * 0.8,
+                    height: isWeb ? 28 : 24,
+                    borderRadius: Dimensions.radiusS,
+                  ),
+                  SizedBox(height: 8),
+                  SkeletonLoading(
+                    width: cardWidth * 0.6,
+                    height: isWeb ? 24 : 20,
+                    borderRadius: Dimensions.radiusS,
+                  ),
+                  SizedBox(height: 16),
+                  // Bottom stats
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          SkeletonLoading(
+                            width: 16,
+                            height: 16,
+                            borderRadius: 8,
+                          ),
+                          SizedBox(width: 4),
+                          SkeletonLoading(
+                            width: 40,
+                            height: 16,
+                            borderRadius: Dimensions.radiusS,
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          SkeletonLoading(
+                            width: 16,
+                            height: 16,
+                            borderRadius: 8,
+                          ),
+                          SizedBox(width: 4),
+                          SkeletonLoading(
+                            width: 30,
+                            height: 16,
+                            borderRadius: Dimensions.radiusS,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
