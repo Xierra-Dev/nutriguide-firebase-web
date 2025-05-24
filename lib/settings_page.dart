@@ -90,6 +90,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
 
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
@@ -107,122 +108,187 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           child: SafeArea(
-            child: Column(
-              children: [
-                // Header with Glass Effect
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: Dimensions.paddingM,
-                    vertical: Dimensions.paddingM,
-                  ),
-                  child: Row(
-                    children: [
+            child: Center(
+              child: Container(
+                constraints: BoxConstraints(
+                  maxWidth: isWeb ? 1200 : double.infinity,
+                ),
+                child: Row(
+                  children: [
+                    if (isWeb)
                       Container(
+                        width: 300,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(Dimensions.radiusM),
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.arrow_back,
-                            color: const Color.fromARGB(255, 255, 255, 255),
-                            size: Dimensions.iconM,
+                          border: Border(
+                            right: BorderSide(
+                              color: Colors.white.withOpacity(0.1),
+                              width: 1,
+                            ),
                           ),
-                          onPressed: () {
-                            Navigator.pushReplacement(
-                              context,
-                              SlideRightRoute(page: const ProfilePage()),
-                            );
-                          },
+                        ),
+                        padding: EdgeInsets.all(Dimensions.paddingL),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.arrow_back,
+                                  color: Colors.white,
+                                  size: Dimensions.iconM,
+                                ),
+                                onPressed: () {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    SlideRightRoute(page: const ProfilePage()),
+                                  );
+                                },
+                              ),
+                            ),
+                            SizedBox(height: Dimensions.spacingL),
+                            Text(
+                              'Settings',
+                              style: TextStyle(
+                                fontSize: FontSizes.heading1,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: Dimensions.spacingM),
+                            Text(
+                              'Manage your account settings and preferences',
+                              style: TextStyle(
+                                fontSize: FontSizes.body,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(width: Dimensions.spacingM),
-                      Text(
-                        'Settings',
-                        style: TextStyle(
-                          fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.heading3),
-                          fontWeight: FontWeight.bold,
-                          color: const Color.fromARGB(255, 255, 255, 255),
-                        ),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          if (!isWeb)
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: Dimensions.paddingM,
+                                vertical: Dimensions.paddingM,
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                                    ),
+                                    child: IconButton(
+                                      icon: Icon(
+                                        Icons.arrow_back,
+                                        color: Colors.white,
+                                        size: Dimensions.iconM,
+                                      ),
+                                      onPressed: () {
+                                        Navigator.pushReplacement(
+                                          context,
+                                          SlideRightRoute(page: const ProfilePage()),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  SizedBox(width: Dimensions.spacingM),
+                                  Text(
+                                    'Settings',
+                                    style: TextStyle(
+                                      fontSize: FontSizes.heading3,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          Expanded(
+                            child: ListView(
+                              padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingM),
+                              children: [
+                                _buildSettingsSection(
+                                  title: 'Account Settings',
+                                  children: [
+                                    _buildSettingsListTile(
+                                      context: context,
+                                      leadingIcon: Icons.person_outline,
+                                      leadingText: 'Account',
+                                      trailingText: email ?? '',
+                                      onTap: () => Navigator.of(context).pushReplacement(
+                                        SlideLeftRoute(page: const AccountPage()),
+                                      ),
+                                    ),
+                                    _buildSettingsListTile(
+                                      context: context,
+                                      leadingIcon: Icons.edit_outlined,
+                                      leadingText: 'Profile',
+                                      trailingText: displayName ?? '',
+                                      onTap: () => Navigator.push(
+                                        context,
+                                        SlideLeftRoute(page: const ProfileEditPage()),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: Dimensions.spacingL),
+                                _buildSettingsSection(
+                                  title: 'Preferences',
+                                  children: [
+                                    _buildSettingsListTile(
+                                      context: context,
+                                      leadingIcon: Icons.notifications_outlined,
+                                      leadingText: 'Notifications',
+                                      trailingText: '',
+                                      onTap: () => Navigator.of(context).push(
+                                        SlideLeftRoute(page: const NotificationsPage()),
+                                      ),
+                                    ),
+                                    _buildSettingsListTile(
+                                      context: context,
+                                      leadingIcon: Icons.tune_outlined,
+                                      leadingText: 'Preferences',
+                                      trailingText: '',
+                                      onTap: () => Navigator.pushReplacement(
+                                        context,
+                                        SlideLeftRoute(page: const PreferencePage()),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: Dimensions.spacingL),
+                                _buildSettingsSection(
+                                  title: 'About',
+                                  children: [
+                                    _buildSettingsListTile(
+                                      context: context,
+                                      leadingIcon: Icons.info_outline,
+                                      leadingText: 'About NutriGuide',
+                                      trailingText: '',
+                                      onTap: () => Navigator.push(
+                                        context,
+                                        SlideLeftRoute(page: const AboutNutriguidePage()),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-
-                // Settings List
-                Expanded(
-                  child: ListView(
-                    padding: EdgeInsets.all(Dimensions.paddingM),
-                    children: [
-                      _buildSettingsSection(
-                        title: 'Account Settings',
-                        children: [
-                          _buildSettingsListTile(
-                            context: context,
-                            leadingIcon: Icons.person_outline,
-                            leadingText: 'Account',
-                            trailingText: email ?? '',
-                            onTap: () => Navigator.of(context).pushReplacement(
-                              SlideLeftRoute(page: const AccountPage()),
-                            ),
-                          ),
-                          _buildSettingsListTile(
-                            context: context,
-                            leadingIcon: Icons.edit_outlined,
-                            leadingText: 'Profile',
-                            trailingText: displayName ?? '',
-                            onTap: () => Navigator.push(
-                              context,
-                              SlideLeftRoute(page: const ProfileEditPage()),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: Dimensions.spacingL),
-                      _buildSettingsSection(
-                        title: 'Preferences',
-                        children: [
-                          _buildSettingsListTile(
-                            context: context,
-                            leadingIcon: Icons.notifications_outlined,
-                            leadingText: 'Notifications',
-                            trailingText: '',
-                            onTap: () => Navigator.of(context).push(
-                              SlideLeftRoute(page: const NotificationsPage()),
-                            ),
-                          ),
-                          _buildSettingsListTile(
-                            context: context,
-                            leadingIcon: Icons.tune_outlined,
-                            leadingText: 'Preferences',
-                            trailingText: '',
-                            onTap: () => Navigator.pushReplacement(
-                              context,
-                              SlideLeftRoute(page: const PreferencePage()),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: Dimensions.spacingL),
-                      _buildSettingsSection(
-                        title: 'About',
-                        children: [
-                          _buildSettingsListTile(
-                            context: context,
-                            leadingIcon: Icons.info_outline,
-                            leadingText: 'About NutriGuide',
-                            trailingText: '',
-                            onTap: () => Navigator.push(
-                              context,
-                              SlideLeftRoute(page: const AboutNutriguidePage()),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -231,36 +297,51 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildSettingsSection({required String title, required List<Widget> children}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.only(
-            left: Dimensions.paddingM,
-            bottom: Dimensions.paddingS,
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(Dimensions.radiusL),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
-          child: Text(
-            title,
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.bodySmall),
-              fontWeight: FontWeight.w600,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.all(Dimensions.paddingM),
+            child: Text(
+              title,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isWeb ? FontSizes.heading3 : FontSizes.bodySmall,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(Dimensions.radiusL),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
+          Container(
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: Colors.white.withOpacity(0.1),
+                ),
+              ),
+            ),
+            child: Column(
+              children: children,
             ),
           ),
-          child: Column(
-            children: children,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -271,28 +352,30 @@ class _SettingsPageState extends State<SettingsPage> {
     required String trailingText,
     required VoidCallback onTap,
   }) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+    
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(Dimensions.radiusL),
-        child: Padding(
-          padding: EdgeInsets.all(Dimensions.paddingM),
+        child: Container(
+          padding: EdgeInsets.all(isWeb ? Dimensions.paddingL : Dimensions.paddingM),
           child: Row(
             children: [
               Container(
-                padding: EdgeInsets.all(Dimensions.paddingS),
+                padding: EdgeInsets.all(isWeb ? Dimensions.paddingM : Dimensions.paddingS),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(Dimensions.radiusM),
                 ),
                 child: Icon(
                   leadingIcon,
-                  color: const Color.fromARGB(255, 255, 255, 255),
-                  size: Dimensions.iconM,
+                  color: Colors.white,
+                  size: isWeb ? Dimensions.iconL : Dimensions.iconM,
                 ),
               ),
-              SizedBox(width: Dimensions.spacingM),
+              SizedBox(width: isWeb ? Dimensions.spacingL : Dimensions.spacingM),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,8 +383,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     Text(
                       leadingText,
                       style: TextStyle(
-                        color: const Color.fromARGB(255, 255, 255, 255),
-                        fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
+                        color: Colors.white,
+                        fontSize: isWeb ? FontSizes.heading3 : FontSizes.body,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -311,7 +394,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         trailingText,
                         style: TextStyle(
                           color: Colors.white70,
-                          fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.bodySmall),
+                          fontSize: isWeb ? FontSizes.body : FontSizes.bodySmall,
                         ),
                       ),
                     ],
@@ -320,8 +403,8 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               Icon(
                 Icons.arrow_forward_ios,
-                color: const Color.fromARGB(255, 255, 255, 255),
-                size: Dimensions.iconS,
+                color: Colors.white,
+                size: isWeb ? Dimensions.iconM : Dimensions.iconS,
               ),
             ],
           ),

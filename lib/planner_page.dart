@@ -484,24 +484,19 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
   }
 
   Widget _buildMealCard(PlannedMeal meal, String mealKey) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+    
     return Hero(
       tag: 'recipe-${meal.recipe.id}',
       child: Container(
-        width: ResponsiveHelper.screenWidth(context) * 0.6,
-        margin: EdgeInsets.only(
-          right: Dimensions.paddingM,
-          bottom: Dimensions.paddingS,
-          top: Dimensions.paddingXS,
-        ),
+        width: ResponsiveHelper.screenWidth(context) * (isWeb ? 0.25 : 0.45),
+        margin: EdgeInsets.only(right: 12),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(Dimensions.radiusL),
-          image: DecorationImage(
-            image: NetworkImage(meal.recipe.image),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.3),
-              BlendMode.darken,
-            ),
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.black.withOpacity(0.3),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.1),
+            width: 1,
           ),
           boxShadow: [
             BoxShadow(
@@ -515,82 +510,128 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
           color: Colors.transparent,
           child: InkWell(
             onTap: () => _viewRecipe(meal.recipe),
-            borderRadius: BorderRadius.circular(Dimensions.radiusL),
-            child: Container(
-              padding: EdgeInsets.all(Dimensions.paddingM),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.8),
-                  ],
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: Dimensions.paddingS,
-                      vertical: Dimensions.paddingXS,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(Dimensions.radiusS),
-                    ),
-                    child: AppText(
-                      meal.mealType,
-                      fontSize: FontSizes.caption,
-                      color: AppColors.text,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: Dimensions.paddingS),
-                  AppText(
-                    meal.recipe.title,
-                    fontSize: FontSizes.body,
-                    color: AppColors.text,
-                    fontWeight: FontWeight.bold,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: Dimensions.paddingXS),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.timer,
-                            color: AppColors.primary,
-                            size: Dimensions.iconS,
+            borderRadius: BorderRadius.circular(12),
+            child: Column(
+              children: [
+                Expanded(
+                  flex: 7,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                    child: Stack(
+                      children: [
+                        Image.network(
+                          meal.recipe.image,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.2),
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.3),
+                              ],
+                              stops: [0.0, 0.3, 1.0],
+                            ),
                           ),
-                          SizedBox(width: Dimensions.paddingXS),
-                          AppText(
-                            '${meal.recipe.preparationTime} min',
-                            fontSize: FontSizes.caption,
-                            color: AppColors.textSecondary,
+                        ),
+                        Positioned(
+                          top: 8,
+                          left: 8,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.1),
+                                width: 1,
+                              ),
+                            ),
+                            child: AppText(
+                              meal.mealType,
+                              fontSize: 10,
+                              color: AppColors.text,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.black.withOpacity(0.7),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.1),
+                                width: 1,
+                              ),
+                            ),
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              iconSize: 16,
+                              icon: Icon(
+                                Icons.check_circle,
+                                color: madeStatus[mealKey] ?? false
+                                  ? AppColors.success
+                                  : AppColors.text.withOpacity(0.6),
+                              ),
+                              onPressed: () => _toggleMade(meal),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AppText(
+                        meal.recipe.title,
+                        fontSize: isWeb ? 14 : 12,
+                        color: AppColors.text,
+                        fontWeight: FontWeight.bold,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.timer,
+                                color: AppColors.primary,
+                                size: 14,
+                              ),
+                              SizedBox(width: 4),
+                              AppText(
+                                '${meal.recipe.preparationTime} min',
+                                fontSize: 10,
+                                color: AppColors.textSecondary,
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      IconButton(
-                        iconSize: Dimensions.iconXL,
-                        icon: Icon(
-                          Icons.check_circle,
-                          color: madeStatus[mealKey] ?? false
-                              ? AppColors.success
-                              : AppColors.text.withOpacity(0.6),
-                        ),
-                        onPressed: () => _toggleMade(meal),
-                      ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

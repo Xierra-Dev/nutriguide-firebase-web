@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'home_page.dart';
 import 'register_page.dart';
 import 'services/auth_service.dart';
@@ -8,6 +9,7 @@ import 'core/constants/dimensions.dart';
 import 'core/constants/font_sizes.dart';
 import 'core/helpers/responsive_helper.dart';
 import 'landing_page.dart';
+import 'package:simple_animations/simple_animations.dart';
 
 class ErrorDetails {
   final String title;
@@ -52,22 +54,27 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
+    _setupControllers();
+    _setupAnimations();
+  }
+
+  void _setupControllers() {
     _emailController.addListener(_updateEmailEmpty);
     _passwordController.addListener(_updatePasswordEmpty);
+    _setupFocusNodes();
+  }
 
+  void _setupFocusNodes() {
     _emailFocusNode.addListener(() {
-      setState(() {
-        _isEmailFocused = _emailFocusNode.hasFocus;
-      });
+      setState(() => _isEmailFocused = _emailFocusNode.hasFocus);
     });
 
     _passwordFocusNode.addListener(() {
-      setState(() {
-        _isPasswordFocused = _passwordFocusNode.hasFocus;
-      });
+      setState(() => _isPasswordFocused = _passwordFocusNode.hasFocus);
     });
+  }
 
-    // Initialize animation controller
+  void _setupAnimations() {
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
@@ -84,15 +91,612 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   void _updateEmailEmpty() {
-    setState(() {
-      _isEmailEmpty = _emailController.text.isEmpty;
-    });
+    setState(() => _isEmailEmpty = _emailController.text.isEmpty);
   }
 
   void _updatePasswordEmpty() {
-    setState(() {
-      _isPasswordEmpty = _passwordController.text.isEmpty;
-    });
+    setState(() => _isPasswordEmpty = _passwordController.text.isEmpty);
+  }
+
+  bool _isWebPlatform() {
+    return MediaQuery.of(context).size.width > 800;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWeb = _isWebPlatform();
+    final size = MediaQuery.of(context).size;
+
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.black,
+              Color(0xFF1A1A1A),
+              Color(0xFF262626),
+            ],
+            stops: [0.0, 0.5, 1.0],
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Pattern Background
+            Positioned.fill(
+              child: _buildPatternBackground(),
+            ),
+            
+            // Main Content
+            SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: isWeb
+                        ? _buildWebLayout(size)
+                        : _buildMobileLayout(size),
+                  ),
+                ),
+              ),
+            ),
+
+            // Close Button
+            Positioned(
+              top: 20,
+              right: 20,
+              child: _buildCloseButton(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPatternBackground() {
+    return ShaderMask(
+      shaderCallback: (bounds) => LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.white.withOpacity(0.1),
+          Colors.white.withOpacity(0.05),
+        ],
+      ).createShader(bounds),
+      child: GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 8,
+          crossAxisSpacing: 15,
+          mainAxisSpacing: 15,
+        ),
+        itemBuilder: (context, index) {
+          return Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+                width: 0.5,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildWebLayout(Size size) {
+    return Container(
+      width: size.width * 0.85,
+      height: size.height * 0.85,
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.1),
+            blurRadius: 20,
+            spreadRadius: 5,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Left Panel - Branding
+          Expanded(
+            flex: 5,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  bottomLeft: Radius.circular(30),
+                ),
+                image: DecorationImage(
+                  image: AssetImage('assets/images/login_bg.jpg'),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withOpacity(0.7),
+                    BlendMode.darken,
+                  ),
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildLogo(true),
+                  SizedBox(height: 40),
+                  _buildBrandingContent(),
+                  SizedBox(height: 60),
+                  _buildFeaturesList(),
+                ],
+              ),
+            ),
+          ),
+          // Right Panel - Login Form
+          Expanded(
+            flex: 4,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 60),
+              child: Center(
+                child: SingleChildScrollView(
+                  child: _buildLoginForm(true),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout(Size size) {
+    return Container(
+      width: size.width * 0.9,
+      padding: EdgeInsets.all(30),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.1),
+            blurRadius: 15,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildLogo(false),
+          SizedBox(height: 30),
+          _buildLoginForm(false),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLogo(bool isWeb) {
+    return Column(
+      children: [
+        Container(
+          width: isWeb ? 120 : 100,
+          height: isWeb ? 120 : 100,
+          padding: EdgeInsets.all(isWeb ? 25 : 20),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.2),
+                blurRadius: 15,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          child: Image.asset(
+            'assets/images/logo_NutriGuide.png',
+            fit: BoxFit.contain,
+          ),
+        ),
+        if (isWeb) ...[
+          SizedBox(height: 20),
+          Text(
+            'NutriGuide',
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildBrandingContent() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 40),
+      child: Column(
+        children: [
+          Text(
+            'Your Journey to\nHealthier Living',
+            style: TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              height: 1.2,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 20),
+          Text(
+            'Join thousands of users who have transformed their lives with personalized nutrition guidance',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.white.withOpacity(0.9),
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeaturesList() {
+    return Column(
+      children: [
+        _buildFeatureItem(
+          icon: Icons.restaurant_menu,
+          title: 'Smart Meal Planning',
+        ),
+        SizedBox(height: 20),
+        _buildFeatureItem(
+          icon: Icons.trending_up,
+          title: 'Progress Tracking',
+        ),
+        SizedBox(height: 20),
+        _buildFeatureItem(
+          icon: Icons.psychology,
+          title: 'AI-Powered Insights',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeatureItem({
+    required IconData icon,
+    required String title,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.primary, size: 24),
+          SizedBox(width: 12),
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoginForm(bool isWeb) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!isWeb) ...[
+          Text(
+            'Welcome Back!',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2C3E50),
+              letterSpacing: 0.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Sign in to continue your journey',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 30),
+        ],
+        if (isWeb) ...[
+          Text(
+            'Sign In',
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2C3E50),
+              letterSpacing: 0.5,
+            ),
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Welcome back! Please enter your details',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+          ),
+          SizedBox(height: 40),
+        ],
+        Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildTextField(
+                controller: _emailController,
+                focusNode: _emailFocusNode,
+                label: 'Email',
+                icon: Icons.email_outlined,
+                isWeb: isWeb,
+              ),
+              SizedBox(height: 20),
+              _buildTextField(
+                controller: _passwordController,
+                focusNode: _passwordFocusNode,
+                label: 'Password',
+                icon: Icons.lock_outline,
+                isPassword: true,
+                isWeb: isWeb,
+              ),
+              SizedBox(height: isWeb ? 30 : 25),
+              _buildLoginButton(isWeb),
+              SizedBox(height: 20),
+              _buildRegisterLink(isWeb),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required String label,
+    required IconData icon,
+    bool isPassword = false,
+    required bool isWeb,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: focusNode.hasFocus 
+              ? AppColors.primary 
+              : Colors.white24,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.1),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        focusNode: focusNode,
+        obscureText: isPassword && !_isPasswordVisible,
+        style: TextStyle(
+          fontSize: isWeb ? 16 : 15,
+          color: Colors.white,
+        ),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(
+            color: focusNode.hasFocus 
+                ? AppColors.primary 
+                : Colors.white70,
+            fontSize: isWeb ? 16 : 15,
+          ),
+          prefixIcon: Icon(
+            icon,
+            color: focusNode.hasFocus 
+                ? AppColors.primary 
+                : Colors.white70,
+            size: isWeb ? 24 : 22,
+          ),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    _isPasswordVisible
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                    color: focusNode.hasFocus 
+                        ? AppColors.primary 
+                        : Colors.white70,
+                    size: isWeb ? 24 : 22,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: isWeb ? 20 : 18,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoginButton(bool isWeb) {
+    return Container(
+      height: isWeb ? 56 : 50,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary,
+            Color(0xFFFF6E40),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _login,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
+        child: AnimatedSwitcher(
+          duration: Duration(milliseconds: 200),
+          child: _isLoading
+              ? SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.login_rounded,
+                      color: Colors.white,
+                      size: isWeb ? 24 : 22,
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      'Sign In',
+                      style: TextStyle(
+                        fontSize: isWeb ? 18 : 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRegisterLink(bool isWeb) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Don\'t have an account? ',
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: isWeb ? 16 : 14,
+          ),
+        ),
+        MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const RegisterPage()),
+              );
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: AppColors.primary.withOpacity(0.5),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                'Register',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: isWeb ? 16 : 14,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCloseButton() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: IconButton(
+        icon: Icon(
+          Icons.close,
+          color: Color(0xFF2C3E50),
+          size: 24,
+        ),
+        onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LandingPage()),
+          );
+        },
+      ),
+    );
   }
 
   ErrorDetails _getErrorDetails(dynamic error) {
@@ -283,345 +887,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         });
       }
     });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MediaQuery(
-      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
-      child: Scaffold(
-        body: Container(
-          height: MediaQuery.of(context).size.height,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                AppColors.surface,
-                AppColors.background,
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: SingleChildScrollView(
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Column(
-                  children: [
-                    // Close Button
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: IconButton(
-                        icon: Container(
-                          padding: EdgeInsets.all(Dimensions.paddingXS),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.close_rounded,
-                            color: Colors.white,
-                            size: Dimensions.iconL,
-                          ),
-                        ),
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => const LandingPage()),
-                          );
-                        },
-                      ),
-                    ),
-                    // Logo and Welcome Text
-                    Container(
-                      padding: EdgeInsets.all(Dimensions.paddingXL),
-                      child: Column(
-                        children: [
-                          // App Logo with glow effect
-                          Container(
-                            padding: EdgeInsets.all(Dimensions.paddingL),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primary.withOpacity(0.2),
-                                  blurRadius: 30,
-                                  spreadRadius: 5,
-                                ),
-                              ],
-                            ),
-                            child: Image.asset(
-                              'assets/images/logo_NutriGuide.png',
-                              width: 80,
-                              height: 80,
-                            ),
-                          ),
-                          SizedBox(height: Dimensions.spacingL),
-                          // Welcome Text
-                          Text(
-                            'Welcome Back!',
-                            style: TextStyle(
-                              fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                                  context, FontSizes.heading1),
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              shadows: [
-                                Shadow(
-                                  offset: const Offset(0, 2),
-                                  blurRadius: 4,
-                                  color: Colors.black.withOpacity(0.25),
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: Dimensions.spacingM),
-                          Text(
-                            'Sign in to continue your nutrition journey',
-                            style: TextStyle(
-                              fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                                  context, FontSizes.body),
-                              color: Colors.white.withOpacity(0.9),
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Login Form Container with frosted glass effect
-                    Container(
-                      margin:
-                          EdgeInsets.symmetric(horizontal: Dimensions.paddingL),
-                      padding: EdgeInsets.all(Dimensions.paddingL),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface.withOpacity(0.9),
-                        borderRadius:
-                            BorderRadius.circular(Dimensions.radiusL),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.1),
-                          width: 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 20,
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Email Field
-                            TextFormField(
-                              controller: _emailController,
-                              focusNode: _emailFocusNode,
-                              style: const TextStyle(color: Colors.white),
-                              decoration: InputDecoration(
-                                labelText: 'Email',
-                                labelStyle: TextStyle(
-                                  color: _isEmailFocused
-                                      ? AppColors.primary
-                                      : Colors.white70,
-                                ),
-                                hintText: 'Enter your email',
-                                hintStyle:
-                                    TextStyle(color: Colors.white38),
-                                prefixIcon: Icon(
-                                  Icons.email_outlined,
-                                  color: _isEmailFocused
-                                      ? AppColors.primary
-                                      : Colors.white70,
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      Dimensions.radiusM),
-                                  borderSide:
-                                      BorderSide(color: Colors.white24),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      Dimensions.radiusM),
-                                  borderSide: BorderSide(
-                                      color: AppColors.primary, width: 2),
-                                ),
-                                filled: true,
-                                fillColor:
-                                    AppColors.surface.withOpacity(0.5),
-                              ),
-                            ),
-
-                            SizedBox(height: Dimensions.spacingL),
-
-                            // Password Field
-                            TextFormField(
-                              controller: _passwordController,
-                              focusNode: _passwordFocusNode,
-                              obscureText: !_isPasswordVisible,
-                              style: const TextStyle(color: Colors.white),
-                              decoration: InputDecoration(
-                                labelText: 'Password',
-                                labelStyle: TextStyle(
-                                  color: _isPasswordFocused
-                                      ? AppColors.primary
-                                      : Colors.white70,
-                                ),
-                                hintText: 'Enter your password',
-                                hintStyle:
-                                    TextStyle(color: Colors.white38),
-                                prefixIcon: Icon(
-                                  Icons.lock_outline,
-                                  color: _isPasswordFocused
-                                      ? AppColors.primary
-                                      : Colors.white70,
-                                ),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _isPasswordVisible
-                                        ? Icons.visibility_off
-                                        : Icons.visibility,
-                                    color: _isPasswordFocused
-                                        ? AppColors.primary
-                                        : Colors.white70,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _isPasswordVisible =
-                                          !_isPasswordVisible;
-                                    });
-                                  },
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      Dimensions.radiusM),
-                                  borderSide:
-                                      BorderSide(color: Colors.white24),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      Dimensions.radiusM),
-                                  borderSide: BorderSide(
-                                      color: AppColors.primary, width: 2),
-                                ),
-                                filled: true,
-                                fillColor:
-                                    AppColors.surface.withOpacity(0.5),
-                              ),
-                            ),
-
-                            SizedBox(height: Dimensions.spacingXL),
-
-                            // Enhanced Login Button with gradient
-                            Container(
-                              height: 55,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    AppColors.primary,
-                                    const Color(0xFFFF6E40),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(
-                                    Dimensions.radiusL),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.primary
-                                        .withOpacity(0.3),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 6),
-                                  ),
-                                ],
-                              ),
-                              child: ElevatedButton(
-                                onPressed: _isLoading ? null : _login,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.transparent,
-                                  shadowColor: Colors.transparent,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        Dimensions.radiusL),
-                                  ),
-                                ),
-                                child: AnimatedSwitcher(
-                                  duration:
-                                      const Duration(milliseconds: 200),
-                                  child: _isLoading
-                                      ? const SizedBox(
-                                          height: 24,
-                                          width: 24,
-                                          child:
-                                              CircularProgressIndicator(
-                                            color: Colors.white,
-                                            strokeWidth: 2,
-                                          ),
-                                        )
-                                      : Text(
-                                          'Sign In',
-                                          style: TextStyle(
-                                            fontSize: ResponsiveHelper
-                                                .getAdaptiveTextSize(
-                                                    context,
-                                                    FontSizes.button),
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Register Link
-                    Padding(
-                      padding: EdgeInsets.all(Dimensions.paddingL),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Don\'t have an account? ',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                                  context, FontSizes.bodySmall),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const RegisterPage()),
-                              );
-                            },
-                            child: Text(
-                              'Register',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.bold,
-                                fontSize:
-                                    ResponsiveHelper.getAdaptiveTextSize(
-                                        context, FontSizes.bodySmall),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   @override

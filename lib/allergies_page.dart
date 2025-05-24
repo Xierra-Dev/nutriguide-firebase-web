@@ -101,45 +101,279 @@ class _AllergiesPageState extends State<AllergiesPage> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
         backgroundColor: AppColors.background,
-        body: Stack(
+        body: SafeArea(
+          child: Center(
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: isWeb ? 1200 : double.infinity,
+              ),
+              child: Row(
+                children: [
+                  if (isWeb)
+                    Container(
+                      width: 300,
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 0, 0, 0),
+                        border: Border(
+                          right: BorderSide(
+                            color: Colors.white.withOpacity(0.1),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      padding: EdgeInsets.all(Dimensions.paddingL),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                            ),
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.arrow_back,
+                                color: AppColors.primary,
+                                size: Dimensions.iconM,
+                              ),
+                              onPressed: () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const GoalsPage()),
+                                );
+                              },
+                            ),
+                          ),
+                          SizedBox(height: Dimensions.spacingL),
+                          Text(
+                            'Any Food Allergies?',
+                            style: TextStyle(
+                              fontSize: FontSizes.heading1,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.text,
+                            ),
+                          ),
+                          SizedBox(height: Dimensions.spacingM),
+                          Text(
+                            'Select all that apply to you',
+                            style: TextStyle(
+                              fontSize: FontSizes.body,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          SizedBox(height: Dimensions.spacingL),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(
+                              3,
+                              (index) => Container(
+                                margin: EdgeInsets.symmetric(horizontal: 4),
+                                width: index + 1 == currentStep ? 24 : 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(6),
+                                  color: index + 1 == currentStep ? AppColors.primary : Colors.white24,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        if (!isWeb)
+                          Container(
+                            padding: EdgeInsets.all(Dimensions.paddingM),
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 0, 0, 0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
           children: [
-
             Container(
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                                  ),
+                                  child: IconButton(
+                                    icon: Icon(
+                                      Icons.arrow_back,
+                                      color: AppColors.primary,
+                                      size: Dimensions.iconM,
+                                    ),
+                                    onPressed: () {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => const GoalsPage()),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                SizedBox(width: Dimensions.paddingM),
+                                Text(
+                                  'Any Food Allergies?',
+                                  style: TextStyle(
+                                    fontSize: FontSizes.heading2,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.text,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingM),
+                            child: Column(
+                              children: [
+                                if (!isWeb) _buildHeader(),
+                                Container(
+                                  padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingL),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 10),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      if (isWeb)
+                                        GridView.builder(
+                                          shrinkWrap: true,
+                                          physics: NeverScrollableScrollPhysics(),
+                                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 3,
+                                            childAspectRatio: 1.2,
+                                            crossAxisSpacing: Dimensions.spacingL,
+                                            mainAxisSpacing: Dimensions.spacingL,
+                                          ),
+                                          itemCount: allergies.length,
+                                          itemBuilder: (context, index) => _buildAllergyCard(allergies[index]),
+                                        )
+                                      else
+                                        GridView.builder(
+                                          shrinkWrap: true,
+                                          physics: NeverScrollableScrollPhysics(),
+                                          padding: EdgeInsets.symmetric(horizontal: Dimensions.paddingM),
+                                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 2,
+                                            childAspectRatio: 1.5,
+                                            crossAxisSpacing: Dimensions.spacingM,
+                                            mainAxisSpacing: Dimensions.spacingM,
+                                          ),
+                                          itemCount: allergies.length,
+                                          itemBuilder: (context, index) => _buildAllergyCard(allergies[index]),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: isWeb ? Dimensions.paddingXL : Dimensions.paddingL),
+                                Container(
+                                  width: double.infinity,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isWeb ? Dimensions.paddingXL : Dimensions.paddingM,
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        height: 55,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
                     colors: [
-                      AppColors.surface,
-                      AppColors.background,
+                                              AppColors.primary,
+                                              Color(0xFFFF6E40),
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColors.primary.withOpacity(0.3),
+                                              blurRadius: 12,
+                                              offset: Offset(0, 6),
+                                            ),
+                                          ],
+                                        ),
+                                        child: ElevatedButton(
+                                          onPressed: _isLoading ? null : _saveAllergies,
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.transparent,
+                                            shadowColor: Colors.transparent,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                'Complete Setup',
+                                                style: TextStyle(
+                                                  fontSize: isWeb ? FontSizes.heading3 : FontSizes.button,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              SizedBox(width: 8),
+                                              Icon(Icons.arrow_forward, color: Colors.white),
                     ],
                   ),
                 ),
               ),
-            
-            // Main content
-            SafeArea(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: Dimensions.paddingL),
-                  child: Column(
-                    children: [
-                      _buildHeader(),
-                      _buildAllergiesGrid(),
-                      _buildBottomButtons(),
+                                      SizedBox(height: Dimensions.spacingL),
+                                      TextButton(
+                                        onPressed: _showSetUpLaterDialog,
+                                        style: TextButton.styleFrom(
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: Dimensions.paddingM,
+                                            horizontal: Dimensions.paddingXL,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                            side: BorderSide(color: Colors.white24),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Set Up Later',
+                                          style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: isWeb ? FontSizes.body : FontSizes.button,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                     ],
                   ),
                 ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-
-            // Back button
-            _buildBackButton(),
-          ],
+          ),
         ),
       ),
     );
@@ -228,21 +462,9 @@ class _AllergiesPageState extends State<AllergiesPage> with SingleTickerProvider
     );
   }
 
-  Widget _buildAllergiesGrid() {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      padding: EdgeInsets.symmetric(horizontal: Dimensions.paddingM),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1.5,
-        crossAxisSpacing: Dimensions.spacingM,
-        mainAxisSpacing: Dimensions.spacingM,
-      ),
-      itemCount: allergies.length,
-      itemBuilder: (context, index) {
-        final allergy = allergies[index];
-        final isSelected = selectedAllergies.contains(allergy['name']);
+  Widget _buildAllergyCard(Map<String, dynamic> allergy) {
+    final bool isSelected = selectedAllergies.contains(allergy['name']);
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
         
         return AnimatedContainer(
           duration: Duration(milliseconds: 200),
@@ -260,7 +482,7 @@ class _AllergiesPageState extends State<AllergiesPage> with SingleTickerProvider
               },
               borderRadius: BorderRadius.circular(Dimensions.radiusL),
               child: Container(
-                padding: EdgeInsets.all(Dimensions.paddingM),
+            padding: EdgeInsets.all(isWeb ? Dimensions.paddingL : Dimensions.paddingM),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -274,123 +496,52 @@ class _AllergiesPageState extends State<AllergiesPage> with SingleTickerProvider
                     color: isSelected ? AppColors.primary : Colors.white.withOpacity(0.1),
                     width: isSelected ? 2 : 1,
                   ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                Container(
+                  padding: EdgeInsets.all(isWeb ? Dimensions.paddingM : Dimensions.paddingS),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary.withOpacity(0.2) : Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                  ),
+                  child: Icon(
                       allergy['icon'],
                       color: isSelected ? AppColors.primary : Colors.white70,
-                      size: 28,
+                    size: isWeb ? Dimensions.iconL : Dimensions.iconM,
+                  ),
                     ),
-                    SizedBox(height: Dimensions.spacingS),
+                SizedBox(height: isWeb ? Dimensions.paddingM : Dimensions.paddingS),
                     Text(
                       allergy['name'],
                       style: TextStyle(
                         color: isSelected ? AppColors.primary : Colors.white,
-                        fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.bodySmall),
+                    fontSize: isWeb ? FontSizes.heading3 : FontSizes.body,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildBottomButtons() {
-    return Container(
-      padding: EdgeInsets.all(Dimensions.paddingL),
-      child: Column(
-        children: [
-          // Continue Button with gradient and animation
-          Container(
-            height: 55,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.primary,
-                  Color(0xFFFF6E40),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(Dimensions.radiusL),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withOpacity(0.3),
-                  blurRadius: 12,
-                  offset: Offset(0, 6),
+                SizedBox(height: Dimensions.paddingXS),
+                Text(
+                  allergy['description'],
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: isWeb ? FontSizes.body : FontSizes.caption,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ],
-            ),
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _saveAllergies,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                ),
-              ),
-              child: AnimatedSwitcher(
-                duration: Duration(milliseconds: 200),
-                child: _isLoading
-                    ? SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Complete Setup',
-                            style: TextStyle(
-                              fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                                  context, FontSizes.button),
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward, color: Colors.white),
-                        ],
-                      ),
               ),
             ),
           ),
-          SizedBox(height: Dimensions.spacingL),
-          
-          // Set Up Later Button with hover effect
-          TextButton(
-            onPressed: _showSetUpLaterDialog,
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.symmetric(
-                vertical: Dimensions.paddingM,
-                horizontal: Dimensions.paddingXL,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                side: BorderSide(color: Colors.white24),
-              ),
-            ),
-            child: Text(
-              'Set Up Later',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.button),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -516,35 +667,6 @@ class _AllergiesPageState extends State<AllergiesPage> with SingleTickerProvider
           ),
         );
       },
-    );
-  }
-
-  Widget _buildBackButton() {
-    return Positioned(
-      top: MediaQuery.of(context).padding.top + Dimensions.paddingM,
-      left: Dimensions.paddingL,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface.withOpacity(0.9),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 10,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const GoalsPage()),
-            );
-          },
-        ),
-      ),
     );
   }
 

@@ -23,7 +23,6 @@ class StorageService {
       
       return response.secureUrl;
     } catch (e) {
-      print('Error uploading image: $e');
       rethrow;
     }
   }

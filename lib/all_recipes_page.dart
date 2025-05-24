@@ -333,14 +333,13 @@ class _AllRecipesPageState extends State<AllRecipesPage> {
       ),
       builder: (BuildContext context) {
         return MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(1.0)),
           child: StatefulBuilder(
             builder: (BuildContext context, StateSetter setDialogState) {
               return Padding(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 20,
-                    horizontal: 20
-                ),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -362,8 +361,8 @@ class _AllRecipesPageState extends State<AllRecipesPage> {
                           onPressed: () {
                             // Pindah ke minggu sebelumnya
                             setDialogState(() {
-                              _selectedDate =
-                                  _selectedDate.subtract(const Duration(days: 7));
+                              _selectedDate = _selectedDate
+                                  .subtract(const Duration(days: 7));
                             });
                           },
                           icon: const Icon(
@@ -375,7 +374,7 @@ class _AllRecipesPageState extends State<AllRecipesPage> {
                         Text(
                           // Menampilkan rentang tanggal minggu
                           '${DateFormat('MMM dd').format(_selectedDate)} - '
-                              '${DateFormat('MMM dd').format(_selectedDate.add(const Duration(days: 6)))}',
+                          '${DateFormat('MMM dd').format(_selectedDate.add(const Duration(days: 6)))}',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -404,10 +403,12 @@ class _AllRecipesPageState extends State<AllRecipesPage> {
                         child: InkWell(
                           onTap: () {
                             // Open meal selection dialog
-                            _showMealSelectionDialog(context, setDialogState, recipe);
+                            _showMealSelectionDialog(
+                                context, setDialogState, recipe);
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
                               color: Colors.grey[850],
                               borderRadius: BorderRadius.circular(8),
@@ -416,7 +417,9 @@ class _AllRecipesPageState extends State<AllRecipesPage> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  _selectedMeal.isEmpty ? 'Select Meal' : _selectedMeal,
+                                  _selectedMeal.isEmpty
+                                      ? 'Select Meal'
+                                      : _selectedMeal,
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
@@ -456,7 +459,7 @@ class _AllRecipesPageState extends State<AllRecipesPage> {
                             backgroundColor: Colors.grey[800],
                             labelStyle: TextStyle(
                               color:
-                              _daysSelected[i] ? Colors.white : Colors.grey,
+                                  _daysSelected[i] ? Colors.white : Colors.grey,
                             ),
                           ),
                       ],
@@ -478,9 +481,12 @@ class _AllRecipesPageState extends State<AllRecipesPage> {
                         ElevatedButton(
                           // Inside dialog's ElevatedButton onPressed
                           onPressed: () {
-                            if (_selectedMeal.isEmpty || !_daysSelected.contains(true)) {
+                            if (_selectedMeal.isEmpty ||
+                                !_daysSelected.contains(true)) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Please select at least one day and a meal type!')),
+                                const SnackBar(
+                                    content: Text(
+                                        'Please select at least one day and a meal type!')),
                               );
                               return;
                             }
@@ -489,12 +495,14 @@ class _AllRecipesPageState extends State<AllRecipesPage> {
                           },
                           style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.deepOrange,
-                              foregroundColor: Colors.white
+                              foregroundColor: Colors.white),
+                          child: const Text(
+                            'Done',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          child: const Text('Done', style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ) ,),
                         ),
                       ],
                     ),

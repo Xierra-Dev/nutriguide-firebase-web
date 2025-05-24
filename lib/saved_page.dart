@@ -423,8 +423,8 @@ class _SavedPageState extends State<SavedPage> with SingleTickerProviderStateMix
     return GridView.builder(
       padding: EdgeInsets.all(Dimensions.paddingS),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.75,
+        crossAxisCount: ResponsiveHelper.screenWidth(context) > 800 ? 4 : 2,
+        childAspectRatio: ResponsiveHelper.screenWidth(context) > 800 ? 0.95 : 0.9,
         crossAxisSpacing: Dimensions.paddingS,
         mainAxisSpacing: Dimensions.paddingS,
       ),
@@ -440,125 +440,158 @@ class _SavedPageState extends State<SavedPage> with SingleTickerProviderStateMix
   }
 
   Widget _buildRecipeCard(Recipe recipe) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+    
     return Hero(
       tag: 'recipe-${recipe.id}',
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(Dimensions.radiusM),
-          image: DecorationImage(
-            image: NetworkImage(recipe.image),
-            fit: BoxFit.cover,
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.black.withOpacity(0.3),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.1),
+            width: 1,
           ),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Dimensions.radiusM),
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.transparent,
-                Colors.black.withOpacity(0.7),
-              ],
-            ),
-          ),
-          padding: EdgeInsets.symmetric(
-            vertical: ResponsiveHelper.screenHeight(context) * 0.0155,
-            horizontal: ResponsiveHelper.screenWidth(context) * 0.025,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildRecipeActions(recipe),
-              _buildRecipeInfo(recipe),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRecipeActions(Recipe recipe) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Area info
-        Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: Dimensions.paddingS,
-            vertical: Dimensions.paddingXS,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(Dimensions.radiusS),
-          ),
-          child: AppText(
-            recipe.area ?? 'International',
-            fontSize: FontSizes.bodySmall,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        // Delete button
-        Container(
-          width: Dimensions.iconL,
-          height: Dimensions.iconL,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.black.withOpacity(0.5),
-          ),
-          child: IconButton(
-            padding: EdgeInsets.zero,
-            iconSize: Dimensions.iconM,
-            icon: Icon(Icons.delete_outline, color: AppColors.text),
-            onPressed: () => _removeSavedRecipe(recipe),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRecipeInfo(Recipe recipe) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        AppText(
-          recipe.title,
-          fontSize: FontSizes.body,
-          color: AppColors.text,
-          fontWeight: FontWeight.bold,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        SizedBox(height: Dimensions.paddingXS),
-        Row(
-          children: [
-            Icon(
-              Icons.timer,
-              color: AppColors.primary,
-              size: Dimensions.iconS,
-            ),
-            SizedBox(width: Dimensions.paddingXS),
-            AppText(
-              '${recipe.preparationTime} min',
-              fontSize: FontSizes.caption,
-              color: AppColors.textSecondary,
-            ),
-            SizedBox(width: 47.5),
-            Icon(
-              Icons.favorite,
-              color: _getHealthScoreColor(recipe.healthScore),
-              size: Dimensions.iconS,
-            ),
-            SizedBox(width: Dimensions.paddingXS),
-            AppText(
-              recipe.healthScore.toStringAsFixed(1),
-              fontSize: FontSizes.caption,
-              color: _getHealthScoreColor(recipe.healthScore),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-      ],
+        child: Column(
+          children: [
+            Expanded(
+              flex: 7,
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                child: Stack(
+                  children: [
+                    Image.network(
+                      recipe.image,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.2),
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.3),
+                          ],
+                          stops: [0.0, 0.3, 1.0],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.1),
+                            width: 1,
+                          ),
+                        ),
+                        child: AppText(
+                          recipe.area ?? 'International',
+                          fontSize: 10,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black.withOpacity(0.7),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.1),
+                            width: 1,
+                          ),
+                        ),
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          iconSize: 16,
+                          icon: Icon(Icons.delete_outline, color: AppColors.text),
+                          onPressed: () => _removeSavedRecipe(recipe),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppText(
+                    recipe.title,
+                    fontSize: isWeb ? 14 : 12,
+                    color: AppColors.text,
+                    fontWeight: FontWeight.bold,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.timer,
+                            color: AppColors.primary,
+                            size: 14,
+                          ),
+                          SizedBox(width: 4),
+                          AppText(
+                            '${recipe.preparationTime} min',
+                            fontSize: 10,
+                            color: AppColors.textSecondary,
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.favorite,
+                            color: _getHealthScoreColor(recipe.healthScore),
+                            size: 14,
+                          ),
+                          SizedBox(width: 4),
+                          AppText(
+                            recipe.healthScore.toStringAsFixed(1),
+                            fontSize: 10,
+                            color: _getHealthScoreColor(recipe.healthScore),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

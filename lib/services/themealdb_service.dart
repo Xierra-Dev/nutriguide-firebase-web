@@ -3,26 +3,27 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import '../models/recipe.dart';
+import 'package:nutriguide/services/firestore_service.dart';
+import 'dart:math';
 
 class TheMealDBService {
-  static const String baseUrl = 'https://www.themealdb.com/api/json/v1/1';
+  final String _baseUrl = 'https://www.themealdb.com/api/json/v1/1';
+  final FirestoreService _firestoreService = FirestoreService();
+  final Random _random = Random();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<String?> getRandomMealImage() async {
+  Future<String> getRandomMealImage() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/random.php'));
+      final response = await http.get(Uri.parse('$_baseUrl/random.php'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data['meals'] != null && data['meals'].isNotEmpty) {
-          return data['meals'][0]['strMealThumb'];
-        }
+        return data['meals'][0]['strMealThumb'] ?? '';
       }
-      return null;
+      return '';
     } catch (e) {
-      print('Error fetching random meal image: $e');
-      return null;
+      return '';
     }
   }
 
@@ -39,205 +40,330 @@ class TheMealDBService {
       }
       return [];
     } catch (e) {
-      print('Error getting user allergies: $e');
       return [];
     }
   }
 
-  Future<List<Recipe>> getRandomRecipes({int number = 300}) async {
-    // Get user's allergies
-    List<String> userAllergies = await getUserAllergies();
-
-    List<Recipe> recipes = [];
-    int attempts = 0;
-    int maxAttempts = number * 3; // Prevent infinite loop
-
-    while (recipes.length < number && attempts < maxAttempts) {
-      attempts++;
+  Future<List<Recipe>> getRandomRecipes(int number) async {
+    try {
+      List<Recipe> recipes = [];
+      List<String> userAllergies = [];
 
       try {
-        final response = await http.get(Uri.parse('$baseUrl/random.php'));
+        final allergies = await _firestoreService.getUserAllergies();
+        if (allergies.isNotEmpty) {
+          userAllergies = allergies;
+        }
+      } catch (e) {
+        // Continue without allergies
+      }
+
+      int attempts = 0;
+      int maxAttempts = number * 3; // Try up to 3 times per requested recipe
+
+      while (recipes.length < number && attempts < maxAttempts) {
+        attempts++;
+        final response = await http.get(Uri.parse('$_baseUrl/random.php'));
+
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           if (data['meals'] != null && data['meals'].isNotEmpty) {
-            final recipe = Recipe.fromTheMealDB(data['meals'][0]);
+            final mealData = data['meals'][0];
+            Recipe recipe = await _parseRecipeData(mealData);
 
-            // Check if recipe is complete and doesn't contain allergic ingredients
-            if (_isRecipeComplete(recipe) && !_containsAllergicIngredients(recipe, userAllergies)) {
+            // Check if recipe has all required data and doesn't contain allergic ingredients
+            if (_isRecipeComplete(recipe) && !_containsAllergicIngredient(recipe, userAllergies)) {
               recipes.add(recipe);
-              print('Added random recipe: ${recipe.title} with health score: ${recipe.healthScore}');
-            } else {
-              print('Skipped recipe due to incompleteness or allergic ingredients: ${recipe.title}');
             }
           }
         } else {
-          print('Failed to load random recipe. Status code: ${response.statusCode}');
+          throw Exception('Failed to load random recipe');
         }
-      } catch (e) {
-        print('Error fetching random recipe: $e');
       }
-    }
 
-    // If not enough recipes found, log a warning
-    if (recipes.length < number) {
-      print('Warning: Could only find ${recipes.length} non-allergic recipes out of $number requested');
-    }
+      if (recipes.length < number) {
+        // Couldn't find enough non-allergic recipes
+      }
 
-    return recipes;
+      return recipes;
+    } catch (e) {
+      return [];
+    }
   }
 
-// New method to check for allergic ingredients
-  bool _containsAllergicIngredients(Recipe recipe, List<String> allergies) {
+  bool _containsAllergicIngredient(Recipe recipe, List<String> allergies) {
     if (allergies.isEmpty) return false;
 
-    // Convert allergies to lowercase for case-insensitive matching
-    final lowerCaseAllergies = allergies.map((allergy) => allergy.toLowerCase()).toList();
-
-    // Check each ingredient in the recipe
-    for (var ingredient in recipe.ingredients) {
-      // Convert ingredient to lowercase for case-insensitive matching
-      final lowerCaseIngredient = ingredient.toLowerCase();
-
-      // Check if any allergy matches the ingredient
-      if (lowerCaseAllergies.any((allergy) => lowerCaseIngredient.contains(allergy))) {
-        print('Recipe contains allergic ingredient: $ingredient');
-        return true;
+    for (String ingredient in recipe.ingredients) {
+      for (String allergy in allergies) {
+        if (ingredient.toLowerCase().contains(allergy.toLowerCase())) {
+          return true;
+        }
       }
     }
-
     return false;
   }
 
-  Future<List<Recipe>> getRecipesByCategory(String category) async {
+  Future<List<Recipe>> getRecipesByCategory(String category, {int limit = 10}) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/filter.php?c=$category'));
+      final response = await http.get(Uri.parse('$_baseUrl/filter.php?c=$category'));
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data['meals'] != null) {
-          List<Recipe> recipes = [];
-          for (var meal in data['meals']) {
-            final detailedRecipe = await getRecipeById(meal['idMeal']);
-            if (_isRecipeComplete(detailedRecipe)) {
-              recipes.add(detailedRecipe);
-              print('Added category recipe: ${detailedRecipe.title} with health score: ${detailedRecipe.healthScore}');
-            } else {
-              print('Skipped incomplete category recipe: ${detailedRecipe.title}');
-            }
+        if (data['meals'] == null) return [];
+
+        List<Recipe> recipes = [];
+        List<dynamic> meals = data['meals'];
+
+        // Shuffle meals to get random selection
+        meals.shuffle();
+
+        // Limit to first 'limit' meals or less
+        int count = min(limit, meals.length);
+        for (int i = 0; i < count; i++) {
+          String mealId = meals[i]['idMeal'];
+          Recipe? detailedRecipe = await getRecipeDetails(mealId);
+          
+          if (detailedRecipe != null && _isRecipeComplete(detailedRecipe)) {
+            recipes.add(detailedRecipe);
           }
-          return recipes;
+          
+          // If we have enough recipes, break early
+          if (recipes.length >= limit) break;
         }
+        
+        return recipes;
+      } else {
+        throw Exception('Failed to load recipes');
       }
-      print('Failed to load recipes for category $category. Status code: ${response.statusCode}');
-      return [];
     } catch (e) {
-      print('Error fetching recipes by category: $e');
       return [];
     }
   }
 
-  Future<Recipe> getRecipeById(String id) async {
+  Future<Recipe?> getRecipeDetails(String id) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/lookup.php?i=$id'));
+      final response = await http.get(Uri.parse('$_baseUrl/lookup.php?i=$id'));
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data['meals'] != null && data['meals'].isNotEmpty) {
-          return Recipe.fromTheMealDB(data['meals'][0]);
+        if (data['meals'] == null || data['meals'].isEmpty) return null;
+
+        return await _parseRecipeData(data['meals'][0]);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<Recipe> _parseRecipeData(Map<String, dynamic> mealData) async {
+    // Extract ingredients and measurements
+    List<String> ingredients = [];
+    List<String> measurements = [];
+
+    for (int i = 1; i <= 20; i++) {
+      String ingredient = mealData['strIngredient$i'] ?? '';
+      String measure = mealData['strMeasure$i'] ?? '';
+
+      if (ingredient.isNotEmpty && ingredient != 'null' && ingredient != ' ') {
+        ingredients.add(ingredient);
+        measurements.add(measure.isNotEmpty ? measure : 'to taste');
+      }
+    }
+
+    // Generate a random preparation time between 15 and 60 minutes
+    int prepTime = _random.nextInt(46) + 15;
+
+    // Create the recipe object
+    return Recipe(
+      id: mealData['idMeal'] ?? '',
+      title: mealData['strMeal'] ?? '',
+      image: mealData['strMealThumb'] ?? '',
+      category: mealData['strCategory'] ?? '',
+      area: mealData['strArea'] ?? '',
+      instructions: mealData['strInstructions'] ?? '',
+      instructionSteps: (mealData['strInstructions'] ?? '').split('\n'),
+      ingredients: ingredients,
+      measurements: measurements,
+      preparationTime: prepTime,
+      healthScore: _calculateHealthScore(ingredients),
+      nutritionInfo: NutritionInfo.generateRandom(),
+    );
+  }
+
+  double _calculateHealthScore(List<String> ingredients) {
+    // This is a simplified scoring system
+    // In a real app, you would use a more sophisticated algorithm or API
+    
+    // List of ingredients considered healthy
+    List<String> healthyIngredients = [
+      'vegetable', 'vegetables', 'fruit', 'fruits', 'grain', 'grains', 
+      'bean', 'beans', 'lentil', 'lentils', 'fish', 'olive oil', 
+      'nut', 'nuts', 'seed', 'seeds', 'herb', 'herbs', 'spice', 'spices',
+      'broccoli', 'spinach', 'kale', 'carrot', 'tomato', 'avocado', 
+      'quinoa', 'brown rice', 'oat', 'oats', 'salmon', 'chicken breast',
+      'turkey', 'tofu', 'tempeh', 'yogurt', 'egg', 'eggs'
+    ];
+    
+    // List of ingredients considered less healthy
+    List<String> lessHealthyIngredients = [
+      'sugar', 'butter', 'oil', 'cream', 'cheese', 'bacon', 'sausage',
+      'processed', 'fried', 'fry', 'fries', 'chip', 'chips', 'candy',
+      'chocolate', 'cake', 'cookie', 'cookies', 'ice cream', 'soda',
+      'white bread', 'white flour', 'margarine', 'syrup', 'corn syrup',
+      'high fructose', 'shortening'
+    ];
+    
+    int healthyCount = 0;
+    int unhealthyCount = 0;
+    
+    for (String ingredient in ingredients) {
+      String lowerIngredient = ingredient.toLowerCase();
+      
+      for (String healthy in healthyIngredients) {
+        if (lowerIngredient.contains(healthy)) {
+          healthyCount++;
+          break;
         }
       }
-      throw Exception('Failed to load recipe details');
-    } catch (e) {
-      print('Error fetching recipe details: $e');
-      rethrow;
+      
+      for (String unhealthy in lessHealthyIngredients) {
+        if (lowerIngredient.contains(unhealthy)) {
+          unhealthyCount++;
+          break;
+        }
+      }
     }
+    
+    // Calculate score (0-100)
+    double totalIngredients = ingredients.length.toDouble();
+    double healthyRatio = healthyCount / totalIngredients;
+    double unhealthyRatio = unhealthyCount / totalIngredients;
+    
+    // Base score is 50
+    double score = 50.0;
+    
+    // Add up to 40 points for healthy ingredients
+    score += healthyRatio * 40.0;
+    
+    // Subtract up to 30 points for unhealthy ingredients
+    score -= unhealthyRatio * 30.0;
+    
+    // Ensure score is between 0 and 100
+    return score.clamp(0.0, 100.0);
   }
 
   bool _isRecipeComplete(Recipe recipe) {
-    return recipe.ingredients.isNotEmpty &&
-           recipe.instructionSteps.isNotEmpty &&
-           recipe.healthScore > 0; // Changed from 4 to 0 to include more recipes
+    return recipe.id.isNotEmpty &&
+           recipe.title.isNotEmpty &&
+           recipe.image.isNotEmpty &&
+           recipe.instructions.isNotEmpty &&
+           recipe.ingredients.isNotEmpty;
   }
 
-
-  Future<List<Map<String, String>>> getPopularIngredients() async {
+  Future<List<String>> getPopularIngredients() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/list.php?i=list'));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['meals'] != null) {
-          final ingredients = (data['meals'] as List)
-              .take(10) // Get the first 10 ingredients
-              .map((ingredient) => {
-                    'name': ingredient['strIngredient'] as String,
-                    'image':
-                        'https://www.themealdb.com/images/ingredients/${ingredient['strIngredient']}.png',
-                  })
-              .toList();
-          return ingredients;
-        }
-      }
-      throw Exception('Failed to load popular ingredients');
+      List<String> popularIngredients = [
+        'Chicken',
+        'Beef',
+        'Pork',
+        'Fish',
+        'Pasta',
+        'Rice',
+        'Potato',
+        'Tomato',
+        'Onion',
+        'Garlic',
+        'Cheese',
+        'Egg',
+        'Mushroom',
+        'Carrot',
+        'Broccoli',
+        'Spinach',
+        'Lemon',
+        'Olive Oil',
+        'Butter',
+        'Flour'
+      ];
+      
+      return popularIngredients;
     } catch (e) {
-      print('Error fetching popular ingredients: $e');
       return [];
     }
   }
 
   Future<List<Recipe>> searchRecipes(String query) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/search.php?s=$query'));
+      final response = await http.get(Uri.parse('$_baseUrl/search.php?s=$query'));
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data['meals'] != null) {
-          return (data['meals'] as List)
-              .map((recipeData) => Recipe.fromTheMealDB(recipeData))
-              .toList();
+        if (data['meals'] == null) return [];
+
+        List<Recipe> recipes = [];
+        for (var mealData in data['meals']) {
+          Recipe recipe = await _parseRecipeData(mealData);
+          recipes.add(recipe);
         }
+        
+        return recipes;
+      } else {
+        return [];
       }
-      return [];
     } catch (e) {
-      print('Error searching recipes: $e');
       return [];
     }
   }
 
-  Future<List<Recipe>> searchRecipesByIngredient(String ingredient) async {
+  Future<List<Recipe>> getRecipesByIngredient(String ingredient, {int limit = 10}) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/filter.php?i=$ingredient'));
+      final response = await http.get(Uri.parse('$_baseUrl/filter.php?i=$ingredient'));
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data['meals'] != null) {
-          List<Recipe> recipes = [];
-          for (var meal in data['meals']) {
-            final detailedRecipe = await getRecipeById(meal['idMeal']);
-            if (_isRecipeComplete(detailedRecipe)) {
-              recipes.add(detailedRecipe);
-              print('Added category recipe: ${detailedRecipe.title} with health score: ${detailedRecipe.healthScore}');
-            } else {
-              print('Skipped incomplete category recipe: ${detailedRecipe.title}');
-            }
+        if (data['meals'] == null) return [];
+
+        List<Recipe> recipes = [];
+        List<dynamic> meals = data['meals'];
+
+        // Shuffle meals to get random selection
+        meals.shuffle();
+
+        // Limit to first 'limit' meals or less
+        int count = min(limit, meals.length);
+        for (int i = 0; i < count; i++) {
+          String mealId = meals[i]['idMeal'];
+          Recipe? detailedRecipe = await getRecipeDetails(mealId);
+          
+          if (detailedRecipe != null && _isRecipeComplete(detailedRecipe)) {
+            recipes.add(detailedRecipe);
           }
-          return recipes;
+          
+          // If we have enough recipes, break early
+          if (recipes.length >= limit) break;
         }
+        
+        return recipes;
+      } else {
+        throw Exception('Failed to load recipes');
       }
-      print('Failed to load recipes for category $ingredient. Status code: ${response.statusCode}');
-      return [];
     } catch (e) {
-      print('Error fetching recipes by category: $e');
       return [];
     }
   }
 
   Future<List<Recipe>> getRecommendedRecipes() async {
-    return getRandomRecipes(number: 10);
+    return getRandomRecipes(10);
   }
 
   Future<List<Recipe>> getPopularRecipes() async {
-    return getRandomRecipes(number: 10);
+    return getRandomRecipes(10);
   }
 
   Future<List<Recipe>> getFeedRecipes() async {
-    return getRandomRecipes(number: 20);
+    return getRandomRecipes(20);
   }
-
 }
 

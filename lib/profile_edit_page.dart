@@ -72,13 +72,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         });
       }
     } catch (e) {
-      print('Error loading user data: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to load user data: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      // Handle error silently
     }
   }
 
@@ -181,29 +175,19 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   }
 
   Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
     try {
-      final XFile? image = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 800,
-        maxHeight: 800,
-        imageQuality: 100,
-      );
-      if (image != null) {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
         setState(() {
-          _imageFile = File(image.path);
+          _imageFile = File(pickedFile.path);
           _profilePictureDeleted = false; // Reset delete flag when picking a new image
           _hasChanges = true;
         });
       }
     } catch (e) {
-      print('Error picking image: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to pick image: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      // Handle error silently
     }
   }
 
@@ -403,6 +387,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isWeb = MediaQuery.of(context).size.width > 800;
+    
     return MediaQuery.withClampedTextScaling(
       minScaleFactor: 1.0,
       maxScaleFactor: 1.0,
@@ -427,127 +413,260 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               color: AppColors.text,
               fontWeight: FontWeight.bold,
             ),
+            centerTitle: isWeb,
           ),
-          body: SingleChildScrollView(
-            padding: EdgeInsets.all(Dimensions.paddingM),
-            child: Form(
-              key: _formKey,
-              child: Column(
+          body: Center(
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: isWeb ? 800 : double.infinity,
+              ),
+              child: Row(
                 children: [
-                  Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.surface,
-                        ),
-                        child: ClipOval(
-                          child: _imageFile != null
-                              ? Image.file(_imageFile!, fit: BoxFit.cover)
-                              : (_currentProfilePictureUrl != null && !_profilePictureDeleted)
-                              ? Image.network(
-                            _currentProfilePictureUrl!,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.primary,
+                  if (isWeb)
+                    Expanded(
+                      flex: 2,
+                      child: Container(
+                        padding: EdgeInsets.all(Dimensions.paddingXL),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Stack(
+                              alignment: Alignment.bottomRight,
+                              children: [
+                                Container(
+                                  width: 200,
+                                  height: 200,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColors.surface,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.primary.withOpacity(0.1),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 10),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipOval(
+                                    child: _imageFile != null
+                                        ? Image.file(_imageFile!, fit: BoxFit.cover)
+                                        : (_currentProfilePictureUrl != null && !_profilePictureDeleted)
+                                            ? Image.network(
+                                                _currentProfilePictureUrl!,
+                                                fit: BoxFit.cover,
+                                                loadingBuilder: (context, child, loadingProgress) {
+                                                  if (loadingProgress == null) return child;
+                                                  return Center(
+                                                    child: CircularProgressIndicator(
+                                                      color: AppColors.primary,
+                                                    ),
+                                                  );
+                                                },
+                                                errorBuilder: (context, error, stackTrace) {
+                                                  return Icon(
+                                                    Icons.person,
+                                                    size: 80,
+                                                    color: AppColors.text,
+                                                  );
+                                                },
+                                              )
+                                            : Icon(
+                                                Icons.person,
+                                                size: 80,
+                                                color: AppColors.text,
+                                              ),
+                                  ),
                                 ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.person,
-                                size: Dimensions.iconXL,
+                                GestureDetector(
+                                  onTap: (_imageFile != null || (_currentProfilePictureUrl != null && !_profilePictureDeleted))
+                                      ? _showProfilePictureOptions
+                                      : _pickImage,
+                                  child: Container(
+                                    padding: EdgeInsets.all(Dimensions.paddingM),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.surface,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.primary.withOpacity(0.1),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 5),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Icon(
+                                      Icons.camera_alt,
+                                      color: AppColors.text,
+                                      size: Dimensions.iconL,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: Dimensions.paddingL),
+                            AppText(
+                              'Profile Picture',
+                              fontSize: FontSizes.heading3,
+                              color: AppColors.text,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            SizedBox(height: Dimensions.paddingM),
+                            AppText(
+                              'Upload a new profile picture or change your current one',
+                              fontSize: FontSizes.body,
+                              color: AppColors.textSecondary,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  Expanded(
+                    flex: isWeb ? 3 : 1,
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingM),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (!isWeb) ...[
+                              Stack(
+                                alignment: Alignment.bottomRight,
+                                children: [
+                                  Container(
+                                    width: 100,
+                                    height: 100,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: AppColors.surface,
+                                    ),
+                                    child: ClipOval(
+                                      child: _imageFile != null
+                                          ? Image.file(_imageFile!, fit: BoxFit.cover)
+                                          : (_currentProfilePictureUrl != null && !_profilePictureDeleted)
+                                              ? Image.network(
+                                                  _currentProfilePictureUrl!,
+                                                  fit: BoxFit.cover,
+                                                  loadingBuilder: (context, child, loadingProgress) {
+                                                    if (loadingProgress == null) return child;
+                                                    return Center(
+                                                      child: CircularProgressIndicator(
+                                                        color: AppColors.primary,
+                                                      ),
+                                                    );
+                                                  },
+                                                  errorBuilder: (context, error, stackTrace) {
+                                                    return Icon(
+                                                      Icons.person,
+                                                      size: Dimensions.iconXL,
+                                                      color: AppColors.text,
+                                                    );
+                                                  },
+                                                )
+                                              : Icon(
+                                                  Icons.person,
+                                                  size: Dimensions.iconXL,
+                                                  color: AppColors.text,
+                                                ),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: (_imageFile != null || (_currentProfilePictureUrl != null && !_profilePictureDeleted))
+                                        ? _showProfilePictureOptions
+                                        : _pickImage,
+                                    child: Container(
+                                      padding: EdgeInsets.all(Dimensions.paddingS),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.surface,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.camera_alt,
+                                        color: AppColors.text,
+                                        size: Dimensions.iconM,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: Dimensions.paddingL),
+                            ],
+                            if (isWeb)
+                              AppText(
+                                'Personal Information',
+                                fontSize: FontSizes.heading3,
                                 color: AppColors.text,
-                              );
-                            },
-                          )
-                              : Icon(
-                            Icons.person,
-                            size: Dimensions.iconXL,
-                            color: AppColors.text,
-                          ),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            if (isWeb)
+                              SizedBox(height: Dimensions.paddingM),
+                            _buildTextField(
+                              controller: _firstNameController,
+                              label: 'First Name',
+                              maxLength: 20,
+                            ),
+                            SizedBox(height: Dimensions.paddingM),
+                            _buildTextField(
+                              controller: _lastNameController,
+                              label: 'Last Name',
+                              maxLength: 20,
+                            ),
+                            SizedBox(height: Dimensions.paddingM),
+                            _buildTextField(
+                              controller: _usernameController,
+                              label: 'Username',
+                              maxLength: 15,
+                              customValidator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return null;
+                                }
+                                if (value.length < 3) {
+                                  return 'Username must be at least 3 characters long';
+                                }
+                                return null;
+                              },
+                            ),
+                            SizedBox(height: Dimensions.paddingM),
+                            _buildTextField(
+                              controller: _bioController,
+                              label: 'Bio',
+                              maxLines: 3,
+                              maxLength: 200,
+                            ),
+                            SizedBox(height: Dimensions.paddingL),
+                            Container(
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                onPressed: (_isLoading || !_hasChanges) ? null : _saveProfile,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _hasChanges ? AppColors.primary : AppColors.surface,
+                                  padding: EdgeInsets.symmetric(vertical: Dimensions.paddingM),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                  ),
+                                  elevation: _hasChanges ? 2 : 0,
+                                ),
+                                child: _isLoading
+                                    ? SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          color: AppColors.text,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : AppText(
+                                        'SAVE CHANGES',
+                                        fontSize: FontSizes.body,
+                                        color: _hasChanges ? AppColors.text : AppColors.textSecondary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      GestureDetector(
-                        onTap: (_imageFile != null || (_currentProfilePictureUrl != null && !_profilePictureDeleted))
-                            ? _showProfilePictureOptions
-                            : _pickImage,
-                        child: Container(
-                          padding: EdgeInsets.all(Dimensions.paddingS),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.camera_alt,
-                            color: AppColors.text,
-                            size: Dimensions.iconM,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: Dimensions.paddingL),
-                  _buildTextField(
-                    controller: _firstNameController,
-                    label: 'First Name',
-                    maxLength: 20,
-                  ),
-                  SizedBox(height: Dimensions.paddingM),
-                  _buildTextField(
-                    controller: _lastNameController,
-                    label: 'Last Name',
-                    maxLength: 20,
-                  ),
-                  SizedBox(height: Dimensions.paddingM),
-                  _buildTextField(
-                    controller: _usernameController,
-                    label: 'Username',
-                    maxLength: 15,
-                    customValidator: (value) {
-                      // Allow empty username (will pass validation)
-                      if (value == null || value.isEmpty) {
-                        return null;
-                      }
-                      // But if username has content, enforce length requirement
-                      if (value.length < 3) {
-                        return 'Username must be at least 3 characters long';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: Dimensions.paddingM),
-                  _buildTextField(
-                    controller: _bioController,
-                    label: 'Bio',
-                    maxLines: 3,
-                    maxLength: 200,
-                  ),
-                  SizedBox(height: Dimensions.paddingL),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: (_isLoading || !_hasChanges) ? null : _saveProfile,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _hasChanges ? AppColors.primary : AppColors.surface,
-                        padding: EdgeInsets.symmetric(vertical: Dimensions.paddingM),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                        ),
-                      ),
-                      child: _isLoading
-                          ? CircularProgressIndicator(color: AppColors.text)
-                          : AppText(
-                        'SAVE',
-                        fontSize: FontSizes.body,
-                        color: _hasChanges ? AppColors.text : AppColors.textSecondary,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -567,39 +686,65 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     int? maxLength,
     String? Function(String?)? customValidator,
   }) {
-    return TextFormField(
-      controller: controller,
-      maxLines: maxLines,
-      maxLength: maxLength,
-      style: TextStyle(color: AppColors.text),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: AppColors.textSecondary),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Dimensions.radiusM),
-          borderSide: BorderSide(color: AppColors.border),
+    final isWeb = MediaQuery.of(context).size.width > 800;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (isWeb)
+          Padding(
+            padding: EdgeInsets.only(bottom: Dimensions.paddingS),
+            child: AppText(
+              label,
+              fontSize: FontSizes.body,
+              color: AppColors.text,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        TextFormField(
+          controller: controller,
+          maxLines: maxLines,
+          maxLength: maxLength,
+          style: TextStyle(
+            color: AppColors.text,
+            fontSize: isWeb ? FontSizes.body : null,
+          ),
+          decoration: InputDecoration(
+            labelText: isWeb ? null : label,
+            labelStyle: TextStyle(color: AppColors.textSecondary),
+            filled: true,
+            fillColor: AppColors.surface,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(Dimensions.radiusM),
+              borderSide: BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(Dimensions.radiusM),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(Dimensions.radiusM),
+              borderSide: BorderSide(color: AppColors.error),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(Dimensions.radiusM),
+              borderSide: BorderSide(color: AppColors.error, width: 2),
+            ),
+            counterStyle: TextStyle(color: AppColors.textSecondary),
+            errorStyle: TextStyle(color: AppColors.error),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: Dimensions.paddingM,
+              vertical: isWeb ? Dimensions.paddingM : Dimensions.paddingS,
+            ),
+          ),
+          validator: customValidator ?? (value) {
+            return null;
+          },
+          onChanged: (value) {
+            _checkChanges();
+          },
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Dimensions.radiusM),
-          borderSide: BorderSide(color: AppColors.primary),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Dimensions.radiusM),
-          borderSide: BorderSide(color: AppColors.error),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Dimensions.radiusM),
-          borderSide: BorderSide(color: AppColors.error),
-        ),
-        counterStyle: TextStyle(color: AppColors.textSecondary),
-        errorStyle: TextStyle(color: AppColors.error),
-      ),
-      validator: customValidator ?? (value) {
-        return null;
-      },
-      onChanged: (value) {
-        _checkChanges();
-      },
+      ],
     );
   }
 

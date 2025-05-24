@@ -59,6 +59,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   firebase_auth: ^5.3.3
   timezone: ^0.10.0
+  simple_animations: ^5.2.0
 
 dev_dependencies:
   flutter_test:

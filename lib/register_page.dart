@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'login_page.dart';
 import 'services/auth_service.dart';
 import 'email_verification_page.dart';
@@ -8,6 +9,7 @@ import 'core/constants/font_sizes.dart';
 import 'core/constants/dimensions.dart';
 import 'core/helpers/responsive_helper.dart';
 import 'landing_page.dart';
+import 'package:simple_animations/simple_animations.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -126,29 +128,31 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     });
   }
 
-  Widget _buildEnhancedRequirementItem(bool isMet, String text) {
+  Widget _buildEnhancedRequirementItem(bool isMet, String text, bool isWeb) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(vertical: isWeb ? 6 : 4),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(2),
+            padding: EdgeInsets.all(isWeb ? 3 : 2),
             decoration: BoxDecoration(
               color: isMet ? AppColors.success.withOpacity(0.8) : AppColors.error.withOpacity(0.5),
               shape: BoxShape.circle,
             ),
             child: Icon(
               isMet ? Icons.check : Icons.close,
-              size: 12,
+              size: isWeb ? 14 : 12,
               color: Colors.white,
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: isWeb ? 12 : 8),
           Text(
             text,
             style: TextStyle(
               color: isMet ? AppColors.success : AppColors.error.withOpacity(0.7),
-              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.bodySmall),
+              fontSize: isWeb 
+                  ? 14
+                  : ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.bodySmall),
             ),
           ),
         ],
@@ -304,84 +308,227 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     );
   }
 
+  bool _isWebPlatform() {
+    return MediaQuery.of(context).size.width > 800;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MediaQuery(
-      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
-      child: Scaffold(
-        body: Container(
-          height: MediaQuery.of(context).size.height,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                AppColors.surface,
-                AppColors.background,
-              ],
-            ),
+    final isWeb = _isWebPlatform();
+    final size = MediaQuery.of(context).size;
+
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.black,
+              Color(0xFF1A1A1A),
+              Color(0xFF262626),
+            ],
+            stops: [0.0, 0.5, 1.0],
           ),
-          child: SafeArea(
-            child: SingleChildScrollView(
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(Dimensions.paddingL),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildHeader(),
-                          SizedBox(height: Dimensions.spacingXL),
-                          _buildRegistrationForm(),
-                          SizedBox(height: Dimensions.spacingL),
-                          _buildLoginLink(),
-                        ],
-                      ),
-                    ),
-                    // Close Button
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: IconButton(
-                        icon: Container(
-                          padding: EdgeInsets.all(Dimensions.paddingXS),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.close_rounded,
-                            color: Colors.white,
-                            size: Dimensions.iconL,
-                          ),
-                        ),
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => const LandingPage()),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+        ),
+        child: Stack(
+          children: [
+            // Pattern Background
+            Positioned.fill(
+              child: _buildPatternBackground(),
+            ),
+            
+            // Main Content
+            SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: isWeb
+                        ? _buildWebLayout(size)
+                        : _buildMobileLayout(size),
+                  ),
                 ),
               ),
             ),
-          ),
+
+            // Close Button
+            Positioned(
+              top: 20,
+              right: 20,
+              child: _buildCloseButton(),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildPatternBackground() {
+    return ShaderMask(
+      shaderCallback: (bounds) => LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.white.withOpacity(0.1),
+          Colors.white.withOpacity(0.05),
+        ],
+      ).createShader(bounds),
+      child: GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 8,
+          crossAxisSpacing: 15,
+          mainAxisSpacing: 15,
+        ),
+        itemBuilder: (context, index) {
+          return Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+                width: 0.5,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildWebLayout(Size size) {
+    return Container(
+      width: size.width * 0.85,
+      height: size.height * 0.85,
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.1),
+            blurRadius: 20,
+            spreadRadius: 5,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Left Panel - Branding
+          Expanded(
+            flex: 6,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  bottomLeft: Radius.circular(30),
+                ),
+                image: DecorationImage(
+                  image: AssetImage('assets/images/register_bg.jpg'),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withOpacity(0.7),
+                    BlendMode.darken,
+                  ),
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildLogo(true),
+                  SizedBox(height: 30),
+                  _buildBrandingContent(),
+                  SizedBox(height: 40),
+                  _buildFeaturesList(),
+                ],
+              ),
+            ),
+          ),
+          // Right Panel - Registration Form
+          Expanded(
+            flex: 5,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 40),
+              child: Center(
+                child: Container(
+                  height: size.height * 0.75,
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: _buildRegistrationForm(true),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout(Size size) {
+    return Container(
+      width: size.width * 0.9,
+      padding: EdgeInsets.all(30),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.1),
+            blurRadius: 15,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildLogo(false),
+          SizedBox(height: 30),
+          _buildRegistrationForm(false),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent(Size size) {
+    final isWeb = _isWebPlatform();
+    return Stack(
+      children: [
+        Padding(
+          padding: EdgeInsets.all(size.width * 0.03),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(size),
+              SizedBox(height: size.height * 0.05),
+              _buildRegistrationForm(isWeb),
+              SizedBox(height: size.height * 0.05),
+              _buildLoginLink(isWeb),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeader(Size size) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Center(
           child: Container(
-            padding: EdgeInsets.all(Dimensions.paddingL),
+            padding: EdgeInsets.all(size.width * 0.03),
             decoration: BoxDecoration(
               color: AppColors.primary.withOpacity(0.1),
               shape: BoxShape.circle,
@@ -395,12 +542,12 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
             ),
             child: Image.asset(
               'assets/images/logo_NutriGuide.png',
-              width: 30,
-              height: 30,
+              width: size.width * 0.08,
+              height: size.width * 0.08,
             ),
           ),
         ),
-        SizedBox(height: Dimensions.spacingL),
+        SizedBox(height: size.height * 0.05),
         Center(
           child: Text(
             'Create Account',
@@ -415,68 +562,101 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildRegistrationForm() {
-    return Container(
-      padding: EdgeInsets.all(Dimensions.paddingL),
-      decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(Dimensions.radiusL),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 20,
-            spreadRadius: 5,
+  Widget _buildRegistrationForm(bool isWeb) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (!isWeb) ...[
+          Text(
+            'Create Account',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 0.5,
+            ),
+            textAlign: TextAlign.center,
           ),
+          SizedBox(height: 8),
+          Text(
+            'Join us and start your journey',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white70,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 20),
         ],
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            _buildTextField(
-              controller: _nameController,
-              focusNode: _nameFocusNode,
-              label: 'Full Name',
-              icon: Icons.person_outline,
-              isFocused: _isNameFocused,
+        if (isWeb) ...[
+          Text(
+            'Create Account',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 0.5,
             ),
-            SizedBox(height: Dimensions.spacingL),
-            _buildTextField(
-              controller: _emailController,
-              focusNode: _emailFocusNode,
-              label: 'Email Address',
-              icon: Icons.email_outlined,
-              isFocused: _isEmailFocused,
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Start your journey to a healthier lifestyle',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white70,
             ),
-            SizedBox(height: Dimensions.spacingL),
-            _buildPasswordField(
-              controller: _passwordController,
-              focusNode: _passwordFocusNode,
-              label: 'Password',
-              isVisible: _isPasswordVisible,
-              onVisibilityChanged: (value) => setState(() => _isPasswordVisible = value),
-              isFocused: _isPasswordFocused,
-            ),
-            SizedBox(height: Dimensions.spacingM),
-            _buildPasswordRequirements(),
-            SizedBox(height: Dimensions.spacingL),
-            _buildPasswordField(
-              controller: _confirmPasswordController,
-              focusNode: _confirmPasswordFocusNode,
-              label: 'Confirm Password',
-              isVisible: _isConfirmPasswordVisible,
-              onVisibilityChanged: (value) => setState(() => _isConfirmPasswordVisible = value),
-              isFocused: _isConfirmPasswordFocused,
-            ),
-            SizedBox(height: Dimensions.spacingXL),
-            _buildRegisterButton(),
-          ],
+          ),
+          SizedBox(height: 25),
+        ],
+        Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildTextField(
+                controller: _nameController,
+                focusNode: _nameFocusNode,
+                label: 'Full Name',
+                icon: Icons.person_outline,
+                isWeb: isWeb,
+              ),
+              SizedBox(height: 15),
+              _buildTextField(
+                controller: _emailController,
+                focusNode: _emailFocusNode,
+                label: 'Email',
+                icon: Icons.email_outlined,
+                isWeb: isWeb,
+              ),
+              SizedBox(height: 15),
+              _buildTextField(
+                controller: _passwordController,
+                focusNode: _passwordFocusNode,
+                label: 'Password',
+                icon: Icons.lock_outline,
+                isPassword: true,
+                isWeb: isWeb,
+              ),
+              SizedBox(height: 15),
+              _buildPasswordRequirements(isWeb),
+              SizedBox(height: 15),
+              _buildTextField(
+                controller: _confirmPasswordController,
+                focusNode: _confirmPasswordFocusNode,
+                label: 'Confirm Password',
+                icon: Icons.lock_outline,
+                isPassword: true,
+                isWeb: isWeb,
+              ),
+              SizedBox(height: 20),
+              _buildRegisterButton(isWeb),
+              SizedBox(height: 15),
+              _buildLoginLink(isWeb),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -485,106 +665,101 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     required FocusNode focusNode,
     required String label,
     required IconData icon,
-    required bool isFocused,
+    bool isPassword = false,
+    required bool isWeb,
   }) {
-    return TextFormField(
-      controller: controller,
-      focusNode: focusNode,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(
-          color: isFocused ? AppColors.primary : Colors.white70,
-        ),
-        prefixIcon: Icon(
-          icon,
-          color: isFocused ? AppColors.primary : Colors.white70,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Dimensions.radiusM),
-          borderSide: BorderSide(color: Colors.white24),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Dimensions.radiusM),
-          borderSide: BorderSide(color: AppColors.primary, width: 2),
-        ),
-        filled: true,
-        fillColor: AppColors.surface.withOpacity(0.5),
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'This field is required';
-        }
-        if (label == 'Email Address' && !value.contains('@')) {
-          return 'Please enter a valid email address';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildPasswordField({
-    required TextEditingController controller,
-    required FocusNode focusNode,
-    required String label,
-    required bool isVisible,
-    required Function(bool) onVisibilityChanged,
-    required bool isFocused,
-  }) {
-    return TextFormField(
-      controller: controller,
-      focusNode: focusNode,
-      obscureText: !isVisible,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(
-          color: isFocused ? AppColors.primary : Colors.white70,
-        ),
-        prefixIcon: Icon(
-          Icons.lock_outline,
-          color: isFocused ? AppColors.primary : Colors.white70,
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(
-            isVisible ? Icons.visibility_off : Icons.visibility,
-            color: isFocused ? AppColors.primary : Colors.white70,
-          ),
-          onPressed: () => onVisibilityChanged(!isVisible),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Dimensions.radiusM),
-          borderSide: BorderSide(color: Colors.white24),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Dimensions.radiusM),
-          borderSide: BorderSide(color: AppColors.primary, width: 2),
-        ),
-        filled: true,
-        fillColor: AppColors.surface.withOpacity(0.5),
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'This field is required';
-        }
-        if (label == 'Password' && (!_hasMinLength || !_hasNumber || !_hasSymbol)) {
-          return 'Password does not meet requirements';
-        }
-        if (label == 'Confirm Password' && value != _passwordController.text) {
-          return 'Passwords do not match';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildPasswordRequirements() {
     return Container(
-      padding: EdgeInsets.all(Dimensions.paddingM),
+      height: 50,
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(Dimensions.radiusM),
-        border: Border.all(color: Colors.white10),
+        color: Colors.black.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: focusNode.hasFocus 
+              ? AppColors.primary 
+              : Colors.white24,
+          width: 1.5,
+        ),
+      ),
+      child: TextFormField(
+        controller: controller,
+        focusNode: focusNode,
+        obscureText: isPassword && (label == 'Password' ? !_isPasswordVisible : !_isConfirmPasswordVisible),
+        style: TextStyle(
+          fontSize: 14,
+          color: Colors.white,
+        ),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(
+            color: focusNode.hasFocus 
+                ? AppColors.primary 
+                : Colors.white70,
+            fontSize: 14,
+          ),
+          prefixIcon: Icon(
+            icon,
+            color: focusNode.hasFocus 
+                ? AppColors.primary 
+                : Colors.white70,
+            size: 20,
+          ),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    (label == 'Password' ? _isPasswordVisible : _isConfirmPasswordVisible)
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                    color: focusNode.hasFocus 
+                        ? AppColors.primary 
+                        : Colors.white70,
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      if (label == 'Password') {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      } else {
+                        _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                      }
+                    });
+                  },
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'This field is required';
+          }
+          if (label == 'Email' && !value.contains('@')) {
+            return 'Please enter a valid email address';
+          }
+          if (label == 'Password' && (!_hasMinLength || !_hasNumber || !_hasSymbol)) {
+            return 'Password does not meet requirements';
+          }
+          if (label == 'Confirm Password' && value != _passwordController.text) {
+            return 'Passwords do not match';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget _buildPasswordRequirements(bool isWeb) {
+    return Container(
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white10,
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -593,22 +768,52 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
             'Password Requirements:',
             style: TextStyle(
               color: Colors.white70,
-              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.bodySmall),
+              fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: Dimensions.spacingS),
-          _buildEnhancedRequirementItem(_hasMinLength, 'At least 8 characters'),
-          _buildEnhancedRequirementItem(_hasNumber, 'Contains a number'),
-          _buildEnhancedRequirementItem(_hasSymbol, 'Contains a symbol'),
+          SizedBox(height: 8),
+          _buildRequirementItem(_hasMinLength, 'At least 8 characters', isWeb),
+          _buildRequirementItem(_hasNumber, 'Contains a number', isWeb),
+          _buildRequirementItem(_hasSymbol, 'Contains a symbol', isWeb),
         ],
       ),
     );
   }
 
-  Widget _buildRegisterButton() {
+  Widget _buildRequirementItem(bool isMet, String text, bool isWeb) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: isWeb ? 6 : 4),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(isWeb ? 3 : 2),
+            decoration: BoxDecoration(
+              color: isMet ? AppColors.primary.withOpacity(0.8) : Colors.white24,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isMet ? Icons.check : Icons.close,
+              size: isWeb ? 14 : 12,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(width: isWeb ? 12 : 8),
+          Text(
+            text,
+            style: TextStyle(
+              color: isMet ? AppColors.primary : Colors.white70,
+              fontSize: isWeb ? 14 : 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRegisterButton(bool isWeb) {
     return Container(
-      height: 55,
+      height: isWeb ? 56 : 50,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -616,12 +821,12 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
             Color(0xFFFF6E40),
           ],
         ),
-        borderRadius: BorderRadius.circular(Dimensions.radiusL),
+        borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
             color: AppColors.primary.withOpacity(0.3),
-            blurRadius: 12,
-            offset: Offset(0, 6),
+            blurRadius: 8,
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -631,7 +836,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(Dimensions.radiusL),
+            borderRadius: BorderRadius.circular(15),
           ),
         ),
         child: AnimatedSwitcher(
@@ -645,21 +850,32 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                     strokeWidth: 2,
                   ),
                 )
-              : Text(
-                  'Create Account',
-                  style: TextStyle(
-                    fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                        context, FontSizes.button),
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.person_add_rounded,
+                      color: Colors.white,
+                      size: isWeb ? 24 : 22,
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      'Create Account',
+                      style: TextStyle(
+                        fontSize: isWeb ? 18 : 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
                 ),
         ),
       ),
     );
   }
 
-  Widget _buildLoginLink() {
+  Widget _buildLoginLink(bool isWeb) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -667,26 +883,190 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           'Already have an account? ',
           style: TextStyle(
             color: Colors.white70,
-            fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.bodySmall),
+            fontSize: isWeb ? 16 : 14,
           ),
         ),
-        GestureDetector(
-          onTap: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginPage()),
-            );
-          },
-          child: Text(
-            'Login',
-            style: TextStyle(
-              color: AppColors.primary,
-              fontWeight: FontWeight.bold,
-              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.bodySmall),
+        MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: InkWell(
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+              );
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: AppColors.primary.withOpacity(0.5),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                'Login',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: isWeb ? 16 : 14,
+                ),
+              ),
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCloseButton() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: IconButton(
+        icon: Icon(
+          Icons.close,
+          color: Colors.black87,
+          size: 24,
+        ),
+        onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LandingPage()),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLogo(bool isWeb) {
+    return Column(
+      children: [
+        Container(
+          width: isWeb ? 120 : 100,
+          height: isWeb ? 120 : 100,
+          padding: EdgeInsets.all(isWeb ? 25 : 20),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.2),
+                blurRadius: 15,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          child: Image.asset(
+            'assets/images/logo_NutriGuide.png',
+            fit: BoxFit.contain,
+          ),
+        ),
+        if (isWeb) ...[
+          SizedBox(height: 20),
+          Text(
+            'NutriGuide',
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildBrandingContent() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 40),
+      child: Column(
+        children: [
+          Text(
+            'Start Your Journey to\nHealthier Living',
+            style: TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              height: 1.2,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 20),
+          Text(
+            'Join our community and get personalized nutrition guidance tailored just for you',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.white.withOpacity(0.9),
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeaturesList() {
+    return Column(
+      children: [
+        _buildFeatureItem(
+          icon: Icons.person_outline,
+          title: 'Personalized Plans',
+        ),
+        SizedBox(height: 20),
+        _buildFeatureItem(
+          icon: Icons.restaurant_menu,
+          title: 'Custom Meal Plans',
+        ),
+        SizedBox(height: 20),
+        _buildFeatureItem(
+          icon: Icons.insights,
+          title: 'Progress Analytics',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeatureItem({
+    required IconData icon,
+    required String title,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.primary, size: 24),
+          SizedBox(width: 12),
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

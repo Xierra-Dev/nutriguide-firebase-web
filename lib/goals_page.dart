@@ -76,44 +76,259 @@ class _GoalsPageState extends State<GoalsPage> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
         backgroundColor: AppColors.background,
-        body: FadeTransition(
-          opacity: _fadeAnimation,
-          child: Stack(
+        body: SafeArea(
+          child: Center(
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: isWeb ? 1200 : double.infinity,
+              ),
+              child: Row(
+                children: [
+                  if (isWeb)
+                    Container(
+                      width: 300,
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 0, 0, 0),
+                        border: Border(
+                          right: BorderSide(
+                            color: Colors.white.withOpacity(0.1),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      padding: EdgeInsets.all(Dimensions.paddingL),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Background gradient
               Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      AppColors.surface,
-                      AppColors.background,
-                    ],
-                  ),
-                ),
-              ),
-
-              // Content
-              SafeArea(
+                              color: AppColors.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                            ),
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.arrow_back,
+                                color: AppColors.primary,
+                                size: Dimensions.iconM,
+                              ),
+                              onPressed: () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const PersonalizationPage()),
+                                );
+                              },
+                            ),
+                          ),
+                          SizedBox(height: Dimensions.spacingL),
+                          Text(
+                            'Set Your Goals',
+                            style: TextStyle(
+                              fontSize: FontSizes.heading1,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.text,
+                            ),
+                          ),
+                          SizedBox(height: Dimensions.spacingM),
+                          Text(
+                            'Select at least 1 goal to continue',
+                            style: TextStyle(
+                              fontSize: FontSizes.body,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          SizedBox(height: Dimensions.spacingL),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(
+                              3,
+                              (index) => Container(
+                                margin: EdgeInsets.symmetric(horizontal: 4),
+                                width: index + 1 == currentStep ? 24 : 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(6),
+                                  color: index + 1 == currentStep ? AppColors.primary : Colors.white24,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        if (!isWeb)
+                          Container(
+                            padding: EdgeInsets.all(Dimensions.paddingM),
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 0, 0, 0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                                  ),
+                                  child: IconButton(
+                                    icon: Icon(
+                                      Icons.arrow_back,
+                                      color: AppColors.primary,
+                                      size: Dimensions.iconM,
+                                    ),
+                                    onPressed: () {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => const PersonalizationPage()),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                SizedBox(width: Dimensions.paddingM),
+                                Text(
+                                  'Set Your Goals',
+                                  style: TextStyle(
+                                    fontSize: FontSizes.heading2,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.text,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        Expanded(
                 child: SingleChildScrollView(
+                            padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingM),
+                            child: Column(
+                              children: [
+                                if (!isWeb) _buildHeader(),
+                                Container(
+                                  padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingL),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 10),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      if (isWeb)
+                                        Wrap(
+                                          spacing: Dimensions.paddingL,
+                                          runSpacing: Dimensions.paddingL,
+                                          children: goals.map((goal) {
+                                            return SizedBox(
+                                              width: (MediaQuery.of(context).size.width - 800) / 3,
+                                              child: _buildGoalOption(goal),
+                                            );
+                                          }).toList(),
+                                        )
+                                      else
+                                        Column(
+                                          children: goals.map((goal) => _buildGoalOption(goal)).toList(),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: isWeb ? Dimensions.paddingXL : Dimensions.paddingL),
+                                Container(
+                                  width: double.infinity,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isWeb ? Dimensions.paddingXL : Dimensions.paddingM,
+                                  ),
                   child: Column(
                     children: [
-                      _buildHeader(),
-                      _buildGoalsContainer(),
-                      _buildBottomButtons(),
+                                      Container(
+                                        height: 55,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              AppColors.primary,
+                                              Color(0xFFFF6E40),
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColors.primary.withOpacity(0.3),
+                                              blurRadius: 12,
+                                              offset: Offset(0, 6),
+                                            ),
+                                          ],
+                                        ),
+                                        child: ElevatedButton(
+                                          onPressed: selectedGoals.isNotEmpty ? _saveGoals : null,
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.transparent,
+                                            shadowColor: Colors.transparent,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'Continue',
+                                            style: TextStyle(
+                                              fontSize: isWeb ? FontSizes.heading3 : FontSizes.button,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(height: Dimensions.spacingL),
+                                      TextButton(
+                                        onPressed: _showSetUpLaterDialog,
+                                        style: TextButton.styleFrom(
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: Dimensions.paddingM,
+                                            horizontal: Dimensions.paddingXL,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                            side: BorderSide(color: Colors.white24),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Set Up Later',
+                                          style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: isWeb ? FontSizes.body : FontSizes.button,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                     ],
                   ),
                 ),
               ),
-
-              // Back button
-              _buildBackButton(),
-            ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -186,34 +401,15 @@ class _GoalsPageState extends State<GoalsPage> with SingleTickerProviderStateMix
     );
   }
 
-  Widget _buildGoalsContainer() {
-    return Container(
-      margin: EdgeInsets.all(Dimensions.paddingL),
-      decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(Dimensions.radiusL),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 20,
-            spreadRadius: 5,
-          ),
-        ],
-      ),
-      child: Column(
-        children: goals.map((goal) => _buildGoalOption(goal)).toList(),
-      ),
-    );
-  }
-
   Widget _buildGoalOption(Map<String, dynamic> goal) {
     final bool isSelected = selectedGoals.contains(goal['title']);
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
     
-    return InkWell(
+    return Container(
+      margin: EdgeInsets.only(bottom: isWeb ? 0 : Dimensions.paddingM),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
       onTap: () {
         setState(() {
           if (isSelected) {
@@ -223,205 +419,72 @@ class _GoalsPageState extends State<GoalsPage> with SingleTickerProviderStateMix
           }
         });
       },
+          borderRadius: BorderRadius.circular(Dimensions.radiusL),
       child: Container(
-        padding: EdgeInsets.all(Dimensions.paddingL),
+            padding: EdgeInsets.all(isWeb ? Dimensions.paddingL : Dimensions.paddingM),
         decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
-          ),
-        ),
-        child: Row(
-          children: [
-            // Icon container with gradient (similar to personalization page)
-            Container(
-              padding: EdgeInsets.all(Dimensions.paddingS),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    isSelected ? AppColors.primary : Colors.white24,
-                    isSelected ? AppColors.primary.withOpacity(0.7) : Colors.white12,
-                  ],
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isSelected
+                    ? [AppColors.primary.withOpacity(0.2), AppColors.primary.withOpacity(0.3)]
+                    : [Colors.white.withOpacity(0.05), Colors.white.withOpacity(0.08)],
+              ),
+              borderRadius: BorderRadius.circular(Dimensions.radiusL),
+              border: Border.all(
+                color: isSelected ? AppColors.primary : Colors.white.withOpacity(0.1),
+                width: isSelected ? 2 : 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+                  padding: EdgeInsets.all(isWeb ? Dimensions.paddingM : Dimensions.paddingS),
+              decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary.withOpacity(0.2) : Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(Dimensions.radiusM),
               ),
               child: Icon(
-                goal['icon'] as IconData,
-                color: Colors.white,
-                size: Dimensions.iconM,
-              ),
-            ),
-            SizedBox(width: Dimensions.spacingL),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                    goal['icon'],
+                    color: isSelected ? AppColors.primary : Colors.white70,
+                    size: isWeb ? Dimensions.iconL : Dimensions.iconM,
+                  ),
+                ),
+                SizedBox(height: isWeb ? Dimensions.paddingM : Dimensions.paddingS),
                   Text(
-                    goal['title'] as String,
+                  goal['title'],
                     style: TextStyle(
                       color: isSelected ? AppColors.primary : Colors.white,
-                      fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
+                    fontSize: isWeb ? FontSizes.heading3 : FontSizes.body,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
                   ),
-                  SizedBox(height: Dimensions.spacingXS),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: Dimensions.paddingXS),
                   Text(
-                    goal['description'] as String,
+                  goal['description'],
                     style: TextStyle(
                       color: Colors.white70,
-                      fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.bodySmall),
-                    ),
+                    fontSize: isWeb ? FontSizes.body : FontSizes.caption,
                   ),
-                ],
-              ),
-            ),
-            if (isSelected)
-              Container(
-                padding: EdgeInsets.all(Dimensions.paddingXS),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
+                  textAlign: TextAlign.center,
                 ),
-                child: Icon(
-                  Icons.check,
-                  color: Colors.white,
-                  size: Dimensions.iconS,
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-    Widget _buildBottomButtons() {
-    final bool hasSelectedGoals = selectedGoals.isNotEmpty;
-
-    return Container(
-      padding: EdgeInsets.all(Dimensions.paddingL),
-      child: Column(
-        children: [
-          // Continue Button with gradient
-          Container(
-            height: 55,
-            decoration: BoxDecoration(
-              gradient: hasSelectedGoals
-                  ? LinearGradient(
-                      colors: [
-                        AppColors.primary,
-                        Color(0xFFFF6E40),
-                      ],
-                    )
-                  : LinearGradient(
-                      colors: [
-                        Colors.grey[800]!,
-                        Colors.grey[700]!,
-                      ],
-                    ),
-              borderRadius: BorderRadius.circular(Dimensions.radiusL),
-              boxShadow: hasSelectedGoals
-                  ? [
-                      BoxShadow(
-                        color: AppColors.primary.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: Offset(0, 6),
-                      ),
-                    ]
-                  : [],
-            ),
-            child: ElevatedButton(
-              onPressed: hasSelectedGoals ? _saveGoals : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                ),
-                disabledBackgroundColor: Colors.transparent,
-              ),
-              child: AnimatedSwitcher(
-                duration: Duration(milliseconds: 200),
-                child: _isLoading
-                    ? SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text(
-                        'Continue',
-                        style: TextStyle(
-                          fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                              context, FontSizes.button),
-                          fontWeight: FontWeight.bold,
-                          color: hasSelectedGoals ? Colors.white : Colors.grey[400],
-                        ),
-                      ),
-              ),
+              ],
             ),
           ),
-          SizedBox(height: Dimensions.spacingL),
-          // Set Up Later Button
-          TextButton(
-            onPressed: _showSetUpLaterDialog,
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.symmetric(
-                vertical: Dimensions.paddingM,
-                horizontal: Dimensions.paddingXL,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                side: BorderSide(color: Colors.white24),
-              ),
-            ),
-            child: Text(
-              'Set Up Later',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.button),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBackButton() {
-    return Positioned(
-      top: MediaQuery.of(context).padding.top + Dimensions.paddingM,
-      left: Dimensions.paddingL,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface.withOpacity(0.9),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 10,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const PersonalizationPage()),
-            );
-          },
         ),
       ),
     );
   }
 
-  // Keep existing methods for dialog and navigation
   void _showSetUpLaterDialog() {
     showDialog(
       context: context,

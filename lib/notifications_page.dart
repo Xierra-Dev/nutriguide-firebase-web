@@ -4,6 +4,7 @@ import 'core/constants/colors.dart';
 import 'core/constants/dimensions.dart';
 import 'core/constants/font_sizes.dart';
 import 'core/widgets/app_text.dart';
+import 'core/helpers/responsive_helper.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -41,135 +42,269 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.text),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: AppText(
-          'Notifications',
-          fontSize: FontSizes.heading3,
-          color: AppColors.text,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(Dimensions.paddingM),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: EdgeInsets.all(Dimensions.paddingL),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(Dimensions.radiusL),
-              ),
-              child: Row(
-                children: [
+      body: SafeArea(
+        child: Center(
+          child: Container(
+            constraints: BoxConstraints(
+              maxWidth: isWeb ? 1200 : double.infinity,
+            ),
+            child: Row(
+              children: [
+                if (isWeb)
                   Container(
-                    padding: EdgeInsets.all(Dimensions.paddingM),
+                    width: 300,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                      color: const Color.fromARGB(255, 0, 0, 0),
+                      border: Border(
+                        right: BorderSide(
+                          color: Colors.white.withOpacity(0.1),
+                          width: 1,
+                        ),
+                      ),
                     ),
-                    child: Icon(
-                      Icons.notifications_active,
-                      color: AppColors.primary,
-                      size: Dimensions.iconL,
-                    ),
-                  ),
-                  SizedBox(width: Dimensions.paddingM),
-                  Expanded(
+                    padding: EdgeInsets.all(Dimensions.paddingL),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        AppText(
-                          'Stay Updated',
-                          fontSize: FontSizes.heading3,
-                          color: AppColors.text,
-                          fontWeight: FontWeight.bold,
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.arrow_back,
+                              color: AppColors.primary,
+                              size: Dimensions.iconM,
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                          ),
                         ),
-                        SizedBox(height: Dimensions.paddingXS),
-                        AppText(
-                          'Enable notifications to never miss out on personalized recipe recommendations and updates',
-                          fontSize: FontSizes.body,
-                          color: AppColors.textSecondary,
+                        SizedBox(height: Dimensions.spacingL),
+                        Text(
+                          'Notifications',
+                          style: TextStyle(
+                            fontSize: FontSizes.heading1,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.text,
+                          ),
+                        ),
+                        SizedBox(height: Dimensions.spacingM),
+                        Text(
+                          'Manage your notification preferences and settings',
+                          style: TextStyle(
+                            fontSize: FontSizes.body,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
+                Expanded(
+                  child: Column(
+                    children: [
+                      if (!isWeb)
+                        Container(
+                          padding: EdgeInsets.all(Dimensions.paddingM),
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 0, 0, 0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                                ),
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.arrow_back,
+                                    color: AppColors.primary,
+                                    size: Dimensions.iconM,
+                                  ),
+                                  onPressed: () => Navigator.pop(context),
+                                ),
+                              ),
+                              SizedBox(width: Dimensions.paddingM),
+                              Text(
+                                'Notifications',
+                                style: TextStyle(
+                                  fontSize: FontSizes.heading2,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.text,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingM),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingL),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 10),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(isWeb ? Dimensions.paddingL : Dimensions.paddingM),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                                      ),
+                                      child: Icon(
+                                        Icons.notifications_active,
+                                        color: AppColors.primary,
+                                        size: isWeb ? Dimensions.iconXL : Dimensions.iconL,
+                                      ),
+                                    ),
+                                    SizedBox(width: isWeb ? Dimensions.paddingL : Dimensions.paddingM),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Stay Updated',
+                                            style: TextStyle(
+                                              fontSize: isWeb ? FontSizes.heading2 : FontSizes.heading3,
+                                              color: AppColors.text,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          SizedBox(height: Dimensions.paddingXS),
+                                          Text(
+                                            'Enable notifications to never miss out on personalized recipe recommendations and updates',
+                                            style: TextStyle(
+                                              fontSize: isWeb ? FontSizes.body : FontSizes.bodySmall,
+                                              color: AppColors.textSecondary,
+                                              height: 1.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: isWeb ? Dimensions.paddingXL : Dimensions.paddingL),
+                              Container(
+                                padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingL),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 10),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Notification Settings',
+                                      style: TextStyle(
+                                        fontSize: isWeb ? FontSizes.heading2 : FontSizes.heading3,
+                                        color: AppColors.text,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: isWeb ? Dimensions.paddingL : Dimensions.paddingM),
+                                    _buildNotificationOption(
+                                      'Push Notifications',
+                                      'Get instant updates about your favorite recipes',
+                                      Icons.notifications_outlined,
+                                      _notificationsEnabled,
+                                      _toggleNotifications,
+                                      isWeb,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: isWeb ? Dimensions.paddingXL : Dimensions.paddingL),
+                              Container(
+                                padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingL),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 10),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'What You\'ll Receive',
+                                      style: TextStyle(
+                                        fontSize: isWeb ? FontSizes.heading2 : FontSizes.heading3,
+                                        color: AppColors.text,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: isWeb ? Dimensions.paddingL : Dimensions.paddingM),
+                                    _buildFeatureItem(
+                                      'Recipe Recommendations',
+                                      'Personalized recipe ideas just for you',
+                                      Icons.restaurant_menu,
+                                      isWeb,
+                                    ),
+                                    SizedBox(height: isWeb ? Dimensions.paddingL : Dimensions.paddingM),
+                                    _buildFeatureItem(
+                                      'New Features',
+                                      'Stay updated with latest app features',
+                                      Icons.new_releases,
+                                      isWeb,
+                                    ),
+                                    SizedBox(height: isWeb ? Dimensions.paddingL : Dimensions.paddingM),
+                                    _buildFeatureItem(
+                                      'Special Offers',
+                                      'Exclusive NutriGuide offers and updates',
+                                      Icons.local_offer,
+                                      isWeb,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: Dimensions.paddingL),
-            Container(
-              padding: EdgeInsets.all(Dimensions.paddingL),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(Dimensions.radiusL),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    'Notification Settings',
-                    fontSize: FontSizes.heading3,
-                    color: AppColors.text,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  SizedBox(height: Dimensions.paddingM),
-                  _buildNotificationOption(
-                    'Push Notifications',
-                    'Get instant updates about your favorite recipes',
-                    Icons.notifications_outlined,
-                    _notificationsEnabled,
-                    _toggleNotifications,
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: Dimensions.paddingL),
-            Container(
-              padding: EdgeInsets.all(Dimensions.paddingL),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(Dimensions.radiusL),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    'What You\'ll Receive',
-                    fontSize: FontSizes.heading3,
-                    color: AppColors.text,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  SizedBox(height: Dimensions.paddingM),
-                  _buildFeatureItem(
-                    'Recipe Recommendations',
-                    'Personalized recipe ideas just for you',
-                    Icons.restaurant_menu,
-                  ),
-                  SizedBox(height: Dimensions.paddingM),
-                  _buildFeatureItem(
-                    'New Features',
-                    'Stay updated with latest app features',
-                    Icons.new_releases,
-                  ),
-                  SizedBox(height: Dimensions.paddingM),
-                  _buildFeatureItem(
-                    'Special Offers',
-                    'Exclusive NutriGuide offers and updates',
-                    Icons.local_offer,
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -181,11 +316,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
     IconData icon,
     bool value,
     Function() onTap,
+    bool isWeb,
   ) {
     return Row(
       children: [
         Container(
-          padding: EdgeInsets.all(Dimensions.paddingS),
+          padding: EdgeInsets.all(isWeb ? Dimensions.paddingM : Dimensions.paddingS),
           decoration: BoxDecoration(
             color: AppColors.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(Dimensions.radiusM),
@@ -193,25 +329,29 @@ class _NotificationsPageState extends State<NotificationsPage> {
           child: Icon(
             icon,
             color: AppColors.primary,
-            size: Dimensions.iconM,
+            size: isWeb ? Dimensions.iconL : Dimensions.iconM,
           ),
         ),
-        SizedBox(width: Dimensions.paddingM),
+        SizedBox(width: isWeb ? Dimensions.paddingL : Dimensions.paddingM),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppText(
+              Text(
                 title,
-                fontSize: FontSizes.body,
-                color: AppColors.text,
-                fontWeight: FontWeight.bold,
+                style: TextStyle(
+                  fontSize: isWeb ? FontSizes.heading3 : FontSizes.body,
+                  color: AppColors.text,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               SizedBox(height: Dimensions.paddingXS),
-              AppText(
+              Text(
                 subtitle,
-                fontSize: FontSizes.caption,
-                color: AppColors.textSecondary,
+                style: TextStyle(
+                  fontSize: isWeb ? FontSizes.body : FontSizes.caption,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ],
           ),
@@ -225,11 +365,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 
-  Widget _buildFeatureItem(String title, String subtitle, IconData icon) {
+  Widget _buildFeatureItem(String title, String subtitle, IconData icon, bool isWeb) {
     return Row(
       children: [
         Container(
-          padding: EdgeInsets.all(Dimensions.paddingS),
+          padding: EdgeInsets.all(isWeb ? Dimensions.paddingM : Dimensions.paddingS),
           decoration: BoxDecoration(
             color: AppColors.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(Dimensions.radiusM),
@@ -237,25 +377,29 @@ class _NotificationsPageState extends State<NotificationsPage> {
           child: Icon(
             icon,
             color: AppColors.primary,
-            size: Dimensions.iconM,
+            size: isWeb ? Dimensions.iconL : Dimensions.iconM,
           ),
         ),
-        SizedBox(width: Dimensions.paddingM),
+        SizedBox(width: isWeb ? Dimensions.paddingL : Dimensions.paddingM),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppText(
+              Text(
                 title,
-                fontSize: FontSizes.body,
-                color: AppColors.text,
-                fontWeight: FontWeight.bold,
+                style: TextStyle(
+                  fontSize: isWeb ? FontSizes.heading3 : FontSizes.body,
+                  color: AppColors.text,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               SizedBox(height: Dimensions.paddingXS),
-              AppText(
+              Text(
                 subtitle,
-                fontSize: FontSizes.caption,
-                color: AppColors.textSecondary,
+                style: TextStyle(
+                  fontSize: isWeb ? FontSizes.body : FontSizes.caption,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ],
           ),

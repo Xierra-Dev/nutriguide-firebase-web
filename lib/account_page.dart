@@ -116,7 +116,6 @@ class _AccountPageState extends State<AccountPage> {
 
       // Load user personalization data from Firestore
       final data = await _firestoreService.getUserPersonalization();
-      print('Loaded userData: $data'); // Debug print
 
       if (data != null) {
         print('Profile Picture URL: ${data['profilePictureUrl']}'); // Debug print
@@ -245,160 +244,242 @@ class _AccountPageState extends State<AccountPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Enhanced Header
-            Container(
-              padding: EdgeInsets.all(Dimensions.paddingM),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 0, 0, 0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(Dimensions.radiusM),
-                    ),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.arrow_back,
-                        color: AppColors.primary,
-                        size: Dimensions.iconM,
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).pushReplacement(
-                          SlideRightRoute(page: const SettingsPage()),
-                        );
-                      },
-                    ),
-                  ),
-                  SizedBox(width: Dimensions.paddingM),
-                  Text(
-                    'Account Settings',
-                    style: TextStyle(
-                      fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                        context,
-                        FontSizes.heading2,
-                      ),
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.text,
-                    ),
-                  ),
-                ],
-              ),
+        child: Center(
+          child: Container(
+            constraints: BoxConstraints(
+              maxWidth: isWeb ? 1200 : double.infinity,
             ),
-            // Enhanced Content
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.all(Dimensions.paddingM),
-                children: [
-                  // User Info Section
+            child: Row(
+              children: [
+                if (isWeb)
                   Container(
-                    padding: EdgeInsets.all(Dimensions.paddingL),
+                    width: 300,
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
+                      color: const Color.fromARGB(255, 0, 0, 0),
+                      border: Border(
+                        right: BorderSide(
+                          color: Colors.white.withOpacity(0.1),
+                          width: 1,
                         ),
-                      ],
+                      ),
                     ),
+                    padding: EdgeInsets.all(Dimensions.paddingL),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          width: 80,
-                          height: 80,
                           decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.primary.withOpacity(0.25),
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(Dimensions.radiusM),
                           ),
-                          child: ClipOval(
-                            child: _buildProfileImage(),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.arrow_back,
+                              color: AppColors.primary,
+                              size: Dimensions.iconM,
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pushReplacement(
+                                SlideRightRoute(page: const SettingsPage()),
+                              );
+                            },
+                          ),
+                        ),
+                        SizedBox(height: Dimensions.spacingL),
+                        Text(
+                          'Account Settings',
+                          style: TextStyle(
+                            fontSize: FontSizes.heading1,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.text,
                           ),
                         ),
                         SizedBox(height: Dimensions.spacingM),
                         Text(
-                          email ?? 'Loading...',
+                          'Manage your account information and security settings',
                           style: TextStyle(
-                            fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                              context,
-                              FontSizes.body,
-                            ),
-                            color: AppColors.text,
-                            fontWeight: FontWeight.w500,
+                            fontSize: FontSizes.body,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],
                     ),
                   ),
-
-                  SizedBox(height: Dimensions.spacingL),
-
-                  // Account Options Section
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
+                Expanded(
+                  child: Column(
+                    children: [
+                      if (!isWeb)
+                        Container(
+                          padding: EdgeInsets.all(Dimensions.paddingM),
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 0, 0, 0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                                ),
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.arrow_back,
+                                    color: AppColors.primary,
+                                    size: Dimensions.iconM,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pushReplacement(
+                                      SlideRightRoute(page: const SettingsPage()),
+                                    );
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: Dimensions.paddingM),
+                              Text(
+                                'Account Settings',
+                                style: TextStyle(
+                                  fontSize: FontSizes.heading2,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.text,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        _buildEnhancedListTile(
-                          icon: Icons.email_outlined,
-                          title: 'Email',
-                          subtitle: email ?? '',
-                          onTap: () {},
+                      Expanded(
+                        child: ListView(
+                          padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingM),
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingL),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    width: isWeb ? 150 : 80,
+                                    height: isWeb ? 150 : 80,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: AppColors.primary.withOpacity(0.25),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.primary.withOpacity(0.2),
+                                          blurRadius: 15,
+                                          offset: const Offset(0, 8),
+                                        ),
+                                      ],
+                                    ),
+                                    child: ClipOval(
+                                      child: _buildProfileImage(),
+                                    ),
+                                  ),
+                                  SizedBox(height: isWeb ? Dimensions.spacingL : Dimensions.spacingM),
+                                  Text(
+                                    email ?? 'Loading...',
+                                    style: TextStyle(
+                                      fontSize: isWeb ? FontSizes.heading3 : FontSizes.body,
+                                      color: AppColors.text,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: isWeb ? Dimensions.spacingXL : Dimensions.spacingL),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (isWeb)
+                                    Padding(
+                                      padding: EdgeInsets.all(Dimensions.paddingL),
+                                      child: Text(
+                                        'Account Options',
+                                        style: TextStyle(
+                                          fontSize: FontSizes.heading3,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.text,
+                                        ),
+                                      ),
+                                    ),
+                                  _buildEnhancedListTile(
+                                    icon: Icons.email_outlined,
+                                    title: 'Email',
+                                    subtitle: email ?? '',
+                                    onTap: () {},
+                                    isWeb: isWeb,
+                                  ),
+                                  _buildDivider(),
+                                  _buildEnhancedListTile(
+                                    icon: Icons.lock_outline,
+                                    title: 'Password',
+                                    subtitle: '********',
+                                    onTap: _showChangePasswordDialog,
+                                    isWeb: isWeb,
+                                  ),
+                                  _buildDivider(),
+                                  _buildEnhancedListTile(
+                                    icon: Icons.logout,
+                                    title: 'Logout',
+                                    subtitle: 'Sign out of your account',
+                                    onTap: () => confirmLogout(context),
+                                    isWarning: true,
+                                    isWeb: isWeb,
+                                  ),
+                                  _buildDivider(),
+                                  _buildEnhancedListTile(
+                                    icon: Icons.delete_outline,
+                                    title: 'Delete Account',
+                                    subtitle: 'Permanently delete your account',
+                                    onTap: () => confirmDeleteAccount(context),
+                                    isDestructive: true,
+                                    isWeb: isWeb,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        _buildDivider(),
-                        _buildEnhancedListTile(
-                          icon: Icons.lock_outline,
-                          title: 'Password',
-                          subtitle: '********',
-                          onTap: _showChangePasswordDialog,
-                        ),
-                        _buildDivider(),
-                        _buildEnhancedListTile(
-                          icon: Icons.logout,
-                          title: 'Logout',
-                          subtitle: 'Sign out of your account',
-                          onTap: () => confirmLogout(context),
-                          isWarning: true,
-                        ),
-                        _buildDivider(),
-                        _buildEnhancedListTile(
-                          icon: Icons.delete_outline,
-                          title: 'Delete Account',
-                          subtitle: 'Permanently delete your account',
-                          onTap: () => confirmDeleteAccount(context),
-                          isDestructive: true,
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -411,41 +492,37 @@ class _AccountPageState extends State<AccountPage> {
     required VoidCallback onTap,
     bool isDestructive = false,
     bool isWarning = false,
+    required bool isWeb,
   }) {
     return ListTile(
       contentPadding: EdgeInsets.symmetric(
-        horizontal: Dimensions.paddingM,
-        vertical: Dimensions.paddingS,
+        horizontal: isWeb ? Dimensions.paddingL : Dimensions.paddingM,
+        vertical: isWeb ? Dimensions.paddingM : Dimensions.paddingS,
       ),
       leading: Container(
-        padding: EdgeInsets.all(Dimensions.paddingS),
+        padding: EdgeInsets.all(isWeb ? Dimensions.paddingM : Dimensions.paddingS),
         decoration: BoxDecoration(
-          color:
-              isDestructive
-                  ? Colors.red.withOpacity(0.1)
-                  : isWarning
+          color: isDestructive
+              ? Colors.red.withOpacity(0.1)
+              : isWarning
                   ? Colors.orange.withOpacity(0.1)
                   : AppColors.primary.withOpacity(0.1),
           borderRadius: BorderRadius.circular(Dimensions.radiusM),
         ),
         child: Icon(
           icon,
-          color:
-              isDestructive
-                  ? Colors.red
-                  : isWarning
+          color: isDestructive
+              ? Colors.red
+              : isWarning
                   ? Colors.orange
                   : AppColors.primary,
-          size: Dimensions.iconM,
+          size: isWeb ? Dimensions.iconL : Dimensions.iconM,
         ),
       ),
       title: Text(
         title,
         style: TextStyle(
-          fontSize: ResponsiveHelper.getAdaptiveTextSize(
-            context,
-            FontSizes.body,
-          ),
+          fontSize: isWeb ? FontSizes.heading3 : FontSizes.body,
           fontWeight: FontWeight.w500,
           color: isDestructive ? Colors.red : AppColors.text,
         ),
@@ -453,17 +530,14 @@ class _AccountPageState extends State<AccountPage> {
       subtitle: Text(
         subtitle,
         style: TextStyle(
-          fontSize: ResponsiveHelper.getAdaptiveTextSize(
-            context,
-            FontSizes.bodySmall,
-          ),
+          fontSize: isWeb ? FontSizes.body : FontSizes.bodySmall,
           color: AppColors.textSecondary,
         ),
       ),
       trailing: Icon(
         Icons.arrow_forward_ios,
         color: isDestructive ? Colors.red : AppColors.textSecondary,
-        size: Dimensions.iconS,
+        size: isWeb ? Dimensions.iconM : Dimensions.iconS,
       ),
       onTap: onTap,
     );

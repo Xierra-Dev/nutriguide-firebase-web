@@ -89,82 +89,117 @@ class _AllergiesSettingsPageState extends State<AllergiesSettingsPage> {
         barrierDismissible: true,
         barrierLabel: "Dismiss",
         pageBuilder: (context, animation, secondaryAnimation) {
+          final isWeb = ResponsiveHelper.screenWidth(context) > 800;
           return Center(
             child: Material(
               color: Colors.transparent,
               child: Container(
-                width: MediaQuery.of(context).size.width * 0.9,
-                padding: EdgeInsets.all(Dimensions.paddingL),
+                width: isWeb ? 500 : MediaQuery.of(context).size.width * 0.9,
+                padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingL),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                  color: const Color(0xFF1E1E1E),
+                  borderRadius: BorderRadius.circular(isWeb ? Dimensions.radiusXL : Dimensions.radiusL),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      'Any unsaved data\nwill be lost',
-                      style: TextStyle(
-                        color: AppColors.text,
-                        fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.heading3),
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: Dimensions.spacingM),
-                    Text(
-                      'Are you sure you want leave this page\nbefore you save your data changes?',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
-                      ),
-                    ),
-                    SizedBox(height: Dimensions.spacingL),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const PreferencePage()),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.error,
-                        foregroundColor: AppColors.text,
-                        elevation: 0,
-                        padding: EdgeInsets.symmetric(vertical: Dimensions.paddingM),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                        ),
-                      ),
-                      child: Text(
-                        'Leave Page',
-                        style: TextStyle(
-                          fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.button),
-                          fontWeight: FontWeight.w600,
-                        ),
+                    Container(
+                      padding: EdgeInsets.all(isWeb ? Dimensions.paddingL : Dimensions.paddingM),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.amber,
+                            size: isWeb ? Dimensions.iconXL : Dimensions.iconL,
+                          ),
+                          SizedBox(height: isWeb ? Dimensions.paddingL : Dimensions.paddingM),
+                          Text(
+                            'Any unsaved data\nwill be lost',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: isWeb ? FontSizes.heading2 : FontSizes.heading3,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: isWeb ? Dimensions.paddingM : Dimensions.paddingS),
+                          Text(
+                            'Are you sure you want leave this page\nbefore you save your data changes?',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: isWeb ? FontSizes.body : FontSizes.caption,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(height: Dimensions.spacingM),
-                    ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        foregroundColor: AppColors.text,
-                        elevation: 0,
-                        padding: EdgeInsets.symmetric(vertical: Dimensions.paddingM),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                          side: BorderSide(color: AppColors.border.withOpacity(0.2)),
-                        ),
+                    SizedBox(height: isWeb ? Dimensions.paddingXL : Dimensions.paddingL),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isWeb ? Dimensions.paddingXL : Dimensions.paddingL,
                       ),
-                      child: Text(
-                        'Cancel',
-                        style: TextStyle(
-                          fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.button),
-                          fontWeight: FontWeight.w600,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const PreferencePage()),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: EdgeInsets.symmetric(
+                                vertical: isWeb ? Dimensions.paddingL : Dimensions.paddingM,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(isWeb ? Dimensions.radiusL : Dimensions.radiusM),
+                              ),
+                            ),
+                            child: Text(
+                              'Leave Page',
+                              style: TextStyle(
+                                fontSize: isWeb ? FontSizes.button : FontSizes.caption,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: isWeb ? Dimensions.paddingM : Dimensions.paddingS),
+                          ElevatedButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: EdgeInsets.symmetric(
+                                vertical: isWeb ? Dimensions.paddingL : Dimensions.paddingM,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(isWeb ? Dimensions.radiusL : Dimensions.radiusM),
+                                side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                              ),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: TextStyle(
+                                fontSize: isWeb ? FontSizes.button : FontSizes.caption,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -216,233 +251,313 @@ class _AllergiesSettingsPageState extends State<AllergiesSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+
     return WillPopScope(
       onWillPop: _onWillPop,
       child: MediaQuery(
         data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1)),
         child: Scaffold(
           backgroundColor: AppColors.background,
-          appBar: AppBar(
-            backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-            elevation: 0,
-            title: Text(
-              'Allergies',
-              style: TextStyle(
-                color: AppColors.text,
-                fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.heading2),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            leading: IconButton(
-              icon: Container(
-                padding: EdgeInsets.all(Dimensions.paddingXS),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(Dimensions.radiusM),
+          body: SafeArea(
+            child: Center(
+              child: Container(
+                constraints: BoxConstraints(
+                  maxWidth: isWeb ? 1200 : double.infinity,
                 ),
-                child: Icon(Icons.arrow_back, color: AppColors.primary, size: Dimensions.iconM),
-              ),
-              onPressed: () => _onBackPressed(context),
-            ),
-          ),
-          body: isLoading
-              ? Center(child: CircularProgressIndicator(color: AppColors.primary))
-              : Column(
+                child: Row(
                   children: [
-                    // Info Card
-                    Container(
-                      margin: EdgeInsets.all(Dimensions.paddingM),
-                      padding: EdgeInsets.all(Dimensions.paddingM),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(Dimensions.paddingS),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.info_outline,
-                              color: AppColors.primary,
-                              size: Dimensions.iconM,
+                    if (isWeb)
+                      Container(
+                        width: 300,
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 0, 0, 0),
+                          border: Border(
+                            right: BorderSide(
+                              color: Colors.white.withOpacity(0.1),
+                              width: 1,
                             ),
                           ),
-                          SizedBox(width: Dimensions.spacingM),
-                          Expanded(
-                            child: Text(
-                              'Select any food allergies you have to help us customize your experience',
-                              style: TextStyle(
-                                color: AppColors.text,
-                                fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
+                        ),
+                        padding: EdgeInsets.all(Dimensions.paddingL),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.arrow_back,
+                                  color: AppColors.primary,
+                                  size: Dimensions.iconM,
+                                ),
+                                onPressed: () => _onBackPressed(context),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    // Allergies List
-                    Expanded(
-                      child: Container(
-                        margin: EdgeInsets.symmetric(horizontal: Dimensions.paddingM),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 2),
+                            SizedBox(height: Dimensions.spacingL),
+                            Text(
+                              'Allergies',
+                              style: TextStyle(
+                                fontSize: FontSizes.heading1,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.text,
+                              ),
+                            ),
+                            SizedBox(height: Dimensions.spacingM),
+                            Text(
+                              'Manage your food allergies and restrictions',
+                              style: TextStyle(
+                                fontSize: FontSizes.body,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                           ],
                         ),
-                        child: ListView.builder(
-                          itemCount: allergies.length,
-                          itemBuilder: (context, index) {
-                            final allergy = allergies[index];
-                            final isSelected = selectedAllergies.contains(allergy);
-                            return Column(
-                              children: [
-                                ListTile(
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: Dimensions.paddingM,
-                                    vertical: Dimensions.paddingS,
+                      ),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          if (!isWeb)
+                            Container(
+                              padding: EdgeInsets.all(Dimensions.paddingM),
+                              decoration: BoxDecoration(
+                                color: const Color.fromARGB(255, 0, 0, 0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 2),
                                   ),
-                                  leading: Container(
-                                    padding: EdgeInsets.all(Dimensions.paddingS),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
                                     decoration: BoxDecoration(
-                                      color: isSelected 
-                                          ? AppColors.success.withOpacity(0.1)
-                                          : AppColors.primary.withOpacity(0.1),
+                                      color: AppColors.primary.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(Dimensions.radiusM),
                                     ),
-                                    child: Icon(
-                                      _getAllergyIcon(allergy),  // Add this helper method
-                                      color: isSelected ? AppColors.success : AppColors.primary,
-                                      size: Dimensions.iconM,
+                                    child: IconButton(
+                                      icon: Icon(
+                                        Icons.arrow_back,
+                                        color: AppColors.primary,
+                                        size: Dimensions.iconM,
+                                      ),
+                                      onPressed: () => _onBackPressed(context),
                                     ),
                                   ),
-                                  title: Text(
-                                    allergy,
+                                  SizedBox(width: Dimensions.paddingM),
+                                  Text(
+                                    'Allergies',
                                     style: TextStyle(
+                                      fontSize: FontSizes.heading2,
+                                      fontWeight: FontWeight.bold,
                                       color: AppColors.text,
-                                      fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
-                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
-                                  trailing: AnimatedContainer(
-                                    duration: Duration(milliseconds: 200),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: isSelected 
-                                          ? AppColors.success.withOpacity(0.1)
-                                          : Colors.transparent,
-                                    ),
-                                    child: Icon(
-                                      isSelected ? Icons.check_circle : Icons.circle_outlined,
-                                      color: isSelected ? AppColors.success : AppColors.textSecondary,
-                                      size: Dimensions.iconM,
+                                ],
+                              ),
+                            ),
+                          Expanded(
+                            child: isLoading
+                                ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+                                : SingleChildScrollView(
+                                    padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingM),
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                          margin: EdgeInsets.only(bottom: Dimensions.paddingL),
+                                          padding: EdgeInsets.all(isWeb ? Dimensions.paddingL : Dimensions.paddingM),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.primary.withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                padding: EdgeInsets.all(isWeb ? Dimensions.paddingM : Dimensions.paddingS),
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.primary.withOpacity(0.1),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Icon(
+                                                  Icons.info_outline,
+                                                  color: AppColors.primary,
+                                                  size: isWeb ? Dimensions.iconL : Dimensions.iconM,
+                                                ),
+                                              ),
+                                              SizedBox(width: isWeb ? Dimensions.paddingL : Dimensions.spacingM),
+                                              Expanded(
+                                                child: Text(
+                                                  'Select any food allergies you have to help us customize your experience',
+                                                  style: TextStyle(
+                                                    color: AppColors.text,
+                                                    fontSize: isWeb ? FontSizes.heading3 : FontSizes.body,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            color: AppColors.surface,
+                                            borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(0.1),
+                                                blurRadius: 20,
+                                                offset: const Offset(0, 10),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Column(
+                                            children: allergies.map((allergy) {
+                                              final isSelected = selectedAllergies.contains(allergy);
+                                              return Column(
+                                                children: [
+                                                  ListTile(
+                                                    contentPadding: EdgeInsets.symmetric(
+                                                      horizontal: isWeb ? Dimensions.paddingL : Dimensions.paddingM,
+                                                      vertical: isWeb ? Dimensions.paddingM : Dimensions.paddingS,
+                                                    ),
+                                                    leading: Container(
+                                                      padding: EdgeInsets.all(isWeb ? Dimensions.paddingM : Dimensions.paddingS),
+                                                      decoration: BoxDecoration(
+                                                        color: isSelected
+                                                            ? AppColors.success.withOpacity(0.1)
+                                                            : AppColors.primary.withOpacity(0.1),
+                                                        borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                                                      ),
+                                                      child: Icon(
+                                                        _getAllergyIcon(allergy),
+                                                        color: isSelected ? AppColors.success : AppColors.primary,
+                                                        size: isWeb ? Dimensions.iconL : Dimensions.iconM,
+                                                      ),
+                                                    ),
+                                                    title: Text(
+                                                      allergy,
+                                                      style: TextStyle(
+                                                        color: AppColors.text,
+                                                        fontSize: isWeb ? FontSizes.heading3 : FontSizes.body,
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                    trailing: AnimatedContainer(
+                                                      duration: Duration(milliseconds: 200),
+                                                      decoration: BoxDecoration(
+                                                        shape: BoxShape.circle,
+                                                        color: isSelected
+                                                            ? AppColors.success.withOpacity(0.1)
+                                                            : Colors.transparent,
+                                                      ),
+                                                      child: Icon(
+                                                        isSelected ? Icons.check_circle : Icons.circle_outlined,
+                                                        color: isSelected ? AppColors.success : AppColors.textSecondary,
+                                                        size: isWeb ? Dimensions.iconL : Dimensions.iconM,
+                                                      ),
+                                                    ),
+                                                    onTap: isEditing
+                                                        ? () {
+                                                            setState(() {
+                                                              if (isSelected) {
+                                                                selectedAllergies.remove(allergy);
+                                                              } else {
+                                                                selectedAllergies.add(allergy);
+                                                              }
+                                                              _hasChanges = true;
+                                                            });
+                                                          }
+                                                        : null,
+                                                  ),
+                                                  if (allergy != allergies.last)
+                                                    Divider(
+                                                      color: AppColors.divider.withOpacity(0.5),
+                                                      height: 1,
+                                                      indent: isWeb ? Dimensions.paddingXL : Dimensions.paddingM,
+                                                      endIndent: isWeb ? Dimensions.paddingXL : Dimensions.paddingM,
+                                                    ),
+                                                ],
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ),
+                                        SizedBox(height: isWeb ? Dimensions.paddingXL : Dimensions.paddingL),
+                                        Container(
+                                          width: double.infinity,
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: isWeb ? Dimensions.paddingXL : Dimensions.paddingM,
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                                            children: [
+                                              ElevatedButton(
+                                                onPressed: _hasChanges ? _saveAllergies : null,
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: _hasChanges ? AppColors.primary : AppColors.disabled,
+                                                  elevation: 0,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                                  ),
+                                                  padding: EdgeInsets.symmetric(vertical: Dimensions.paddingM),
+                                                ),
+                                                child: Text(
+                                                  'SAVE CHANGES',
+                                                  style: TextStyle(
+                                                    color: _hasChanges ? Colors.white : AppColors.textSecondary,
+                                                    fontSize: isWeb ? FontSizes.heading3 : FontSizes.button,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(height: Dimensions.spacingM),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: isEditing ? AppColors.surface : AppColors.text,
+                                                  elevation: 0,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                                    side: isEditing
+                                                        ? BorderSide(color: AppColors.error)
+                                                        : BorderSide.none,
+                                                  ),
+                                                  padding: EdgeInsets.symmetric(vertical: Dimensions.paddingM),
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    isEditing = !isEditing;
+                                                    if (!isEditing) {
+                                                      _hasChanges = false;
+                                                    }
+                                                  });
+                                                },
+                                                child: Text(
+                                                  isEditing ? 'CANCEL' : 'EDIT',
+                                                  style: TextStyle(
+                                                    color: isEditing ? AppColors.error : AppColors.background,
+                                                    fontSize: isWeb ? FontSizes.heading3 : FontSizes.button,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  onTap: isEditing ? () {
-                                    setState(() {
-                                      if (isSelected) {
-                                        selectedAllergies.remove(allergy);
-                                      } else {
-                                        selectedAllergies.add(allergy);
-                                      }
-                                      _hasChanges = true;
-                                    });
-                                  } : null,
-                                ),
-                                if (index < allergies.length - 1)
-                                  Divider(
-                                    color: AppColors.divider.withOpacity(0.5),
-                                    height: 1,
-                                    indent: Dimensions.paddingM,
-                                    endIndent: Dimensions.paddingM,
-                                  ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    
-                    // Bottom Buttons
-                    Container(
-                      padding: EdgeInsets.all(Dimensions.paddingM),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 0, 0, 0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, -2),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          ElevatedButton(
-                            onPressed: _hasChanges ? _saveAllergies : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _hasChanges ? AppColors.primary : AppColors.disabled,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                              ),
-                              padding: EdgeInsets.symmetric(vertical: Dimensions.paddingM),
-                            ),
-                            child: Text(
-                              'SAVE CHANGES',
-                              style: TextStyle(
-                                color: _hasChanges ? Colors.white : AppColors.textSecondary,
-                                fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.button),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: Dimensions.spacingM),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isEditing ? AppColors.surface : AppColors.text,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                                side: isEditing 
-                                    ? BorderSide(color: AppColors.error)
-                                    : BorderSide.none,
-                              ),
-                              padding: EdgeInsets.symmetric(vertical: Dimensions.paddingM),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                isEditing = !isEditing;
-                                if (!isEditing) {
-                                  _hasChanges = false;
-                                }
-                              });
-                            },
-                            child: Text(
-                              isEditing ? 'CANCEL' : 'EDIT',
-                              style: TextStyle(
-                                color: isEditing ? AppColors.error : AppColors.background,
-                                fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.button),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
                           ),
                         ],
                       ),
                     ),
                   ],
                 ),
+              ),
+            ),
+          ),
         ),
       ),
     );

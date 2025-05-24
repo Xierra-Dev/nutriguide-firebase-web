@@ -36,7 +36,6 @@ class FirestoreService {
         throw Exception('No authenticated user found');
       }
     } catch (e) {
-      print('Error saving user personalization: $e');
       rethrow;
     }
   }
@@ -59,7 +58,6 @@ class FirestoreService {
       }
       return null;
     } catch (e) {
-      print('Error getting user personalization: $e');
       rethrow;
     }
   }
@@ -76,7 +74,6 @@ class FirestoreService {
         throw Exception('No authenticated user found');
       }
     } catch (e) {
-      print('Error saving user goals: $e');
       rethrow;
     }
   }
@@ -93,7 +90,6 @@ class FirestoreService {
         throw Exception('No authenticated user found');
       }
     } catch (e) {
-      print('Error saving user allergies: $e');
       rethrow;
     }
   }
@@ -125,7 +121,6 @@ class FirestoreService {
         throw Exception('No authenticated user found');
       }
     } catch (e) {
-      print('Error saving recipe: $e');
       rethrow;
     }
   }
@@ -144,7 +139,6 @@ class FirestoreService {
         throw Exception('No authenticated user found');
       }
     } catch (e) {
-      print('Error removing saved recipe: $e');
       rethrow;
     }
   }
@@ -163,7 +157,6 @@ class FirestoreService {
       }
       return false;
     } catch (e) {
-      print('Error checking if recipe is saved: $e');
       return false;
     }
   }
@@ -200,7 +193,6 @@ class FirestoreService {
         throw Exception('No authenticated user found');
       }
     } catch (e) {
-      print('Error getting saved recipes: $e');
       return [];
     }
   }
@@ -222,7 +214,6 @@ class FirestoreService {
           .doc(recipe.id) // Assuming the recipe has a unique ID
           .delete();
     } catch (e) {
-      print('Error removing recipe from saved: $e');
       rethrow;
     }
   }
@@ -242,7 +233,6 @@ class FirestoreService {
       }
       return false;
     } catch (e) {
-      print('Error checking if recipe is planned: $e');
       return false;
     }
   }
@@ -279,7 +269,6 @@ class FirestoreService {
         throw Exception('No authenticated user found');
       }
     } catch (e) {
-      print('Error getting planned recipes: $e');
       return [];
     }
   }
@@ -295,12 +284,10 @@ class FirestoreService {
             .collection('planned_recipes')
             .doc(recipeId)
             .delete();
-        print('Planned recipe removed: $recipeId');
       } else {
         throw Exception('No authenticated user found');
       }
     } catch (e) {
-      print('Error removing planned recipe: $e');
       rethrow;
     }
   }
@@ -342,11 +329,7 @@ class FirestoreService {
           'totalFat': recipe.nutritionInfo.totalFat,
         },
       });
-
-      print('Successfully added planned recipe: ${recipe.title} for $mealType on $normalizedDate');
     } catch (e) {
-      print('Error adding planned recipe: $e');
-      print('Stack trace: ${StackTrace.current}');
       rethrow;
     }
   }
@@ -375,7 +358,6 @@ class FirestoreService {
       }
       return false;
     } catch (e) {
-      print('Error checking for duplicate plan: $e');
       rethrow;
     }
   }
@@ -408,7 +390,6 @@ class FirestoreService {
         throw Exception('No authenticated user found');
       }
     } catch (e) {
-      print('Error adding to recently viewed: $e');
       rethrow;
     }
   }
@@ -444,14 +425,9 @@ class FirestoreService {
           );
         }).toList();
       } else {
-        print('No authenticated user found');
         return [];
       }
     } catch (e) {
-      print('Error getting recently viewed recipes: $e');
-      if (e is FirebaseException && e.code == 'permission-denied') {
-        print('Permission denied. Please check Firebase security rules.');
-      }
       return [];
     }
   }
@@ -477,7 +453,6 @@ class FirestoreService {
         throw Exception('No authenticated user found');
       }
     } catch (e) {
-      print('Error getting username: $e');
       return null;
     }
   }
@@ -513,7 +488,6 @@ class FirestoreService {
       }
       return [];
     } catch (e) {
-      print('Error getting user goals: $e');
       return [];
     }
   }
@@ -531,7 +505,6 @@ class FirestoreService {
       }
       return [];
     } catch (e) {
-      print('Error getting user allergies: $e');
       return [];
     }
   }
@@ -552,8 +525,6 @@ class FirestoreService {
 
       for (var doc in snapshot.docs) {
         final data = doc.data();
-        print('Raw data from Firestore: $data'); // Debug print
-
         final recipe = Recipe(
           id: data['id'] ?? '',
           title: data['title'] ?? '',
@@ -587,7 +558,6 @@ class FirestoreService {
 
       return meals;
     } catch (e) {
-      print('Error in getPlannedMeals: $e');
       throw Exception('Failed to load planned meals: $e');
     }
   }
@@ -609,11 +579,9 @@ class FirestoreService {
         // Hapus semua dokumen yang cocok
         for (var doc in querySnapshot.docs) {
           await doc.reference.delete();
-          print('Deleted planned meal document: ${doc.id}');
         }
       }
     } catch (e) {
-      print('Error in deletePlannedMeal: $e');
       rethrow;
     }
   }
@@ -623,20 +591,14 @@ class FirestoreService {
       String? userId = _auth.currentUser?.uid;
       if (userId == null) throw Exception('User not authenticated');
 
-      print('Fetching recipes for user: $userId'); // Debug print
-
       final snapshot = await _firestore
           .collection('users')
           .doc(userId)
           .collection('created_recipes')
           .get();
 
-      print('Found ${snapshot.docs.length} recipes'); // Debug print
-
       return snapshot.docs.map((doc) {
         final data = doc.data();
-        print('Recipe data from Firestore: $data'); // Debug print
-
         return Recipe(
           id: doc.id,
           title: data['title'],
@@ -653,7 +615,6 @@ class FirestoreService {
         );
       }).toList();
     } catch (e) {
-      print('Error getting user created recipes: $e');
       return [];
     }
   }
@@ -670,7 +631,6 @@ class FirestoreService {
           .doc(recipeId)
           .delete();
     } catch (e) {
-      print('Error deleting user recipe: $e');
       rethrow;
     }
   }
@@ -700,7 +660,6 @@ class FirestoreService {
           .doc(recipe.id)
           .update(recipeData);
     } catch (e) {
-      print('Error updating recipe: $e');
       rethrow;
     }
   }
@@ -730,7 +689,6 @@ class FirestoreService {
         );
       }).toList();
     } catch (e) {
-      print('Error getting random recipes: $e');
       return [];
     }
   }
@@ -772,7 +730,6 @@ class FirestoreService {
         });
       }
     } catch (e) {
-      print('Error in madeRecipe: $e');
       rethrow;
     }
   }
@@ -790,8 +747,6 @@ class FirestoreService {
 
         return snapshot.docs.map((doc) {
           final data = doc.data();
-          print('Recipe data from Firestore: $data'); // Debug print
-
           return Recipe(
             id: data['id'],
             title: data['title'],
@@ -820,8 +775,6 @@ class FirestoreService {
       }
       return [];
     } catch (e) {
-      print('Error getting made recipes: $e');
-      print('Stack trace: ${StackTrace.current}');
       return [];
     }
   }
@@ -838,7 +791,6 @@ class FirestoreService {
             .delete();
       }
     } catch (e) {
-      print('Error removing made recipe: $e');
       rethrow;
     }
   }
@@ -857,7 +809,6 @@ class FirestoreService {
 
       return doc.exists;
     } catch (e) {
-      print('Error checking made status: $e');
       return false;
     }
   }
@@ -882,7 +833,6 @@ class FirestoreService {
       }
       return status;
     } catch (e) {
-      print('Error getting made recipes status: $e');
       return {};
     }
   }
@@ -928,7 +878,6 @@ class FirestoreService {
         'fat': 0,
       };
     } catch (e) {
-      print('Error getting daily nutrition totals: $e');
       return {
         'calories': 0,
         'protein': 0,
@@ -947,10 +896,6 @@ class FirestoreService {
       final now = DateTime.now();
       final startOfWeek = now.subtract(Duration(days: now.weekday - 1 + (7 * (weekNumber - 1))));
       final endOfWeek = startOfWeek.add(const Duration(days: 6));
-
-      print('Fetching nutrition data for week $weekNumber');
-      print('Start date: $startOfWeek');
-      print('End date: $endOfWeek');
 
       final snapshot = await _firestore
           .collection('users')
@@ -987,7 +932,6 @@ class FirestoreService {
 
       return weeklyNutrition;
     } catch (e) {
-      print('Error getting weekly nutrition: $e');
       return {};
     }
   }
@@ -1042,7 +986,6 @@ class FirestoreService {
       }
 
       final goals = doc.data()!['nutritionGoals'] as Map<String, dynamic>;
-      print('Retrieved nutrition goals from Firebase: $goals'); // Debug print
 
       return NutritionGoals(
         calories: (goals['calories'] ?? 1766).toDouble(),
@@ -1052,7 +995,6 @@ class FirestoreService {
         fat: (goals['fat'] ?? 39).toDouble(),
       );
     } catch (e) {
-      print('Error getting nutrition goals: $e');
       // Return default goals if error
       return NutritionGoals(
         calories: 1766,
@@ -1077,10 +1019,6 @@ class FirestoreService {
       );
       final tomorrow = today.add(const Duration(days: 1));
 
-      print('Fetching nutrition for date range:');
-      print('Start: $today');
-      print('End: $tomorrow');
-
       // Query made recipes for today
       final madeRecipesSnapshot = await _firestore
           .collection('users')
@@ -1089,8 +1027,6 @@ class FirestoreService {
           .where('madeAt', isGreaterThanOrEqualTo: Timestamp.fromDate(today))
           .where('madeAt', isLessThan: Timestamp.fromDate(tomorrow))
           .get();
-
-      print('Found ${madeRecipesSnapshot.docs.length} made recipes for today');
 
       // Initialize nutrition totals
       Map<String, double> totals = {
@@ -1104,14 +1040,8 @@ class FirestoreService {
       // Sum up nutrition from all made recipes
       for (var doc in madeRecipesSnapshot.docs) {
         final data = doc.data();
-        print('Processing recipe data: $data'); // Debug print
-
-        // Safely access nutrition data
         if (data['nutrition'] != null) {
           final nutrition = data['nutrition'] as Map<String, dynamic>;
-          print('Found nutrition data: $nutrition'); // Debug print
-
-          // Safely add values with null checks and type conversion
           totals['calories'] = (totals['calories'] ?? 0) +
               (nutrition['calories']?.toDouble() ?? 0);
           totals['carbs'] = (totals['carbs'] ?? 0) +
@@ -1125,11 +1055,8 @@ class FirestoreService {
         }
       }
 
-      print('Final nutrition totals: $totals'); // Debug print
       return totals;
     } catch (e) {
-      print('Error getting today nutrition: $e');
-      print('Stack trace: ${StackTrace.current}');
       return {
         'calories': 0,
         'carbs': 0,
@@ -1142,15 +1069,11 @@ class FirestoreService {
 
   Future<Map<String, double>> checkNutritionWarnings(Recipe recipe) async {
     try {
-      print('Starting nutrition warning check...');
-
       // Get current nutrition totals
       final currentTotals = await getTodayNutrition();
-      print('Current totals: $currentTotals');
 
       // Get user's nutrition goals
       final goals = await getNutritionGoals();
-      print('User goals: ${goals.toMap()}');
 
       // Calculate current percentages
       final currentPercentages = {
@@ -1160,7 +1083,6 @@ class FirestoreService {
         'protein': ((currentTotals['protein'] ?? 0) / goals.protein) * 100,
         'fat': ((currentTotals['fat'] ?? 0) / goals.fat) * 100,
       };
-      print('Current percentages: $currentPercentages');
 
       // Calculate additional percentages from the recipe
       final recipePercentages = {
@@ -1170,7 +1092,6 @@ class FirestoreService {
         'protein': (recipe.nutritionInfo.protein / goals.protein) * 100,
         'fat': (recipe.nutritionInfo.fat / goals.fat) * 100,
       };
-      print('Recipe percentages: $recipePercentages');
 
       // Calculate total percentages after adding the recipe
       final totalPercentages = {
@@ -1180,12 +1101,9 @@ class FirestoreService {
         'protein': currentPercentages['protein']! + recipePercentages['protein']!,
         'fat': currentPercentages['fat']! + recipePercentages['fat']!,
       };
-      print('Total percentages after adding recipe: $totalPercentages');
 
       return totalPercentages;
     } catch (e) {
-      print('Error checking nutrition warnings: $e');
-      print('Stack trace: ${StackTrace.current}');
       return {};
     }
   }
@@ -1202,11 +1120,6 @@ class FirestoreService {
           .doc(userId)
           .get();
 
-      print('User document exists: ${userDoc.exists}');
-      if (userDoc.exists) {
-        print('User data: ${userDoc.data()}');
-      }
-
       // Check made recipes
       final madeRecipes = await _firestore
           .collection('users')
@@ -1214,13 +1127,7 @@ class FirestoreService {
           .collection('made_recipes')
           .get();
 
-      print('Made recipes count: ${madeRecipes.docs.length}');
-      for (var doc in madeRecipes.docs) {
-        print('Made recipe data: ${doc.data()}');
-      }
-
     } catch (e) {
-      print('Error in debugNutritionData: $e');
     }
   }
 
@@ -1244,7 +1151,6 @@ class FirestoreService {
             }).toList(),
           });
     } catch (e) {
-      print('Error saving chat message: $e');
       rethrow;
     }
   }
@@ -1281,7 +1187,6 @@ class FirestoreService {
         );
       }).toList();
     } catch (e) {
-      print('Error getting chat history: $e');
       return [];
     }
   }
@@ -1291,8 +1196,6 @@ class FirestoreService {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw 'User not logged in';
 
-      print('Fetching notifications for user: ${user.uid}');
-
       final querySnapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
@@ -1300,20 +1203,14 @@ class FirestoreService {
           .orderBy('timestamp', descending: true)
           .get();
 
-      print('Found ${querySnapshot.docs.length} notifications');
-
       final notifications = querySnapshot.docs
           .map((doc) {
-            print('Processing notification doc: ${doc.id}');
-            print('Doc data: ${doc.data()}');
             return NotificationModel.fromMap(doc.data(), doc.id);
           })
           .toList();
 
-      print('Processed ${notifications.length} notifications');
       return notifications;
     } catch (e) {
-      print('Error getting notifications: $e');
       rethrow;
     }
   }
@@ -1330,7 +1227,6 @@ class FirestoreService {
           .doc(notificationId)
           .update({'isRead': true});
     } catch (e) {
-      print('Error marking notification as read: $e');
       rethrow;
     }
   }
@@ -1355,7 +1251,6 @@ class FirestoreService {
 
       await batch.commit();
     } catch (e) {
-      print('Error marking all notifications as read: $e');
       rethrow;
     }
   }
@@ -1370,8 +1265,6 @@ class FirestoreService {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw 'User not logged in';
 
-      print('Adding notification for user: ${user.uid}');
-
       final notificationData = {
         'title': title,
         'message': message,
@@ -1381,17 +1274,13 @@ class FirestoreService {
         'relatedId': relatedId,
       };
 
-      print('Notification data: $notificationData');
-
       final docRef = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .collection('notifications')
           .add(notificationData);
 
-      print('Notification added with ID: ${docRef.id}');
     } catch (e) {
-      print('Error adding notification: $e');
       rethrow;
     }
   }
@@ -1407,7 +1296,6 @@ class FirestoreService {
 
       return Recipe.fromMap(doc.data()!);
     } catch (e) {
-      print('Error getting recipe by id: $e');
       return null;
     }
   }
@@ -1443,11 +1331,8 @@ class FirestoreService {
         await _firestore.collection('users').doc(userId).update({
           'profilePictureUrl': "", // Atau gunakan FieldValue.delete()
         });
-
-        print('Profile picture reference removed from user document');
       }
     } catch (e) {
-      print('Error deleting profile picture: $e');
       throw Exception('Failed to delete profile picture: $e');
     }
   }

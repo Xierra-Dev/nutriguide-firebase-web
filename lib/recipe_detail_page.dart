@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'models/recipe.dart';
 import 'services/firestore_service.dart';
 import 'package:intl/intl.dart';
+import 'core/helpers/responsive_helper.dart';
 
 class RecipeDetailPage extends StatefulWidget {
   final Recipe recipe;
@@ -549,148 +550,251 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
-    // Force text scale factor to 1.0 to prevent system font size affecting the UI
     final mediaQueryData = MediaQuery.of(context);
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
     final standardScaleFactor = MediaQuery(
       data: mediaQueryData.copyWith(textScaler: TextScaler.linear(1.0)),
       child: Container(),
     );
 
-    double appBarHeight = MediaQuery.of(context).size.height * 0.375;
+    double appBarHeight = isWeb 
+      ? MediaQuery.of(context).size.height * 0.5
+      : MediaQuery.of(context).size.height * 0.375;
     double threshold = appBarHeight * 0.75;
 
     return MediaQuery(
       data: mediaQueryData.copyWith(textScaler: TextScaler.linear(1.0)),
       child: Scaffold(
         backgroundColor: Colors.black,
-        body: NotificationListener<ScrollNotification>(
-          onNotification: (ScrollNotification scrollInfo) {
-            setState(() {
-              _isScrolledToThreshold = scrollInfo.metrics.pixels >= threshold;
-            });
-            return true;
-          },
-          child: CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                backgroundColor: Colors.black,
-                surfaceTintColor: Colors.transparent,
-                expandedHeight: appBarHeight,
-                pinned: true,
-                flexibleSpace: FlexibleSpaceBar(
-                  centerTitle: true,
-                  title: Text(
-                    _isScrolledToThreshold
-                        ? (widget.recipe.title.length > 15
-                            ? '${widget.recipe.title.substring(0, 15)}...'
-                            : widget.recipe.title)
-                        : widget.recipe.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+        body: Row(
+          children: [
+            if (isWeb) 
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.5,
+                child: Stack(
+                  children: [
+                    Hero(
+                      tag: 'recipe-${widget.recipe.id}',
+                      child: Image.network(
+                        widget.recipe.image,
+                        fit: BoxFit.cover,
+                        height: double.infinity,
+                        width: double.infinity,
+                      ),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  background: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Hero(
-                        tag: 'recipe-${widget.recipe.id}',
-                        child: Image.network(
-                          widget.recipe.image,
-                          fit: BoxFit.cover,
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [
+                            Colors.black.withOpacity(0.6),
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.6),
+                          ],
+                          stops: const [0.0, 0.4, 1.0],
                         ),
                       ),
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
-                                Colors.black.withOpacity(0.45),
-                                Colors.transparent,
-                                Colors.black.withOpacity(0.45),
-                              ],
-                              stops: const [0.0, 0.35, 1.0],
+                    ),
+                    Positioned(
+                      top: 20,
+                      left: 20,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                        onPressed: () async {
+                          await _firestoreService.addToRecentlyViewed(widget.recipe);
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                    Positioned(
+                      top: 20,
+                      right: 20,
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(
+                              Icons.calendar_today,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                            onPressed: isLoadingPlan
+                                ? null
+                                : () => _togglePlan(widget.recipe),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: Icon(
+                              isSaved ? Icons.bookmark : Icons.bookmark_border,
+                              color: isSaved ? Colors.deepOrange : Colors.white,
+                              size: 28,
+                            ),
+                            onPressed: isLoadingSave
+                                ? null
+                                : () => _toggleSave(widget.recipe),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 40,
+                      left: 40,
+                      right: 40,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.recipe.title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
+                          const SizedBox(height: 16),
+                          _buildInfoSection(),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () async {
-                    await _firestoreService.addToRecentlyViewed(widget.recipe);
-                    Navigator.pop(context);
-                  },
-                ),
-                actions: [
-                  Row(
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.only(top: 5),
-                        padding: const EdgeInsets.only(bottom: 2),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.calendar_today,
+              ),
+            Expanded(
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (ScrollNotification scrollInfo) {
+                  if (!isWeb) {
+                    setState(() {
+                      _isScrolledToThreshold = scrollInfo.metrics.pixels >= threshold;
+                    });
+                  }
+                  return true;
+                },
+                child: CustomScrollView(
+                  slivers: [
+                    if (!isWeb) SliverAppBar(
+                      backgroundColor: Colors.black,
+                      surfaceTintColor: Colors.transparent,
+                      expandedHeight: appBarHeight,
+                      pinned: true,
+                      flexibleSpace: FlexibleSpaceBar(
+                        centerTitle: true,
+                        title: Text(
+                          _isScrolledToThreshold
+                              ? (widget.recipe.title.length > 15
+                                  ? '${widget.recipe.title.substring(0, 15)}...'
+                                  : widget.recipe.title)
+                              : widget.recipe.title,
+                          style: const TextStyle(
                             color: Colors.white,
-                            size: 20,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
-                          onPressed: isLoadingPlan
-                              ? null
-                              : () => _togglePlan(widget.recipe),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        background: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Hero(
+                              tag: 'recipe-${widget.recipe.id}',
+                              child: Image.network(
+                                widget.recipe.image,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            Positioned.fill(
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.bottomCenter,
+                                    end: Alignment.topCenter,
+                                    colors: [
+                                      Colors.black.withOpacity(0.45),
+                                      Colors.transparent,
+                                      Colors.black.withOpacity(0.45),
+                                    ],
+                                    stops: const [0.0, 0.35, 1.0],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 5, right: 10),
-                        child: IconButton(
-                          icon: Icon(
-                            isSaved ? Icons.bookmark : Icons.bookmark_border,
-                            color: isSaved ? Colors.deepOrange : Colors.white,
-                            size: 22.5,
-                          ),
-                          onPressed: isLoadingSave
-                              ? null
-                              : () => _toggleSave(widget.recipe),
+                      leading: IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () async {
+                          await _firestoreService.addToRecentlyViewed(widget.recipe);
+                          Navigator.pop(context);
+                        },
+                      ),
+                      actions: [
+                        Row(
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(top: 5),
+                              padding: const EdgeInsets.only(bottom: 2),
+                              child: IconButton(
+                                icon: const Icon(
+                                  Icons.calendar_today,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                onPressed: isLoadingPlan
+                                    ? null
+                                    : () => _togglePlan(widget.recipe),
+                              ),
+                            ),
+                            Container(
+                              margin: const EdgeInsets.only(top: 5, right: 10),
+                              child: IconButton(
+                                icon: Icon(
+                                  isSaved ? Icons.bookmark : Icons.bookmark_border,
+                                  color: isSaved ? Colors.deepOrange : Colors.white,
+                                  size: 22.5,
+                                ),
+                                onPressed: isLoadingSave
+                                    ? null
+                                    : () => _toggleSave(widget.recipe),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 24,
+                          horizontal: isWeb ? 40 : 20,
+                        ),
+                        child: Column(
+                          children: [
+                            if (!isWeb) ...[
+                              const SizedBox(height: 8),
+                              _buildInfoSection(),
+                            ],
+                            const SizedBox(height: 24),
+                            _buildIngredientsList(),
+                            const SizedBox(height: 24),
+                            _buildInstructions(),
+                            const SizedBox(height: 24),
+                            _buildHealthScore(),
+                            const SizedBox(height: 24),
+                            _buildNutritionInfo(widget.recipe.nutritionInfo),
+                            const SizedBox(height: 40),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 24,
-                    horizontal: 20,
-                  ),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 8),
-                      _buildInfoSection(),
-                      const SizedBox(height: 24),
-                      _buildIngredientsList(),
-                      const SizedBox(height: 24),
-                      _buildInstructions(),
-                      const SizedBox(height: 24),
-                      _buildHealthScore(),
-                      const SizedBox(height: 24),
-                      _buildNutritionInfo(widget.recipe.nutritionInfo),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-        bottomNavigationBar: MediaQuery(
+        bottomNavigationBar: !isWeb ? MediaQuery(
           data: mediaQueryData.copyWith(textScaler: TextScaler.linear(1.0)),
           child: Container(
             padding: const EdgeInsets.only(
@@ -771,12 +875,13 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
               ],
             ),
           ),
-        ),
+        ) : null,
       ),
     );
   }
 
   Widget _buildInfoSection() {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
       child: Row(
@@ -786,46 +891,57 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
             'Time',
             '${widget.recipe.preparationTime} min',
             Icons.timer,
+            isWeb,
           ),
           _buildInfoButton(
             'Servings',
             '4',
             Icons.people,
+            isWeb,
           ),
           _buildInfoButton(
             'Calories',
             '${widget.recipe.nutritionInfo.calories}',
             Icons.local_fire_department,
+            isWeb,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoButton(String label, String value, IconData icon) {
+  Widget _buildInfoButton(String label, String value, IconData icon, bool isWeb) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      padding: EdgeInsets.symmetric(
+        vertical: isWeb ? 12 : 8, 
+        horizontal: isWeb ? 20 : 12
+      ),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 18),
-          const SizedBox(width: 8),
+          Icon(icon, color: Colors.white, size: isWeb ? 24 : 18),
+          SizedBox(width: isWeb ? 12 : 8),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 label,
                 style: TextStyle(
-                    color: Colors.white.withOpacity(0.7), fontSize: 12),
+                  color: Colors.white.withOpacity(0.7), 
+                  fontSize: isWeb ? 14 : 12
+                ),
               ),
               Text(
                 value,
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white, 
+                  fontWeight: FontWeight.bold,
+                  fontSize: isWeb ? 16 : 14,
+                ),
               ),
             ],
           ),
@@ -960,6 +1076,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
   }
 
   Widget _buildNutritionInfo(NutritionInfo nutritionInfo) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
       child: Column(
@@ -987,6 +1104,94 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
           _buildNutritionRow('Sodium', '${nutritionInfo.sodium}mg'),
           _buildNutritionRow(
               'Fiber', '${nutritionInfo.fiber.toStringAsFixed(1)}g'),
+          if (isWeb) ...[
+            const SizedBox(height: 40),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: isLoadingSave ? null : () => _toggleSave(widget.recipe),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isSaved ? Colors.deepOrange : Colors.white,
+                      foregroundColor: isSaved ? Colors.white : Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: isLoadingSave
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.deepOrange),
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              isSaved ? Icons.bookmark : Icons.bookmark_border,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              isSaved ? 'Saved' : 'Save Recipe',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _togglePlan(widget.recipe),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: isLoadingPlan
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.deepOrange),
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.calendar_today,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Plan Meal',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

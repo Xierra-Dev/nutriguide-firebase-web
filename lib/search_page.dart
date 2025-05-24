@@ -288,184 +288,185 @@ class _SearchPageState extends State<SearchPage> {
         ),
       ),
       builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setDialogState) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header dengan navigasi antar minggu
-                  Text(
-                    'Choose Day',
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width *
-                          0.05, // Adjusting font size based on screen width
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          // Pindah ke minggu sebelumnya
-                          setDialogState(() {
-                            _selectedDate =
-                                _selectedDate.subtract(const Duration(days: 7));
-                          });
-                        },
-                        icon: const Icon(
-                          Icons.arrow_left_rounded,
-                          size: 40,
-                        ),
+        return MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(1.0)),
+          child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setDialogState) {
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header dengan navigasi antar minggu
+                    const Text(
+                      'Choose Day',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
-                      Text(
-                        // Menampilkan rentang tanggal minggu
-                        '${DateFormat('MMM dd').format(_selectedDate)} - '
-                        '${DateFormat('MMM dd').format(_selectedDate.add(const Duration(days: 6)))}',
-                        style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width *
-                              0.04, // Adjusting font size based on screen width
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          // Pindah ke minggu berikutnya
-                          setDialogState(() {
-                            _selectedDate =
-                                _selectedDate.add(const Duration(days: 7));
-                          });
-                        },
-                        icon: const Icon(
-                          Icons.arrow_right_rounded,
-                          size: 40,
-                        ),
-                        color: Colors.white,
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 60,
-                    child: Center(
-                      child: InkWell(
-                        onTap: () {
-                          // Open meal selection dialog
-                          _showMealSelectionDialog(
-                              context, setDialogState, recipe);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[850],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                _selectedMeal.isEmpty
-                                    ? 'Select Meal'
-                                    : _selectedMeal,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: MediaQuery.of(context).size.width *
-                                      0.04, // Adjusting font size based on screen width
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Icon(
-                                Icons.arrow_drop_down,
-                                color: Colors.white,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
                     ),
-                  ),
-                  const SizedBox(height: 15),
-                  // Pilihan hari menggunakan ChoiceChip (dimulai dari Sunday)
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      for (int i = 0; i < 7; i++)
-                        ChoiceChip(
-                          label: Text(
-                            DateFormat('EEE, dd').format(
-                              _selectedDate.add(Duration(
-                                  days: i - _selectedDate.weekday % 7)),
-                            ), // Menampilkan hari dimulai dari Sunday
-                          ),
-                          selected: _daysSelected[i],
-                          onSelected: (bool selected) {
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            // Pindah ke minggu sebelumnya
                             setDialogState(() {
-                              _daysSelected[i] = selected;
+                              _selectedDate = _selectedDate
+                                  .subtract(const Duration(days: 7));
                             });
                           },
-                          selectedColor: Colors.blue,
-                          backgroundColor: Colors.grey[800],
-                          labelStyle: TextStyle(
-                            color:
-                                _daysSelected[i] ? Colors.white : Colors.grey,
+                          icon: const Icon(
+                            Icons.arrow_left_rounded,
+                            size: 40,
                           ),
+                          color: Colors.white,
                         ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  // Tombol aksi
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text(
-                          'Cancel',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-                      ElevatedButton(
-                        // Inside dialog's ElevatedButton onPressed
-                        onPressed: () {
-                          if (_selectedMeal.isEmpty ||
-                              !_daysSelected.contains(true)) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Please select at least one day and a meal type!')),
-                            );
-                            return;
-                          }
-                          _saveSelectedPlan(recipe); // Pass the recipe
-                          Navigator.of(context).pop();
-                        },
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepOrange,
-                            foregroundColor: Colors.white),
-                        child: Text(
-                          'Done',
-                          style: TextStyle(
-                            fontSize: MediaQuery.of(context).size.width *
-                                0.04, // Adjust font size based on screen width
+                        Text(
+                          // Menampilkan rentang tanggal minggu
+                          '${DateFormat('MMM dd').format(_selectedDate)} - '
+                          '${DateFormat('MMM dd').format(_selectedDate.add(const Duration(days: 6)))}',
+                          style: const TextStyle(
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            // Pindah ke minggu berikutnya
+                            setDialogState(() {
+                              _selectedDate =
+                                  _selectedDate.add(const Duration(days: 7));
+                            });
+                          },
+                          icon: const Icon(
+                            Icons.arrow_right_rounded,
+                            size: 40,
+                          ),
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 60,
+                      child: Center(
+                        child: InkWell(
+                          onTap: () {
+                            // Open meal selection dialog
+                            _showMealSelectionDialog(
+                                context, setDialogState, recipe);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[850],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _selectedMeal.isEmpty
+                                      ? 'Select Meal'
+                                      : _selectedMeal,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Icon(
+                                  Icons.arrow_drop_down,
+                                  color: Colors.white,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
+                    ),
+                    const SizedBox(height: 15),
+                    // Pilihan hari menggunakan ChoiceChip (dimulai dari Sunday)
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        for (int i = 0; i < 7; i++)
+                          ChoiceChip(
+                            label: Text(
+                              DateFormat('EEE, dd').format(
+                                _selectedDate.add(Duration(
+                                    days: i - _selectedDate.weekday % 7)),
+                              ), // Menampilkan hari dimulai dari Sunday
+                            ),
+                            selected: _daysSelected[i],
+                            onSelected: (bool selected) {
+                              setDialogState(() {
+                                _daysSelected[i] = selected;
+                              });
+                            },
+                            selectedColor: Colors.blue,
+                            backgroundColor: Colors.grey[800],
+                            labelStyle: TextStyle(
+                              color:
+                                  _daysSelected[i] ? Colors.white : Colors.grey,
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    // Tombol aksi
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                        ElevatedButton(
+                          // Inside dialog's ElevatedButton onPressed
+                          onPressed: () {
+                            if (_selectedMeal.isEmpty ||
+                                !_daysSelected.contains(true)) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text(
+                                        'Please select at least one day and a meal type!')),
+                              );
+                              return;
+                            }
+                            _saveSelectedPlan(recipe); // Pass the recipe
+                            Navigator.of(context).pop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepOrange,
+                              foregroundColor: Colors.white),
+                          child: const Text(
+                            'Done',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         );
       },
     );
@@ -725,7 +726,7 @@ class _SearchPageState extends State<SearchPage> {
           });
         }
         
-        final batchRecipes = await _mealDBService.getRandomRecipes(number: batchSize);
+        final batchRecipes = await _mealDBService.getRandomRecipes(batchSize);
         
         if (mounted) {
           setState(() {
@@ -784,12 +785,17 @@ class _SearchPageState extends State<SearchPage> {
 
       // If no cache, fetch from API
       final ingredients = await _mealDBService.getPopularIngredients();
-      await _cacheService.cacheIngredients(ingredients);
+      // Convert List<String> to List<Map<String, String>>
+      final mappedIngredients = ingredients.map((name) => {
+        'name': name,
+        'image': 'https://www.themealdb.com/images/ingredients/$name.png',
+      }).toList();
+      await _cacheService.cacheIngredients(mappedIngredients);
       setState(() {
-        popularIngredients = ingredients;
+        popularIngredients = mappedIngredients;
       });
     } catch (e) {
-      print('Error loading popular ingredients: $e');
+      // Handle error silently
     }
   }
 
@@ -925,7 +931,7 @@ class _SearchPageState extends State<SearchPage> {
     });
     
     try {
-      final allRecipes = await _mealDBService.searchRecipesByIngredient(ingredient);
+      final allRecipes = await _mealDBService.getRecipesByIngredient(ingredient);
       
       if (allRecipes.isEmpty) {
       setState(() {
@@ -1025,56 +1031,63 @@ class _SearchPageState extends State<SearchPage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: EdgeInsets.all(Dimensions.paddingM),
-            child: AppText(
-              '',
-              fontSize: FontSizes.heading2,
-              color: AppColors.primary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
           if (!_isSearching) ...[
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  style: TextStyle(
-                    color: AppColors.text,
-                    fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                        context, FontSizes.body),
-                  ),
-                  decoration: InputDecoration(
-                      hintText: "Search...",
-                      hintStyle: TextStyle(
-                        color: AppColors.text.withOpacity(0.5),
-                        fontSize: 16,
-                      ),
-                      prefixIcon: Icon(
-                        Icons.search,
-                        color: AppColors.text,
-                        size: Dimensions.iconM,
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.only(top: 12)),
-                  onSubmitted: (value) {
-                    if (value.isNotEmpty) {
-                      _searchRecipes(value);
-                    } else {
-                      setState(() {
-                        _isSearching = false;
-                      });
-                    }
-                  },
-                ),
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: Dimensions.paddingM,
+                vertical: Dimensions.paddingS,
+              ),
+              child: AppText(
+                '',
+                fontSize: FontSizes.heading2,
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            // Popular Ingredients section - show even when loading
+            Container(
+              margin: EdgeInsets.only(
+                left: Dimensions.paddingM,
+                right: Dimensions.paddingM,
+                bottom: Dimensions.paddingM,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(Dimensions.radiusL),
+              ),
+              child: TextField(
+                controller: _searchController,
+                style: TextStyle(
+                  color: AppColors.text,
+                  fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                      context, FontSizes.body),
+                ),
+                decoration: InputDecoration(
+                  hintText: "Search...",
+                  hintStyle: TextStyle(
+                    color: AppColors.text.withOpacity(0.5),
+                    fontSize: 16,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: AppColors.text,
+                    size: Dimensions.iconM,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: Dimensions.paddingM,
+                  ),
+                ),
+                onSubmitted: (value) {
+                  if (value.isNotEmpty) {
+                    _searchRecipes(value);
+                  } else {
+                    setState(() {
+                      _isSearching = false;
+                    });
+                  }
+                },
+              ),
+            ),
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               height: _showPopularSection ? 160 : 0,
@@ -1171,7 +1184,6 @@ class _SearchPageState extends State<SearchPage> {
                 ),
               ),
             ),
-            // "Recipes you may like" header - always show
             Padding(
               padding: EdgeInsets.only(
                 top: Dimensions.paddingM,
@@ -1225,7 +1237,6 @@ class _SearchPageState extends State<SearchPage> {
               ),
             ),
           ],
-          // Recipe grid or skeleton loading with smooth transition
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 500),
@@ -1249,7 +1260,6 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  // Custom recipe grid skeleton that doesn't include headers or popular ingredients
   Widget _buildRecipeGridSkeleton({Key? key}) {
     final width = ResponsiveHelper.screenWidth(context);
     return GridView.builder(
@@ -1275,7 +1285,6 @@ class _SearchPageState extends State<SearchPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Image area
                 Expanded(
                   flex: 3,
                   child: Container(
@@ -1286,14 +1295,12 @@ class _SearchPageState extends State<SearchPage> {
                         topRight: Radius.circular(Dimensions.radiusM),
                       ),
                     ),
-                    // Top row with area tag and more button
                     child: Padding(
                       padding: EdgeInsets.all(Dimensions.paddingS),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Area tag
                           Container(
                             width: 70,
                             height: 24,
@@ -1302,7 +1309,6 @@ class _SearchPageState extends State<SearchPage> {
                               borderRadius: BorderRadius.circular(Dimensions.radiusS),
                             ),
                           ),
-                          // More button
                           Container(
                             width: 28,
                             height: 28,
@@ -1316,7 +1322,6 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                   ),
                 ),
-                // Text area
                 Expanded(
                   flex: 2,
                   child: Padding(
@@ -1325,7 +1330,6 @@ class _SearchPageState extends State<SearchPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        // Title
                         Container(
                           height: 16,
                           width: width * 0.3,
@@ -1335,7 +1339,6 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                         ),
                         SizedBox(height: Dimensions.paddingXS),
-                        // Subtitle
                         Container(
                           height: 12,
                           width: width * 0.25,
@@ -1345,11 +1348,9 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                         ),
                         SizedBox(height: Dimensions.paddingS),
-                        // Recipe details row (time and rating)
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // Time
                             Row(
                               children: [
                                 Container(
@@ -1371,7 +1372,6 @@ class _SearchPageState extends State<SearchPage> {
                                 ),
                               ],
                             ),
-                            // Rating
                             Row(
                               children: [
                                 Container(
@@ -1424,9 +1424,12 @@ class _SearchPageState extends State<SearchPage> {
       key: key,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header dan search bar
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: Dimensions.paddingS),
+        Container(
+          padding: EdgeInsets.only(
+            left: Dimensions.paddingS,
+            right: Dimensions.paddingS,
+            bottom: Dimensions.paddingM,
+          ),
           child: Row(
             children: [
               IconButton(
@@ -1445,11 +1448,9 @@ class _SearchPageState extends State<SearchPage> {
                     _displayedRecipeIds.clear();
                   });
                   
-                  // Muat ulang data
                   await _loadInitialRecipes();
                   await _loadPopularIngredients();
                   
-                  // Reset state untuk bagian "You might also like"
                   if (mounted) {
                     setState(() {
                       _isYouMightAlsoLikeSectionExpanded = true;
@@ -1469,56 +1470,54 @@ class _SearchPageState extends State<SearchPage> {
           ),
         ),
 
-        // Search bar (tidak berubah)
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(Dimensions.radiusL),
+        Container(
+          margin: EdgeInsets.only(
+            left: Dimensions.paddingM,
+            right: Dimensions.paddingM,
+            bottom: Dimensions.paddingM,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(Dimensions.radiusL),
+          ),
+          child: TextField(
+            controller: _searchController,
+            style: TextStyle(
+              color: AppColors.text,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                  context, FontSizes.body),
             ),
-            child: TextField(
-              controller: _searchController,
-              style: TextStyle(
-                color: AppColors.text,
+            decoration: InputDecoration(
+              hintText: 'Search Recipes...',
+              hintStyle: TextStyle(
+                color: AppColors.text.withOpacity(0.5),
                 fontSize: ResponsiveHelper.getAdaptiveTextSize(
                     context, FontSizes.body),
               ),
-              decoration: InputDecoration(
-                hintText: 'Search Recipes...',
-                hintStyle: TextStyle(
-                  color: AppColors.text.withOpacity(0.5),
-                  fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                      context, FontSizes.body),
-                ),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: AppColors.text,
-                  size: Dimensions.iconM,
-                ),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: Dimensions.paddingM,
-                  vertical: Dimensions.paddingM,
-                ),
+              prefixIcon: Icon(
+                Icons.search,
+                color: AppColors.text,
+                size: Dimensions.iconM,
               ),
-              onSubmitted: (value) {
-                if (value.isNotEmpty) {
-                  _searchRecipes(value);
-                }
-              },
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.symmetric(
+                vertical: Dimensions.paddingM,
+              ),
             ),
+            onSubmitted: (value) {
+              if (value.isNotEmpty) {
+                _searchRecipes(value);
+              }
+            },
           ),
         ),
 
         SizedBox(height: Dimensions.paddingS),
 
-        // Disini menggunakan Expanded untuk mengontrol tata letak
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Gunakan if-else untuk content utama
               if (searchResults.isEmpty && !isLoading)
                 Expanded(
                   child: Center(
@@ -1548,13 +1547,11 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                 )
               else ...[
-                // Hasil pencarian atau skeleton loading
                 Expanded(
                   child: isLoading 
                     ? _buildSearchResultsSkeleton()
                     : _buildRecipeGrid(searchResults)
                 ),
-                // You might also like section
                 Padding(
                   padding: EdgeInsets.only(
                     top: Dimensions.paddingXS,
@@ -1588,7 +1585,6 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                 ),
 
-                // Collapsed section
                 if (_isYouMightAlsoLikeSectionExpanded)
                   SizedBox(
                     height: ResponsiveHelper.screenHeight(context) * 0.245,
@@ -1626,25 +1622,22 @@ class _SearchPageState extends State<SearchPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Image area
                 Expanded(
                   flex: 3,
-            child: Container(
-              decoration: BoxDecoration(
+                  child: Container(
+                    decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(Dimensions.radiusM),
                         topRight: Radius.circular(Dimensions.radiusM),
                       ),
                     ),
-                    // Top row with area tag and more button
                     child: Padding(
                       padding: EdgeInsets.all(Dimensions.paddingS),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Area tag
                           Container(
                             width: 70,
                             height: 24,
@@ -1653,7 +1646,6 @@ class _SearchPageState extends State<SearchPage> {
                               borderRadius: BorderRadius.circular(Dimensions.radiusS),
                             ),
                           ),
-                          // More button
                           Container(
                             width: 28,
                             height: 28,
@@ -1662,21 +1654,19 @@ class _SearchPageState extends State<SearchPage> {
                               color: Colors.white,
                             ),
                           ),
-                  ],
-                ),
-              ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                // Text area
                 Expanded(
                   flex: 2,
                   child: Padding(
                     padding: EdgeInsets.all(Dimensions.paddingS),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                        // Title
+                      children: [
                         Container(
                           height: 16,
                           width: ResponsiveHelper.screenWidth(context) * 0.3,
@@ -1686,7 +1676,6 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                         ),
                         SizedBox(height: Dimensions.paddingXS),
-                        // Subtitle
                         Container(
                           height: 12,
                           width: ResponsiveHelper.screenWidth(context) * 0.25,
@@ -1696,17 +1685,15 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                         ),
                         SizedBox(height: Dimensions.paddingS),
-                        // Recipe details row (time and rating)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // Time
                             Row(
-                    children: [
-                      Container(
+                              children: [
+                                Container(
                                   width: 14,
                                   height: 14,
-                        decoration: BoxDecoration(
+                                  decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: Colors.white,
                                   ),
@@ -1722,9 +1709,8 @@ class _SearchPageState extends State<SearchPage> {
                                 ),
                               ],
                             ),
-                            // Rating
-                      Row(
-                        children: [
+                            Row(
+                              children: [
                                 Container(
                                   width: 14,
                                   height: 14,
@@ -1741,13 +1727,13 @@ class _SearchPageState extends State<SearchPage> {
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(Dimensions.radiusS),
                                   ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -1758,27 +1744,270 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
+  Widget _buildRecipeCard(Recipe recipe) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+
+    return GestureDetector(
+      onTap: () => _viewRecipe(recipe),
+      child: Hero(
+        tag: 'recipe-${recipe.id}',
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.black.withOpacity(0.3),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.1),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                flex: 7,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                  child: Stack(
+                    children: [
+                      Image.network(
+                        recipe.image,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.2),
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.3),
+                            ],
+                            stops: [0.0, 0.3, 1.0],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 8,
+                        left: 8,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.7),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.1),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            recipe.area ?? 'International',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: _buildMoreButton(recipe),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      recipe.title,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: isWeb ? 14 : 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.timer,
+                              color: Colors.white.withOpacity(0.7),
+                              size: 14,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              '${recipe.preparationTime} min',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.7),
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.favorite,
+                              color: _getHealthScoreColor(recipe.healthScore),
+                              size: 14,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              recipe.healthScore.toStringAsFixed(1),
+                              style: TextStyle(
+                                color: _getHealthScoreColor(recipe.healthScore),
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMoreButton(Recipe recipe) {
+    return Container(
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.black.withOpacity(0.7),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: PopupMenuButton<String>(
+        padding: EdgeInsets.zero,
+        iconSize: 16,
+        icon: Icon(
+          Icons.more_vert,
+          color: Colors.white,
+        ),
+        onSelected: (String value) {
+          if (value == 'save') {
+            _toggleSave(recipe);
+          } else if (value == 'plan') {
+            _togglePlan(recipe);
+          }
+        },
+        color: Colors.black.withOpacity(0.9),
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        offset: const Offset(0, 32),
+        itemBuilder: (BuildContext context) => [
+          PopupMenuItem<String>(
+            height: 40,
+            value: 'save',
+            child: Row(
+              children: [
+                Icon(
+                  savedStatus[recipe.id] == true
+                      ? Icons.bookmark
+                      : Icons.bookmark_border_rounded,
+                  size: 16,
+                  color: savedStatus[recipe.id] == true
+                      ? AppColors.primary
+                      : Colors.white,
+                ),
+                SizedBox(width: 8),
+                Text(
+                  savedStatus[recipe.id] == true ? 'Saved' : 'Save Recipe',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: savedStatus[recipe.id] == true
+                        ? AppColors.primary
+                        : Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          PopupMenuItem<String>(
+            height: 40,
+            value: 'plan',
+            child: Row(
+              children: [
+                Icon(
+                  Icons.calendar_today_rounded,
+                  size: 16,
+                  color: Colors.white,
+                ),
+                SizedBox(width: 8),
+                Text(
+                  'Plan Meal',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildRecipeGrid(List<Recipe> recipeList,
       {Axis scrollDirection = Axis.vertical, Key? key}) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+
     return Stack(
       key: key,
       children: [
         GridView.builder(
-      controller: _scrollController,
-      scrollDirection: scrollDirection,
-      padding: EdgeInsets.all(Dimensions.paddingM),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: scrollDirection == Axis.vertical ? 2 : 1,
-        childAspectRatio: scrollDirection == Axis.vertical ? 0.8 : 1.2,
-        crossAxisSpacing: Dimensions.paddingS,
-        mainAxisSpacing: Dimensions.paddingS,
-      ),
-      itemCount: recipeList.length,
-      itemBuilder: (context, index) {
-        final recipe = recipeList[index];
-            final int row = index ~/ 2;
-            final int col = index % 2;
-            final int staggerIndex = row * 2 + col;
+          controller: _scrollController,
+          scrollDirection: scrollDirection,
+          padding: EdgeInsets.all(12),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: scrollDirection == Axis.vertical 
+              ? (isWeb ? 4 : 2)
+              : 1,
+            childAspectRatio: scrollDirection == Axis.vertical
+              ? (isWeb ? 0.95 : 0.9)
+              : 1.2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+          ),
+          itemCount: recipeList.length,
+          itemBuilder: (context, index) {
+            final recipe = recipeList[index];
+            final int row = index ~/ (isWeb ? 4 : 2);
+            final int col = index % (isWeb ? 4 : 2);
+            final int staggerIndex = row * (isWeb ? 4 : 2) + col;
             final bool isNewRecipe = !_displayedRecipeIds.contains(recipe.id);
             
             if (!isNewRecipe) {
@@ -1811,8 +2040,8 @@ class _SearchPageState extends State<SearchPage> {
             right: 0,
             bottom: 0,
             child: Container(
-              padding: EdgeInsets.symmetric(vertical: Dimensions.paddingS),
-              color: AppColors.background.withOpacity(0.7),
+              padding: EdgeInsets.symmetric(vertical: 8),
+              color: Colors.black.withOpacity(0.7),
               child: Center(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -1825,11 +2054,13 @@ class _SearchPageState extends State<SearchPage> {
                         valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                       ),
                     ),
-                    SizedBox(width: Dimensions.paddingS),
-                    AppText(
+                    SizedBox(width: 8),
+                    Text(
                       'Loading more recipes...',
-                      fontSize: FontSizes.caption,
-                      color: AppColors.text,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
                 ),
@@ -1837,168 +2068,6 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ),
       ],
-    );
-  }
-
-  Widget _buildRecipeCard(Recipe recipe) {
-        return GestureDetector(
-          onTap: () => _viewRecipe(recipe),
-      child: Hero(
-        tag: 'recipe-${recipe.id}',
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(Dimensions.radiusM),
-              image: DecorationImage(
-                image: NetworkImage(recipe.image),
-                fit: BoxFit.cover,
-              ),
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(Dimensions.radiusM),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.7),
-                  ],
-                ),
-              ),
-              padding: EdgeInsets.symmetric(
-                vertical: ResponsiveHelper.screenHeight(context) * 0.01375,
-                horizontal: ResponsiveHelper.screenWidth(context) * 0.0275,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: Dimensions.paddingS,
-                          vertical: Dimensions.paddingXS,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(Dimensions.radiusS),
-                        ),
-                        child: AppText(
-                          recipe.area ?? 'International',
-                          fontSize: FontSizes.small,
-                          color: AppColors.text,
-                        ),
-                      ),
-                    _buildMoreButton(recipe),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText(
-                        recipe.title,
-                        fontSize: FontSizes.body,
-                        color: AppColors.text,
-                        fontWeight: FontWeight.bold,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: Dimensions.paddingXS),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.timer_rounded,
-                            color: AppColors.text,
-                            size: Dimensions.iconS,
-                          ),
-                          SizedBox(width: Dimensions.paddingXS),
-                          AppText(
-                            '${recipe.preparationTime} min',
-                            fontSize: FontSizes.caption,
-                            color: AppColors.text,
-                          ),
-                          SizedBox(width: 40),
-                          Icon(
-                            Icons.favorite,
-                            color: _getHealthScoreColor(recipe.healthScore),
-                            size: Dimensions.iconS,
-                          ),
-                          SizedBox(width: Dimensions.paddingXS),
-                          AppText(
-                            recipe.healthScore.toStringAsFixed(1),
-                            fontSize: FontSizes.caption,
-                            color: _getHealthScoreColor(recipe.healthScore),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-            ),
-              ),
-            ),
-          ),
-        );
-  }
-
-  Widget _buildMoreButton(Recipe recipe) {
-    return PopupMenuButton<String>(
-      icon: Icon(
-        Icons.more_vert,
-        color: AppColors.text,
-        size: Dimensions.iconM,
-      ),
-      color: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(Dimensions.radiusS),
-      ),
-      itemBuilder: (context) => [
-        PopupMenuItem<String>(
-          value: 'save',
-          child: Row(
-                children: [
-              Icon(
-                Icons.bookmark_border,
-                color: AppColors.text,
-                size: Dimensions.iconM,
-              ),
-              SizedBox(width: Dimensions.paddingS),
-              AppText(
-                'Save Recipe',
-                fontSize: FontSizes.body,
-                          color: AppColors.text,
-                        ),
-            ],
-          ),
-        ),
-        PopupMenuItem<String>(
-          value: 'plan',
-          child: Row(
-                        children: [
-                          Icon(
-                Icons.calendar_today,
-                            color: AppColors.text,
-                size: Dimensions.iconM,
-                          ),
-              SizedBox(width: Dimensions.paddingS),
-                          AppText(
-                'Plan Meal',
-                fontSize: FontSizes.body,
-                            color: AppColors.text,
-                          ),
-            ],
-          ),
-        ),
-      ],
-      onSelected: (value) {
-        if (value == 'save') {
-          _toggleSave(recipe);
-        } else if (value == 'plan') {
-          _togglePlan(recipe);
-        }
-      },
     );
   }
 

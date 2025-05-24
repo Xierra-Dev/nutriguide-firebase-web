@@ -126,7 +126,9 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
         child: Text(
           'NutriGuide',
           style: TextStyle(
-            fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.heading2 * 1.5),
+            fontSize: _isWebPlatform() 
+                ? 64 
+                : ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.heading2 * 1.5),
             fontWeight: FontWeight.bold,
             fontFamily: 'Roboto',
             letterSpacing: 1.5,
@@ -141,6 +143,11 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
         ),
       ),
     );
+  }
+
+  // Check if we're on web platform
+  bool _isWebPlatform() {
+    return MediaQuery.of(context).size.width > 800;
   }
 
   // Responsive text style method
@@ -182,10 +189,17 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    final isWeb = _isWebPlatform();
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
     return MediaQuery.withClampedTextScaling(
       maxScaleFactor: 1.0,
       child: WillPopScope(
         onWillPop: () async {
+          // Web doesn't need exit dialog
+          if (isWeb) return false;
+          
           final shouldPop = await showDialog<bool>(
             context: context,
             builder: (context) {
@@ -379,8 +393,223 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                     ),
                   ),
 
-                // Main Content with Enhanced Design
-                SafeArea(
+                // Main Content with Enhanced Design - Web Layout
+                if (isWeb) 
+                  SafeArea(
+                    child: Row(
+                      children: [
+                        // Left side - Image/Background takes 60% on web
+                        Expanded(
+                          flex: 6,
+                          child: Container(),
+                        ),
+                        
+                        // Right side - Content area takes 40% on web
+                        Expanded(
+                          flex: 4,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 20,
+                                  offset: const Offset(-10, 0),
+                                ),
+                              ],
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // App Logo
+                                Container(
+                                  padding: EdgeInsets.all(Dimensions.paddingL),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.15),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.primary.withOpacity(0.3),
+                                        blurRadius: 20,
+                                        spreadRadius: 5,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Image.asset(
+                                    'assets/images/logo_NutriGuide.png',
+                                    width: 120,
+                                    height: 120,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                                SizedBox(height: 40),
+                                
+                                // App Name with Shimmer
+                                _buildShimmerTitle(),
+                                SizedBox(height: 20),
+                                
+                                // Tagline
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 30,
+                                    vertical: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: Text(
+                                    'Your Personal Nutrition Assistant',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      color: Colors.white.withOpacity(0.9),
+                                      letterSpacing: 0.5,
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.black.withOpacity(0.3),
+                                          offset: const Offset(1, 1),
+                                          blurRadius: 2,
+                                        ),
+                                      ],
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                
+                                SizedBox(height: 60),
+                                
+                                // Buttons with fixed width for web
+                                SizedBox(
+                                  width: 320,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                      // Register Button
+                                      Container(
+                                        height: 60,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(30),
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              AppColors.primary,
+                                              AppColors.primary.withOpacity(0.8),
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColors.primary.withOpacity(0.3),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 4),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Material(
+                                          color: Colors.transparent,
+                                          child: InkWell(
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                SlideLeftRoute(page: const RegisterPage()),
+                                              );
+                                            },
+                                            borderRadius: BorderRadius.circular(30),
+                                            child: Center(
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(
+                                                    Icons.person_add_rounded,
+                                                    color: Colors.white,
+                                                    size: 24,
+                                                  ),
+                                                  SizedBox(width: 12),
+                                                  Text(
+                                                    'Register',
+                                                    style: TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight: FontWeight.bold,
+                                                      letterSpacing: 0.5,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      SizedBox(height: 20),
+
+                                      // Login Button
+                                      Container(
+                                        height: 60,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(30),
+                                          border: Border.all(
+                                            color: Colors.white.withOpacity(0.3),
+                                            width: 2,
+                                          ),
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Colors.white.withOpacity(0.1),
+                                              Colors.white.withOpacity(0.05),
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ),
+                                        ),
+                                        child: Material(
+                                          color: Colors.transparent,
+                                          child: InkWell(
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                SlideLeftRoute(page: const LoginPage()),
+                                              );
+                                            },
+                                            borderRadius: BorderRadius.circular(30),
+                                            child: Center(
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(
+                                                    Icons.login_rounded,
+                                                    color: Colors.white,
+                                                    size: 24,
+                                                  ),
+                                                  SizedBox(width: 12),
+                                                  Text(
+                                                    'Sign In',
+                                                    style: TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight: FontWeight.w600,
+                                                      letterSpacing: 0.5,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                // Mobile Layout
+                else SafeArea(
                   child: Column(
                     children: [
                       // Logo/Title Section with Enhanced Design
@@ -596,8 +825,6 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                               ),
 
                               SizedBox(height: Dimensions.spacingXL),
-
-                              
                             ],
                           ),
                         ),

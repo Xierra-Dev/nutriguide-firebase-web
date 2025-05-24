@@ -175,9 +175,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
   Future<void> _loadUserData() async {
     try {
       final data = await _firestoreService.getUserPersonalization();
-      print('Loaded userData: $data'); // Debug print
       if (data != null) {
-        print('Profile Picture URL: ${data['profilePictureUrl']}'); // Debug print
         setState(() {
           userData = data;
           isLoading = false;
@@ -220,290 +218,635 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              expandedHeight: 380, // Sesuaikan dengan kebutuhan
-              floating: false,
-              pinned: true,
-              backgroundColor: AppColors.background,
-              leading: IconButton(
-                icon: Icon(Icons.arrow_back, color: AppColors.text),
-                onPressed: () => Navigator.pushReplacement(
-                  context,
-                  SlideRightRoute(page: const HomePage()),
+      body: Row(
+        children: [
+          if (isWeb)
+            Container(
+              width: 300,
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                border: Border(
+                  right: BorderSide(
+                    color: AppColors.primary.withOpacity(0.1),
+                    width: 1,
+                  ),
                 ),
               ),
-              actions: [
-                IconButton(
-                  icon: Container(
-                    padding: EdgeInsets.all(Dimensions.paddingXS),
-                    decoration: BoxDecoration(
-                      color: AppColors.error.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.logout_rounded,
-                      color: AppColors.error,
-                      size: Dimensions.iconM,
-                    ),
-                  ),
-                  onPressed: () => _showLogoutDialog(),
-                ),
-                IconButton(
-                  icon: Icon(Icons.settings, color: AppColors.text),
-                  onPressed: () => Navigator.pushReplacement(
-                    context,
-                    SlideLeftRoute(page: const SettingsPage()),
-                  ),
-                ),
-              ],
-              flexibleSpace: FlexibleSpaceBar(
-                background: Column(
-                  children: [
-                    SizedBox(height: 100), // For AppBar compensation
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.surface,
-                      ),
-                      child: ClipOval(
-                        child: _buildProfileImage(),
-                      ),
-                    ),
-                    SizedBox(height: Dimensions.paddingM),
-                    AppText(
-                      _authService.currentUser?.displayName ?? 'User',
-                      fontSize: FontSizes.heading2,
-                      color: AppColors.text,
-                      fontWeight: FontWeight.bold,
-                    ),
-
-                    // Modified code for better positioning of username/bio
-                    if (userData?['username'] != null && userData!['username'].isNotEmpty) ...[
-                      Padding(
-                        padding: EdgeInsets.only(top: Dimensions.paddingS),
-                        child: AppText(
-                          userData!['username'],
-                          fontSize: FontSizes.body,
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                      if (userData?['bio'] != null && userData!['bio'].isNotEmpty)
-                        Padding(
-                          padding: EdgeInsets.only(top: Dimensions.paddingS),
-                          child: AppText(
-                            '"${userData!['bio']}"',
-                            fontSize: FontSizes.body,
-                            color: AppColors.textSecondary,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(Dimensions.paddingXL),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.arrow_back, color: AppColors.text),
+                          onPressed: () => Navigator.pushReplacement(
+                            context,
+                            SlideRightRoute(page: const HomePage()),
                           ),
                         ),
-                    ]
-                    // If username doesn't exist but bio does, move bio up to username position
-                    else if (userData?['bio'] != null && userData!['bio'].isNotEmpty) ...[
-                      Padding(
-                        padding: EdgeInsets.only(top: Dimensions.paddingS),
-                        child: AppText(
-                          '"${userData!['bio']}"',
-                          fontSize: FontSizes.body,
-                          color: AppColors.textSecondary,
+                        SizedBox(width: Dimensions.paddingM),
+                        AppText(
+                          'Profile',
+                          fontSize: FontSizes.heading3,
+                          color: AppColors.text,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.all(Dimensions.paddingL),
+                      child: Column(
+                        children: [
+                          _buildProfileHeader(),
+                          SizedBox(height: Dimensions.paddingL),
+                          _buildActionButtons(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          Expanded(
+            child: isWeb 
+              ? DefaultTabController(
+                  length: 2,
+                  child: Column(
+                    children: [
+                      Container(
+                        color: AppColors.background,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: Dimensions.paddingXL,
+                          vertical: Dimensions.paddingM,
+                        ),
+                        child: TabBar(
+                          indicatorColor: AppColors.primary,
+                          labelColor: AppColors.primary,
+                          unselectedLabelColor: AppColors.text,
+                          indicatorSize: TabBarIndicatorSize.label,
+                          tabs: [
+                            Tab(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.insights_rounded),
+                                  SizedBox(width: Dimensions.paddingS),
+                                  Text('Insights'),
+                                ],
+                              ),
+                            ),
+                            Tab(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.local_activity_rounded),
+                                  SizedBox(width: Dimensions.paddingS),
+                                  Text('Activity'),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: TabBarView(
+                          children: [
+                            _buildInsightsTab(),
+                            _buildActivityTab(),
+                          ],
                         ),
                       ),
                     ],
-
-                    SizedBox(height: Dimensions.paddingM),
-                    ElevatedButton(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const ProfileEditPage()),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.surface,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: Dimensions.paddingL,
-                          vertical: Dimensions.paddingM,
+                  ),
+                )
+              : NestedScrollView(
+                  headerSliverBuilder: (context, innerBoxIsScrolled) {
+                    return [
+                      SliverAppBar(
+                        expandedHeight: 280,
+                        floating: false,
+                        pinned: true,
+                        backgroundColor: AppColors.background,
+                        leading: IconButton(
+                          icon: Icon(Icons.arrow_back, color: AppColors.text),
+                          onPressed: () => Navigator.pushReplacement(
+                            context,
+                            SlideRightRoute(page: const HomePage()),
+                          ),
+                        ),
+                        flexibleSpace: FlexibleSpaceBar(
+                          background: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  AppColors.primary.withOpacity(0.1),
+                                  AppColors.background,
+                                ],
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                SizedBox(height: 100),
+                                _buildProfileHeader(),
+                                SizedBox(height: Dimensions.paddingL),
+                                _buildActionButtons(),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                      child: AppText(
-                        'Edit Profile',
-                        fontSize: FontSizes.body,
-                        color: AppColors.text,
+                      SliverPersistentHeader(
+                        pinned: true,
+                        delegate: _SliverAppBarDelegate(
+                          TabBar(
+                            controller: _tabController,
+                            indicatorColor: AppColors.primary,
+                            labelColor: AppColors.primary,
+                            unselectedLabelColor: AppColors.text,
+                            indicatorSize: TabBarIndicatorSize.label,
+                            tabs: [
+                              Tab(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.insights_rounded),
+                                    SizedBox(width: Dimensions.paddingS),
+                                    Text('Insights'),
+                                  ],
+                                ),
+                              ),
+                              Tab(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.local_activity_rounded),
+                                    SizedBox(width: Dimensions.paddingS),
+                                    Text('Activity'),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
+                    ];
+                  },
+                  body: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildInsightsTab(),
+                      _buildActivityTab(),
+                    ],
+                  ),
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader() {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Stack(
+          children: [
+            Container(
+              width: isWeb ? 150 : 120,
+              height: isWeb ? 150 : 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.primary.withOpacity(0.2),
+                    AppColors.primary.withOpacity(0.1),
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: _buildProfileImage(),
+            ),
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Container(
+                padding: EdgeInsets.all(Dimensions.paddingXS),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.surface,
+                    width: 3,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-              ),
-            ),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _SliverAppBarDelegate(
-                TabBar(
-                  controller: _tabController,
-                  indicatorColor: AppColors.primary,
-                  labelColor: AppColors.primary,
-                  unselectedLabelColor: AppColors.text,
-                  indicatorSize: TabBarIndicatorSize.label,
-                  indicatorPadding: EdgeInsets.symmetric(horizontal: -25),
-                  tabs: const [
-                    Tab(text: 'Insights'),
-                    Tab(text: 'Activity'),
-                  ],
+                child: Icon(
+                  Icons.edit,
+                  color: AppColors.surface,
+                  size: Dimensions.iconS,
                 ),
               ),
             ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildInsightsTab(),
-            _buildActivityTab(),
           ],
+        ),
+        SizedBox(height: Dimensions.paddingM),
+        AppText(
+          _authService.currentUser?.displayName ?? 'User',
+          fontSize: isWeb ? FontSizes.heading2 : FontSizes.heading3,
+          color: AppColors.text,
+          fontWeight: FontWeight.bold,
+          textAlign: TextAlign.center,
+        ),
+        if (userData?['username'] != null && userData!['username'].isNotEmpty) ...[
+          SizedBox(height: Dimensions.paddingXS),
+          AppText(
+            '@${userData!['username']}',
+            fontSize: isWeb ? FontSizes.body : FontSizes.caption,
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+            textAlign: TextAlign.center,
+          ),
+        ],
+        if (userData?['bio'] != null && userData!['bio'].isNotEmpty) ...[
+          SizedBox(height: Dimensions.paddingS),
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: Dimensions.paddingM),
+            padding: EdgeInsets.symmetric(
+              horizontal: Dimensions.paddingM,
+              vertical: Dimensions.paddingS,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(Dimensions.radiusM),
+            ),
+            child: AppText(
+              '"${userData!['bio']}"',
+              fontSize: isWeb ? FontSizes.body : FontSizes.caption,
+              color: AppColors.text,
+              textAlign: TextAlign.center,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildActionButtons() {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: isWeb ? Dimensions.paddingXL : Dimensions.paddingXS,
+      ),
+      child: Column(
+        children: [
+          _buildActionButton(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfileEditPage()),
+            ),
+            icon: Icons.edit_rounded,
+            label: 'Edit Profile',
+            color: AppColors.primary,
+          ),
+          SizedBox(height: Dimensions.paddingS),
+          IntrinsicHeight(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: _buildActionButton(
+                    onTap: () => Navigator.pushReplacement(
+                      context,
+                      SlideLeftRoute(page: const SettingsPage()),
+                    ),
+                    icon: Icons.settings_rounded,
+                    label: 'Settings',
+                    color: AppColors.info,
+                    compact: true,
+                  ),
+                ),
+                SizedBox(width: Dimensions.paddingXS),
+                Expanded(
+                  child: _buildActionButton(
+                    onTap: _showLogoutDialog,
+                    icon: Icons.logout_rounded,
+                    label: 'Logout',
+                    color: AppColors.error,
+                    isDestructive: true,
+                    compact: true,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required VoidCallback onTap,
+    required IconData icon,
+    required String label,
+    required Color color,
+    bool isDestructive = false,
+    bool compact = false,
+  }) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(Dimensions.radiusM),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 4.0 : Dimensions.paddingM,
+            vertical: isWeb ? Dimensions.paddingM : Dimensions.paddingS,
+          ),
+          decoration: BoxDecoration(
+            color: isDestructive ? color.withOpacity(0.1) : AppColors.surface,
+            borderRadius: BorderRadius.circular(Dimensions.radiusM),
+            border: Border.all(
+              color: color.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: color,
+                size: compact ? 16 : (isWeb ? Dimensions.iconM : Dimensions.iconS),
+              ),
+              SizedBox(width: 4.0),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: compact 
+                      ? FontSizes.small
+                      : (isWeb ? FontSizes.body : FontSizes.caption),
+                    color: isDestructive ? color : AppColors.text,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildProfileImage() {
-    return GestureDetector(
-      onTap: () {
-        if (userData?['profilePictureUrl'] != null) {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return Dialog(
-                backgroundColor: Colors.transparent,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Stack(
-                      alignment: Alignment.topRight,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(Dimensions.radiusM),
-                          child: Image.network(
-                            userData!['profilePictureUrl'],
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Container(
-                                width: MediaQuery.of(context).size.width * 0.8,
-                                height: MediaQuery.of(context).size.width * 0.8,
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius: BorderRadius.circular(Dimensions.radiusM),
-                                ),
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                width: MediaQuery.of(context).size.width * 0.8,
-                                height: MediaQuery.of(context).size.width * 0.8,
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius: BorderRadius.circular(Dimensions.radiusM),
-                                ),
-                                child: Icon(
-                                  Icons.error_outline,
-                                  size: Dimensions.iconXL,
-                                  color: AppColors.error,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        IconButton(
-                          icon: Container(
-                            padding: EdgeInsets.all(Dimensions.paddingXS),
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: GestureDetector(
+        onTap: () {
+          if (userData?['profilePictureUrl'] != null) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return Dialog(
+                  backgroundColor: Colors.transparent,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          Container(
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.5),
-                              shape: BoxShape.circle,
+                              borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
                             ),
-                            child: Icon(
-                              Icons.close,
-                              color: AppColors.surface,
-                              size: Dimensions.iconM,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                              child: Image.network(
+                                userData!['profilePictureUrl'],
+                                fit: BoxFit.cover,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    width: MediaQuery.of(context).size.width * 0.8,
+                                    height: MediaQuery.of(context).size.width * 0.8,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.surface,
+                                      borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                                    ),
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: MediaQuery.of(context).size.width * 0.8,
+                                    height: MediaQuery.of(context).size.width * 0.8,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.surface,
+                                      borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                                    ),
+                                    child: Icon(
+                                      Icons.error_outline,
+                                      size: Dimensions.iconXL,
+                                      color: AppColors.error,
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           ),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        }
-      },
-      child: userData?['profilePictureUrl'] != null
-          ? Image.network(
-        userData!['profilePictureUrl'],
-        fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Center(
-            child: CircularProgressIndicator(
-              color: AppColors.primary,
+                          IconButton(
+                            icon: Container(
+                              padding: EdgeInsets.all(Dimensions.paddingXS),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.5),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.close,
+                                color: AppColors.surface,
+                                size: Dimensions.iconM,
+                              ),
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          }
+        },
+        child: Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: AppColors.primary.withOpacity(0.2),
+              width: 4,
             ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) {
-          return Icon(Icons.person, size: Dimensions.iconXL, color: AppColors.text);
-        },
-      )
-          : Icon(Icons.person, size: Dimensions.iconXL, color: AppColors.text),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.surface,
+                AppColors.surface.withOpacity(0.8),
+              ],
+            ),
+          ),
+          child: ClipOval(
+            child: userData?['profilePictureUrl'] != null
+                ? Image.network(
+                    userData!['profilePictureUrl'],
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                          strokeWidth: 2,
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.person,
+                          size: Dimensions.iconXL, color: AppColors.primary.withOpacity(0.5));
+                    },
+                  )
+                : Icon(Icons.person,
+                    size: Dimensions.iconXL, color: AppColors.primary.withOpacity(0.5)),
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildInsightsTab() {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
     return SingleChildScrollView(
-      padding: EdgeInsets.all(Dimensions.paddingM),
+      padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingM),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: EdgeInsets.all(Dimensions.paddingL),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(Dimensions.radiusM),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.primary.withOpacity(0.1),
+                  AppColors.surface,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(Dimensions.radiusL),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppText(
-                  'Your daily nutrition goals',
-                  fontSize: FontSizes.heading3,
-                  color: AppColors.text,
-                  fontWeight: FontWeight.bold,
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(Dimensions.paddingS),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                      ),
+                      child: Icon(
+                        Icons.insights_rounded,
+                        color: AppColors.primary,
+                        size: Dimensions.iconL,
+                      ),
+                    ),
+                    SizedBox(width: Dimensions.paddingM),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppText(
+                            'Your daily nutrition goals',
+                            fontSize: isWeb ? FontSizes.heading2 : FontSizes.heading3,
+                            color: AppColors.text,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          SizedBox(height: Dimensions.paddingXS),
+                          AppText(
+                            'Track your progress',
+                            fontSize: isWeb ? FontSizes.body : FontSizes.caption,
+                            color: AppColors.textSecondary,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: Dimensions.paddingXS),
-                AppText(
-                  'Balanced macros',
-                  fontSize: FontSizes.caption,
-                  color: AppColors.textSecondary,
-                ),
-                SizedBox(height: Dimensions.paddingM),
+                SizedBox(height: Dimensions.paddingL),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildNutritionItem('Cal', nutritionGoals.calories.toStringAsFixed(0), Colors.blue),
-                    _buildNutritionItem('Carbs', '${nutritionGoals.carbs.toStringAsFixed(0)}g', Colors.orange),
-                    _buildNutritionItem('Fiber', '${nutritionGoals.fiber.toStringAsFixed(0)}g', Colors.green),
-                    _buildNutritionItem('Protein', '${nutritionGoals.protein.toStringAsFixed(0)}g', Colors.pink),
-                    _buildNutritionItem('Fat', '${nutritionGoals.fat.toStringAsFixed(0)}g', Colors.purple),
+                    _buildAnimatedNutritionItem('Cal', nutritionGoals.calories.toStringAsFixed(0), Colors.blue),
+                    _buildAnimatedNutritionItem('Carbs', '${nutritionGoals.carbs.toStringAsFixed(0)}g', Colors.orange),
+                    _buildAnimatedNutritionItem('Fiber', '${nutritionGoals.fiber.toStringAsFixed(0)}g', Colors.green),
+                    _buildAnimatedNutritionItem('Protein', '${nutritionGoals.protein.toStringAsFixed(0)}g', Colors.pink),
+                    _buildAnimatedNutritionItem('Fat', '${nutritionGoals.fat.toStringAsFixed(0)}g', Colors.purple),
                   ],
                 ),
               ],
@@ -516,86 +859,65 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     );
   }
 
-
-  Widget _buildNutritionItem(String label, String value, Color color) {
-  return Column(
-    children: [
-      Container(
-        width: 12,
-        height: 12,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-        ),
-      ),
-      SizedBox(height: Dimensions.paddingXS),
-      AppText(
-        label,
-        fontSize: FontSizes.caption,
-        color: AppColors.textSecondary,
-      ),
-      AppText(
-        value,
-        fontSize: FontSizes.body,
-        color: AppColors.text,
-        fontWeight: FontWeight.bold,
-      ),
-    ],
-  );
-}
-
-  Widget _buildNutrientIndicator(String label, Color color) {
-    return Row(
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.grey,
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDayColumn(String day, bool isSelected, double height) {
-    return Column(
-      children: [
-        Container(
-          width: 30,
-          height: 120,
-          alignment: Alignment.bottomCenter,
+  Widget _buildAnimatedNutritionItem(String label, String value, Color color) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 800),
+      curve: Curves.easeOutQuad,
+      builder: (context, val, child) {
+        return Transform.scale(
+          scale: val,
           child: Container(
-            width: 30,
-            height: height,
+            padding: EdgeInsets.all(Dimensions.paddingM),
             decoration: BoxDecoration(
-              color: isSelected ? Colors.orange : Colors.grey[800],
-              borderRadius: BorderRadius.circular(15),
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(Dimensions.radiusM),
+              border: Border.all(
+                color: color.withOpacity(0.2),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  width: isWeb ? 16 : 12,
+                  height: isWeb ? 16 : 12,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: Dimensions.paddingS),
+                AppText(
+                  label,
+                  fontSize: isWeb ? FontSizes.body : FontSizes.caption,
+                  color: AppColors.textSecondary,
+                ),
+                AppText(
+                  value,
+                  fontSize: isWeb ? FontSizes.heading3 : FontSizes.body,
+                  color: AppColors.text,
+                  fontWeight: FontWeight.bold,
+                ),
+              ],
             ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          day,
-          style: TextStyle(
-            color: isSelected ? Colors.orange : Colors.grey,
-            fontSize: 12,
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 
   Widget _buildActivityTab() {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+    
     if (isLoadingActivity) {
       return Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
@@ -612,11 +934,21 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset(
-                          'assets/images/no-activity.png',
-                          width: 125,
-                          height: 125,
-                          fit: BoxFit.contain,
+                        TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 0.0, end: 1.0),
+                          duration: const Duration(milliseconds: 800),
+                          curve: Curves.elasticOut,
+                          builder: (context, val, child) {
+                            return Transform.scale(
+                              scale: val,
+                              child: Image.asset(
+                                'assets/images/no-activity.png',
+                                width: 125,
+                                height: 125,
+                                fit: BoxFit.contain,
+                              ),
+                            );
+                          },
                         ),
                         SizedBox(height: Dimensions.paddingM),
                         AppText(
@@ -631,123 +963,200 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                 ),
               ],
             )
-          : ListView.builder(
-              padding: EdgeInsets.all(Dimensions.paddingM),
+          : GridView.builder(
+              padding: EdgeInsets.all(isWeb ? Dimensions.paddingL : Dimensions.paddingM),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: isWeb ? 3 : 2,
+                childAspectRatio: 0.75,
+                crossAxisSpacing: Dimensions.paddingM,
+                mainAxisSpacing: Dimensions.paddingM,
+              ),
               itemCount: activityRecipes.length,
               itemBuilder: (context, index) {
                 final recipe = activityRecipes[index];
-                return Container(
-                  margin: EdgeInsets.only(bottom: Dimensions.paddingM),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(Dimensions.radiusM),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.all(Dimensions.paddingM),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 20,
-                              backgroundImage: NetworkImage(userData?['profilePictureUrl'] ?? ''),
-                            ),
-                            SizedBox(width: Dimensions.paddingM),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                AppText(
-                                  _authService.currentUser?.displayName ?? 'User',
-                                  fontSize: FontSizes.body,
-                                  color: AppColors.text,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                AppText(
-                                  'a moment ago',
-                                  fontSize: FontSizes.caption,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ],
+                return TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: Duration(milliseconds: 400 + (index * 100)),
+                  curve: Curves.easeOutQuad,
+                  builder: (context, val, child) {
+                    return Transform.scale(
+                      scale: val,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
                             ),
                           ],
                         ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            RecipePageRoute(recipe: recipe),
-                          );
-                        },
-                        child: Stack(
-                          children: [
-                            Hero(
-                              tag: 'recipe-${recipe.id}',
-                              child: Image.network(
-                                recipe.image,
-                                width: double.infinity,
-                                height: 200,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            Positioned(
-                              top: Dimensions.paddingM,
-                              right: Dimensions.paddingM,
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: Dimensions.paddingM,
-                                  vertical: Dimensions.paddingS,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.7),
-                                  borderRadius: BorderRadius.circular(Dimensions.radiusS),
-                                ),
-                                child: AppText(
-                                  'Made it ✨',
-                                  fontSize: FontSizes.caption,
-                                  color: AppColors.text,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(Dimensions.paddingM),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            AppText(
-                              recipe.title.toUpperCase(),
-                              fontSize: FontSizes.body,
-                              color: AppColors.text,
-                              fontWeight: FontWeight.bold,
+                            Padding(
+                              padding: EdgeInsets.all(Dimensions.paddingS),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.primary.withOpacity(0.2),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: CircleAvatar(
+                                      radius: 15,
+                                      backgroundImage: NetworkImage(userData?['profilePictureUrl'] ?? ''),
+                                    ),
+                                  ),
+                                  SizedBox(width: Dimensions.paddingS),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        AppText(
+                                          _authService.currentUser?.displayName ?? 'User',
+                                          fontSize: FontSizes.caption,
+                                          color: AppColors.text,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        AppText(
+                                          'a moment ago',
+                                          fontSize: FontSizes.small,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            if (recipe.area != null)
-                              Padding(
-                                padding: EdgeInsets.only(top: Dimensions.paddingXS),
-                                child: AppText(
-                                  recipe.area!,
-                                  fontSize: FontSizes.caption,
-                                  color: AppColors.textSecondary,
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    RecipePageRoute(recipe: recipe),
+                                  );
+                                },
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    Hero(
+                                      tag: 'recipe-${recipe.id}',
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.vertical(
+                                          bottom: Radius.circular(Dimensions.radiusM),
+                                        ),
+                                        child: Image.network(
+                                          recipe.image,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.vertical(
+                                          bottom: Radius.circular(Dimensions.radiusM),
+                                        ),
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            Colors.transparent,
+                                            Colors.black.withOpacity(0.7),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: Dimensions.paddingS,
+                                      right: Dimensions.paddingS,
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: Dimensions.paddingS,
+                                          vertical: Dimensions.paddingXS,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primary.withOpacity(0.9),
+                                          borderRadius: BorderRadius.circular(Dimensions.radiusS),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.star_rounded,
+                                              color: Colors.white,
+                                              size: 14,
+                                            ),
+                                            SizedBox(width: 2),
+                                            AppText(
+                                              'Made it',
+                                              fontSize: FontSizes.small,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      bottom: Dimensions.paddingS,
+                                      left: Dimensions.paddingS,
+                                      right: Dimensions.paddingS,
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          AppText(
+                                            recipe.title.toUpperCase(),
+                                            fontSize: FontSizes.caption,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          if (recipe.area != null)
+                                            Padding(
+                                              padding: EdgeInsets.only(top: 2),
+                                              child: AppText(
+                                                recipe.area!,
+                                                fontSize: FontSizes.small,
+                                                color: Colors.white.withOpacity(0.8),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          if (recipe.category != null)
+                                            Padding(
+                                              padding: EdgeInsets.only(top: 2),
+                                              child: AppText(
+                                                recipe.category!,
+                                                fontSize: FontSizes.small,
+                                                color: Colors.white.withOpacity(0.8),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            if (recipe.category != null)
-                              Padding(
-                                padding: EdgeInsets.only(top: Dimensions.paddingXS),
-                                child: AppText(
-                                  recipe.category!,
-                                  fontSize: FontSizes.caption,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
+                            ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 );
               },
             ),

@@ -36,13 +36,19 @@ class _NutritionTrackerState extends State<NutritionTracker> {
     setState(() => isLoading = true);
     try {
       final data = await _firestoreService.getTodayNutrition();
-      setState(() {
-        todayNutrition = data;
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          todayNutrition = data;
+          isLoading = false;
+        });
+      }
     } catch (e) {
-      print('Error loading nutrition: $e');
-      setState(() => isLoading = false);
+      // Handle error silently
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 

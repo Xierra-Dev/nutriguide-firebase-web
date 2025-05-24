@@ -1,160 +1,215 @@
 import 'package:flutter/material.dart';
+import '../core/constants/colors.dart';
+import '../core/constants/dimensions.dart';
+import '../core/constants/font_sizes.dart';
+import '../core/helpers/responsive_helper.dart';
 
 class CustomGenderPicker extends StatefulWidget {
   final String? initialValue;
 
   const CustomGenderPicker({
-    super.key,
+    Key? key,
     this.initialValue,
-  });
+  }) : super(key: key);
 
   @override
-  _CustomGenderPickerState createState() => _CustomGenderPickerState();
+  State<CustomGenderPicker> createState() => _CustomGenderPickerState();
 }
 
 class _CustomGenderPickerState extends State<CustomGenderPicker> {
-  late String _selectedGender;
+  String? selectedGender;
 
   @override
   void initState() {
     super.initState();
-    _selectedGender = widget.initialValue ?? 'Male';
+    selectedGender = widget.initialValue;
   }
 
   @override
   Widget build(BuildContext context) {
-    // Get screen size for responsive calculations
-    final screenSize = MediaQuery.of(context).size;
-
-    // Calculate responsive sizes
-    final double titleFontSize = screenSize.width * 0.06;
-    final double optionFontSize = screenSize.width * 0.045;
-    final double buttonFontSize = screenSize.width * 0.04;
-    final double iconSize = screenSize.width * 0.06;
-    final double verticalPadding = screenSize.height * 0.015;
-    final double horizontalPadding = screenSize.width * 0.05;
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
 
     return MediaQuery(
-      // Prevent system font scaling
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
       child: Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: AppColors.background,
         body: SafeArea(
-          child: Column(
-            children: [
-              // Custom Back Button
-              Align(
-                alignment: Alignment.topLeft,
-                child: Padding(
-                  padding: EdgeInsets.only(
-                      left: horizontalPadding * 0.5,
-                      top: verticalPadding
-                  ),
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.arrow_back,
-                      color: Colors.white,
-                      size: iconSize,
-                    ),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ),
+          child: Center(
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: isWeb ? 800 : double.infinity,
               ),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.all(horizontalPadding),
-                  child: Column(
-                    children: [
-                      Text(
-                        'What sex are you?',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: titleFontSize,
-                            fontWeight: FontWeight.bold
+              child: Column(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(Dimensions.paddingM),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 0, 0, 0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
                         ),
-                      ),
-                      SizedBox(height: verticalPadding),
-                      _buildGenderOption('Female', optionFontSize, iconSize),
-                      _buildGenderOption('Male', optionFontSize, iconSize),
-                      _buildGenderOption('Prefer not to say', optionFontSize, iconSize),
-                      const Spacer(),
-                      Padding(
-                        padding: EdgeInsets.only(
-                          bottom: verticalPadding * 0.5,
-                          left: horizontalPadding * 0.4,
-                          right: horizontalPadding * 0.4,
-                        ),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(_selectedGender);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.deepOrange,
-                              foregroundColor: Colors.white,
-                              padding: EdgeInsets.symmetric(
-                                  vertical: verticalPadding * 0.8
-                              ),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(50)
-                              ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.arrow_back,
+                              color: AppColors.primary,
+                              size: Dimensions.iconM,
                             ),
-                            child: Text(
-                              'SAVE',
-                              style: TextStyle(
-                                fontSize: buttonFontSize,
-                                fontWeight: FontWeight.w800,
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ),
+                        SizedBox(width: Dimensions.paddingM),
+                        Text(
+                          'Select Sex',
+                          style: TextStyle(
+                            fontSize: isWeb ? FontSizes.heading2 : FontSizes.heading3,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.text,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.all(isWeb ? Dimensions.paddingXL : Dimensions.paddingM),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(isWeb ? Dimensions.paddingL : Dimensions.paddingM),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                _buildGenderOption(
+                                  'Male',
+                                  Icons.male,
+                                  selectedGender == 'Male',
+                                ),
+                                Divider(
+                                  color: AppColors.divider.withOpacity(0.5),
+                                  height: 1,
+                                  indent: isWeb ? Dimensions.paddingXL : Dimensions.paddingM,
+                                  endIndent: isWeb ? Dimensions.paddingXL : Dimensions.paddingM,
+                                ),
+                                _buildGenderOption(
+                                  'Female',
+                                  Icons.female,
+                                  selectedGender == 'Female',
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: isWeb ? Dimensions.paddingXL : Dimensions.paddingL),
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isWeb ? Dimensions.paddingXL : Dimensions.paddingM,
+                            ),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: selectedGender != null ? AppColors.primary : AppColors.disabled,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                  vertical: isWeb ? Dimensions.paddingL : Dimensions.paddingM,
+                                ),
+                              ),
+                              onPressed: selectedGender != null
+                                  ? () => Navigator.pop(context, selectedGender)
+                                  : null,
+                              child: Text(
+                                'Confirm',
+                                style: TextStyle(
+                                  fontSize: isWeb ? FontSizes.heading3 : FontSizes.button,
+                                  color: selectedGender != null ? Colors.white : AppColors.textSecondary,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildGenderOption(String option, double fontSize, double iconSize) {
-    return Container(
-      margin: EdgeInsets.symmetric(
-          vertical: MediaQuery.of(context).size.height * 0.012
-      ),
-      decoration: BoxDecoration(
-        color: _selectedGender == option
-            ? Colors.deepOrange.withOpacity(0.2)
-            : Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: ListTile(
-        title: Text(
-          option,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: fontSize,
-          ),
-        ),
-        trailing: Icon(
-          _selectedGender == option
-              ? Icons.radio_button_checked
-              : Icons.radio_button_unchecked,
-          color: _selectedGender == option
-              ? Colors.deepOrange
-              : Colors.white70,
-          size: iconSize,
-        ),
+  Widget _buildGenderOption(String gender, IconData icon, bool isSelected) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         onTap: () {
           setState(() {
-            _selectedGender = option;
+            selectedGender = gender;
           });
         },
+        child: Container(
+          padding: EdgeInsets.all(isWeb ? Dimensions.paddingL : Dimensions.paddingM),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(isWeb ? Dimensions.paddingM : Dimensions.paddingS),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.success.withOpacity(0.1) : AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                ),
+                child: Icon(
+                  icon,
+                  color: isSelected ? AppColors.success : AppColors.primary,
+                  size: isWeb ? Dimensions.iconL : Dimensions.iconM,
+                ),
+              ),
+              SizedBox(width: isWeb ? Dimensions.paddingL : Dimensions.paddingM),
+              Expanded(
+                child: Text(
+                  gender,
+                  style: TextStyle(
+                    fontSize: isWeb ? FontSizes.heading3 : FontSizes.body,
+                    color: AppColors.text,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              Icon(
+                isSelected ? Icons.check_circle : Icons.circle_outlined,
+                color: isSelected ? AppColors.success : AppColors.textSecondary,
+                size: isWeb ? Dimensions.iconL : Dimensions.iconM,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
