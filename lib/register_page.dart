@@ -439,9 +439,9 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildLogo(true),
-                  SizedBox(height: 30),
+                  SizedBox(height: size.height * 0.03),
                   _buildBrandingContent(),
-                  SizedBox(height: 40),
+                  SizedBox(height: size.height * 0.04),
                   _buildFeaturesList(),
                 ],
               ),
@@ -451,13 +451,13 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           Expanded(
             flex: 5,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 40),
+              padding: EdgeInsets.symmetric(horizontal: size.width * 0.03),
               child: Center(
                 child: Container(
                   height: size.height * 0.75,
                   child: SingleChildScrollView(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20),
+                      padding: EdgeInsets.symmetric(vertical: size.height * 0.02),
                       child: _buildRegistrationForm(true),
                     ),
                   ),
@@ -473,7 +473,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   Widget _buildMobileLayout(Size size) {
     return Container(
       width: size.width * 0.9,
-      padding: EdgeInsets.all(30),
+      padding: EdgeInsets.all(size.width * 0.06),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.7),
         borderRadius: BorderRadius.circular(25),
@@ -494,7 +494,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _buildLogo(false),
-          SizedBox(height: 30),
+          SizedBox(height: size.height * 0.03),
           _buildRegistrationForm(false),
         ],
       ),
@@ -563,6 +563,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   }
 
   Widget _buildRegistrationForm(bool isWeb) {
+    final size = MediaQuery.of(context).size;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -571,43 +572,43 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           Text(
             'Create Account',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.heading3),
               fontWeight: FontWeight.bold,
               color: Colors.white,
               letterSpacing: 0.5,
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 8),
+          SizedBox(height: size.height * 0.01),
           Text(
             'Join us and start your journey',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
               color: Colors.white70,
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 20),
+          SizedBox(height: size.height * 0.02),
         ],
         if (isWeb) ...[
           Text(
             'Create Account',
             style: TextStyle(
-              fontSize: 28,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.heading2),
               fontWeight: FontWeight.bold,
               color: Colors.white,
               letterSpacing: 0.5,
             ),
           ),
-          SizedBox(height: 8),
+          SizedBox(height: size.height * 0.01),
           Text(
             'Start your journey to a healthier lifestyle',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
               color: Colors.white70,
             ),
           ),
-          SizedBox(height: 25),
+          SizedBox(height: size.height * 0.025),
         ],
         Form(
           key: _formKey,
@@ -621,7 +622,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                 icon: Icons.person_outline,
                 isWeb: isWeb,
               ),
-              SizedBox(height: 15),
+              SizedBox(height: size.height * 0.015),
               _buildTextField(
                 controller: _emailController,
                 focusNode: _emailFocusNode,
@@ -629,7 +630,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                 icon: Icons.email_outlined,
                 isWeb: isWeb,
               ),
-              SizedBox(height: 15),
+              SizedBox(height: size.height * 0.015),
               _buildTextField(
                 controller: _passwordController,
                 focusNode: _passwordFocusNode,
@@ -638,9 +639,9 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                 isPassword: true,
                 isWeb: isWeb,
               ),
-              SizedBox(height: 15),
+              SizedBox(height: size.height * 0.015),
               _buildPasswordRequirements(isWeb),
-              SizedBox(height: 15),
+              SizedBox(height: size.height * 0.015),
               _buildTextField(
                 controller: _confirmPasswordController,
                 focusNode: _confirmPasswordFocusNode,
@@ -649,9 +650,9 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                 isPassword: true,
                 isWeb: isWeb,
               ),
-              SizedBox(height: 20),
+              SizedBox(height: size.height * 0.02),
               _buildRegisterButton(isWeb),
-              SizedBox(height: 15),
+              SizedBox(height: size.height * 0.015),
               _buildLoginLink(isWeb),
             ],
           ),
@@ -668,8 +669,9 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     bool isPassword = false,
     required bool isWeb,
   }) {
+    final size = MediaQuery.of(context).size;
     return Container(
-      height: 50,
+      height: isWeb ? size.height * 0.07 : size.height * 0.065,
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.5),
         borderRadius: BorderRadius.circular(12),
@@ -685,7 +687,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
         focusNode: focusNode,
         obscureText: isPassword && (label == 'Password' ? !_isPasswordVisible : !_isConfirmPasswordVisible),
         style: TextStyle(
-          fontSize: 14,
+          fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
           color: Colors.white,
         ),
         decoration: InputDecoration(
@@ -694,14 +696,14 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
             color: focusNode.hasFocus 
                 ? AppColors.primary 
                 : Colors.white70,
-            fontSize: 14,
+            fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
           ),
           prefixIcon: Icon(
             icon,
             color: focusNode.hasFocus 
                 ? AppColors.primary 
                 : Colors.white70,
-            size: 20,
+            size: isWeb ? size.width * 0.015 : size.width * 0.05,
           ),
           suffixIcon: isPassword
               ? IconButton(
@@ -712,7 +714,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                     color: focusNode.hasFocus 
                         ? AppColors.primary 
                         : Colors.white70,
-                    size: 20,
+                    size: isWeb ? size.width * 0.015 : size.width * 0.05,
                   ),
                   onPressed: () {
                     setState(() {
@@ -727,8 +729,8 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
               : null,
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
+            horizontal: size.width * 0.02,
+            vertical: size.height * 0.015,
           ),
         ),
         validator: (value) {
@@ -751,8 +753,9 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   }
 
   Widget _buildPasswordRequirements(bool isWeb) {
+    final size = MediaQuery.of(context).size;
     return Container(
-      padding: EdgeInsets.all(12),
+      padding: EdgeInsets.all(size.width * 0.02),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.3),
         borderRadius: BorderRadius.circular(12),
@@ -768,11 +771,11 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
             'Password Requirements:',
             style: TextStyle(
               color: Colors.white70,
-              fontSize: 12,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.bodySmall),
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 8),
+          SizedBox(height: size.height * 0.01),
           _buildRequirementItem(_hasMinLength, 'At least 8 characters', isWeb),
           _buildRequirementItem(_hasNumber, 'Contains a number', isWeb),
           _buildRequirementItem(_hasSymbol, 'Contains a symbol', isWeb),
@@ -782,28 +785,29 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   }
 
   Widget _buildRequirementItem(bool isMet, String text, bool isWeb) {
+    final size = MediaQuery.of(context).size;
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: isWeb ? 6 : 4),
+      padding: EdgeInsets.symmetric(vertical: size.height * 0.005),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(isWeb ? 3 : 2),
+            padding: EdgeInsets.all(isWeb ? size.width * 0.002 : size.width * 0.004),
             decoration: BoxDecoration(
               color: isMet ? AppColors.success.withOpacity(0.8) : Colors.white24,
               shape: BoxShape.circle,
             ),
             child: Icon(
               isMet ? Icons.check : Icons.close,
-              size: isWeb ? 14 : 12,
+              size: isWeb ? size.width * 0.01 : size.width * 0.03,
               color: Colors.white,
             ),
           ),
-          SizedBox(width: isWeb ? 12 : 8),
+          SizedBox(width: size.width * 0.01),
           Text(
             text,
             style: TextStyle(
               color: isMet ? AppColors.success : Colors.white70,
-              fontSize: isWeb ? 14 : 12,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.bodySmall),
             ),
           ),
         ],
@@ -812,8 +816,9 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   }
 
   Widget _buildRegisterButton(bool isWeb) {
+    final size = MediaQuery.of(context).size;
     return Container(
-      height: isWeb ? 56 : 50,
+      height: isWeb ? size.height * 0.07 : size.height * 0.065,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -843,8 +848,8 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           duration: Duration(milliseconds: 200),
           child: _isLoading
               ? SizedBox(
-                  height: 24,
-                  width: 24,
+                  height: size.height * 0.03,
+                  width: size.height * 0.03,
                   child: CircularProgressIndicator(
                     color: Colors.white,
                     strokeWidth: 2,
@@ -856,13 +861,13 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                     Icon(
                       Icons.person_add_rounded,
                       color: Colors.white,
-                      size: isWeb ? 24 : 22,
+                      size: isWeb ? size.width * 0.015 : size.width * 0.05,
                     ),
-                    SizedBox(width: 10),
+                    SizedBox(width: size.width * 0.01),
                     Text(
                       'Create Account',
                       style: TextStyle(
-                        fontSize: isWeb ? 18 : 16,
+                        fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.button),
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         letterSpacing: 0.5,
@@ -876,6 +881,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   }
 
   Widget _buildLoginLink(bool isWeb) {
+    final size = MediaQuery.of(context).size;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -883,7 +889,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           'Already have an account? ',
           style: TextStyle(
             color: Colors.white70,
-            fontSize: isWeb ? 16 : 14,
+            fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
           ),
         ),
         MouseRegion(
@@ -896,7 +902,10 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
               );
             },
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: EdgeInsets.symmetric(
+                horizontal: size.width * 0.008,
+                vertical: size.height * 0.005,
+              ),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
@@ -909,7 +918,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                 style: TextStyle(
                   color: AppColors.primary,
                   fontWeight: FontWeight.bold,
-                  fontSize: isWeb ? 16 : 14,
+                  fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
                 ),
               ),
             ),
@@ -949,12 +958,16 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   }
 
   Widget _buildLogo(bool isWeb) {
+    final size = MediaQuery.of(context).size;
+    final logoSize = isWeb ? size.width * 0.08 : size.width * 0.2;
+    final paddingSize = isWeb ? logoSize * 0.2 : logoSize * 0.2;
+    
     return Column(
       children: [
         Container(
-          width: isWeb ? 120 : 100,
-          height: isWeb ? 120 : 100,
-          padding: EdgeInsets.all(isWeb ? 25 : 20),
+          width: logoSize,
+          height: logoSize,
+          padding: EdgeInsets.all(paddingSize),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.white.withOpacity(0.15),
@@ -972,11 +985,11 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           ),
         ),
         if (isWeb) ...[
-          SizedBox(height: 20),
+          SizedBox(height: size.height * 0.02),
           Text(
             'NutriGuide',
             style: TextStyle(
-              fontSize: 32,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.heading2),
               fontWeight: FontWeight.bold,
               color: Colors.white,
               letterSpacing: 1.2,
@@ -988,25 +1001,26 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   }
 
   Widget _buildBrandingContent() {
+    final size = MediaQuery.of(context).size;
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 40),
+      padding: EdgeInsets.symmetric(horizontal: size.width * 0.03),
       child: Column(
         children: [
           Text(
             'Start Your Journey to\nHealthier Living',
             style: TextStyle(
-              fontSize: 36,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.heading1),
               fontWeight: FontWeight.bold,
               color: Colors.white,
               height: 1.2,
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 20),
+          SizedBox(height: size.height * 0.02),
           Text(
             'Join our community and get personalized nutrition guidance tailored just for you',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
               color: Colors.white.withOpacity(0.9),
               height: 1.5,
             ),
@@ -1018,18 +1032,19 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   }
 
   Widget _buildFeaturesList() {
+    final size = MediaQuery.of(context).size;
     return Column(
       children: [
         _buildFeatureItem(
           icon: Icons.person_outline,
           title: 'Personalized Plans',
         ),
-        SizedBox(height: 20),
+        SizedBox(height: size.height * 0.02),
         _buildFeatureItem(
           icon: Icons.restaurant_menu,
           title: 'Custom Meal Plans',
         ),
-        SizedBox(height: 20),
+        SizedBox(height: size.height * 0.02),
         _buildFeatureItem(
           icon: Icons.insights,
           title: 'Progress Analytics',
@@ -1042,8 +1057,12 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     required IconData icon,
     required String title,
   }) {
+    final size = MediaQuery.of(context).size;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: size.width * 0.015,
+        vertical: size.height * 0.012,
+      ),
       decoration: BoxDecoration(
         color: AppColors.primary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(15),
@@ -1055,13 +1074,17 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.primary, size: 24),
-          SizedBox(width: 12),
+          Icon(
+            icon,
+            color: AppColors.primary,
+            size: ResponsiveHelper.screenWidth(context) * 0.02,
+          ),
+          SizedBox(width: size.width * 0.01),
           Text(
             title,
             style: TextStyle(
               color: Colors.white,
-              fontSize: 16,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
               fontWeight: FontWeight.w500,
             ),
           ),
