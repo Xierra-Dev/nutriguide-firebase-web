@@ -1025,14 +1025,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             if (isWeb) _buildWebNavbar() else _buildAppBar(),
             Expanded(
-              child: Row(
-                children: [
-                  if (isWeb) _buildWebSidebar(),
-                  Expanded(
-                    child: _buildBody(),
-                  ),
-                ],
-              ),
+              child: _buildBody(),
             ),
             if (!isWeb) _buildBottomNavigationBar(),
           ],
@@ -1244,6 +1237,10 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildRecipeSection(String title, List<Recipe> recipes) {
     final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+    final size = MediaQuery.of(context).size;
+    final cardWidth = isWeb ? 280.0 : size.width * 0.525;
+    final cardHeight = isWeb ? 320.0 : size.height * 0.3;
+    final gridCount = isWeb ? (size.width ~/ cardWidth).clamp(1, 4) : 1;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1287,7 +1284,7 @@ class _HomePageState extends State<HomePage> {
         ),
         SizedBox(height: Dimensions.paddingS),
         SizedBox(
-          height: isWeb ? 320 : ResponsiveHelper.screenHeight(context) * 0.3,
+          height: cardHeight,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(
@@ -1302,12 +1299,9 @@ class _HomePageState extends State<HomePage> {
                   child: Hero(
                     tag: 'recipe-${recipe.id}',
                     child: Container(
-                      width: isWeb
-                          ? 280
-                          : ResponsiveHelper.screenWidth(context) * 0.525,
+                      width: cardWidth,
                       margin: EdgeInsets.symmetric(
-                        horizontal:
-                            isWeb ? Dimensions.paddingS : Dimensions.paddingXS,
+                        horizontal: isWeb ? Dimensions.paddingS : Dimensions.paddingXS,
                         vertical: Dimensions.paddingXS,
                       ),
                       decoration: BoxDecoration(
@@ -1329,13 +1323,12 @@ class _HomePageState extends State<HomePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ClipRRect(
-                            borderRadius:
-                                BorderRadius.vertical(top: Radius.circular(16)),
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                             child: Stack(
                               children: [
                                 Image.network(
                                   recipe.image,
-                                  height: isWeb ? 180 : 160,
+                                  height: isWeb ? 180 : cardHeight * 0.5,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
                                 ),
@@ -1359,7 +1352,8 @@ class _HomePageState extends State<HomePage> {
                                       recipe.area ?? 'International',
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 12,
+                                        fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                                            context, FontSizes.caption),
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -1383,7 +1377,8 @@ class _HomePageState extends State<HomePage> {
                                     recipe.title,
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: isWeb ? 16 : 14,
+                                      fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                                          context, isWeb ? FontSizes.body : FontSizes.bodySmall),
                                       fontWeight: FontWeight.bold,
                                     ),
                                     maxLines: 2,
@@ -1391,24 +1386,22 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   const Spacer(),
                                   Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Row(
                                         children: [
                                           Icon(
                                             Icons.timer,
-                                            color:
-                                                Colors.white.withOpacity(0.7),
-                                            size: 16,
+                                            color: Colors.white.withOpacity(0.7),
+                                            size: isWeb ? 16 : 14,
                                           ),
                                           SizedBox(width: 4),
                                           Text(
                                             '${recipe.preparationTime} min',
                                             style: TextStyle(
-                                              color:
-                                                  Colors.white.withOpacity(0.7),
-                                              fontSize: 12,
+                                              color: Colors.white.withOpacity(0.7),
+                                              fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                                                  context, FontSizes.caption),
                                             ),
                                           ),
                                         ],
@@ -1417,18 +1410,16 @@ class _HomePageState extends State<HomePage> {
                                         children: [
                                           Icon(
                                             Icons.favorite,
-                                            color: _getHealthScoreColor(
-                                                recipe.healthScore),
-                                            size: 16,
+                                            color: _getHealthScoreColor(recipe.healthScore),
+                                            size: isWeb ? 16 : 14,
                                           ),
                                           SizedBox(width: 4),
                                           Text(
-                                            recipe.healthScore
-                                                .toStringAsFixed(1),
+                                            recipe.healthScore.toStringAsFixed(1),
                                             style: TextStyle(
-                                              color: _getHealthScoreColor(
-                                                  recipe.healthScore),
-                                              fontSize: 12,
+                                              color: _getHealthScoreColor(recipe.healthScore),
+                                              fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                                                  context, FontSizes.caption),
                                             ),
                                           ),
                                         ],
@@ -1454,6 +1445,10 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildRecipeFeed() {
     final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+    final size = MediaQuery.of(context).size;
+    final cardWidth = isWeb ? size.width * 0.3 : size.width * 0.9;
+    final cardHeight = isWeb ? size.height * 0.4 : size.height * 0.25;
+    final gridCount = isWeb ? 3 : 1;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1481,12 +1476,10 @@ class _HomePageState extends State<HomePage> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: isWeb ? 3 : 1,
+              crossAxisCount: gridCount,
               childAspectRatio: isWeb ? 1.5 : 1.6,
-              crossAxisSpacing:
-                  isWeb ? Dimensions.paddingM : Dimensions.paddingS,
-              mainAxisSpacing:
-                  isWeb ? Dimensions.paddingM : Dimensions.paddingS,
+              crossAxisSpacing: isWeb ? Dimensions.paddingM : Dimensions.paddingS,
+              mainAxisSpacing: isWeb ? Dimensions.paddingM : Dimensions.paddingS,
             ),
             itemCount: feedRecipes.length,
             itemBuilder: (context, index) {
@@ -1544,8 +1537,7 @@ class _HomePageState extends State<HomePage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Container(
                                         padding: EdgeInsets.symmetric(
@@ -1554,11 +1546,9 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: Colors.black.withOpacity(0.7),
-                                          borderRadius:
-                                              BorderRadius.circular(20),
+                                          borderRadius: BorderRadius.circular(20),
                                           border: Border.all(
-                                            color:
-                                                Colors.white.withOpacity(0.1),
+                                            color: Colors.white.withOpacity(0.1),
                                             width: 1,
                                           ),
                                         ),
@@ -1566,7 +1556,8 @@ class _HomePageState extends State<HomePage> {
                                           recipe.area ?? 'International',
                                           style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: 12,
+                                            fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                                                context, FontSizes.caption),
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -1579,7 +1570,8 @@ class _HomePageState extends State<HomePage> {
                                     recipe.title,
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: isWeb ? 18 : 16,
+                                      fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                                          context, isWeb ? FontSizes.body : FontSizes.bodySmall),
                                       fontWeight: FontWeight.bold,
                                     ),
                                     maxLines: 2,
@@ -1587,24 +1579,22 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   SizedBox(height: 8),
                                   Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Row(
                                         children: [
                                           Icon(
                                             Icons.timer,
-                                            color:
-                                                Colors.white.withOpacity(0.7),
-                                            size: 16,
+                                            color: Colors.white.withOpacity(0.7),
+                                            size: isWeb ? 16 : 14,
                                           ),
                                           SizedBox(width: 4),
                                           Text(
                                             '${recipe.preparationTime} min',
                                             style: TextStyle(
-                                              color:
-                                                  Colors.white.withOpacity(0.7),
-                                              fontSize: 12,
+                                              color: Colors.white.withOpacity(0.7),
+                                              fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                                                  context, FontSizes.caption),
                                             ),
                                           ),
                                         ],
@@ -1613,18 +1603,16 @@ class _HomePageState extends State<HomePage> {
                                         children: [
                                           Icon(
                                             Icons.favorite,
-                                            color: _getHealthScoreColor(
-                                                recipe.healthScore),
-                                            size: 16,
+                                            color: _getHealthScoreColor(recipe.healthScore),
+                                            size: isWeb ? 16 : 14,
                                           ),
                                           SizedBox(width: 4),
                                           Text(
-                                            recipe.healthScore
-                                                .toStringAsFixed(1),
+                                            recipe.healthScore.toStringAsFixed(1),
                                             style: TextStyle(
-                                              color: _getHealthScoreColor(
-                                                  recipe.healthScore),
-                                              fontSize: 12,
+                                              color: _getHealthScoreColor(recipe.healthScore),
+                                              fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                                                  context, FontSizes.caption),
                                             ),
                                           ),
                                         ],
@@ -2168,293 +2156,6 @@ class _HomePageState extends State<HomePage> {
                       : Colors.white.withOpacity(0.7),
                   fontSize: 14,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWebSidebar() {
-    return Container(
-      width: 260,
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.7),
-        border: Border(
-          right: BorderSide(
-            color: AppColors.primary.withOpacity(0.2),
-            width: 1,
-          ),
-        ),
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            // AI Assistant section - fixed at top
-            Padding(
-              padding: EdgeInsets.all(20),
-              child: Container(
-                padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary.withOpacity(0.2),
-                      Colors.transparent,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: AppColors.primary.withOpacity(0.2),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.assistant_rounded,
-                        color: AppColors.primary,
-                        size: 24,
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'AI Assistant',
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Get personalized recipe recommendations',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Scrollable sections
-            _buildSidebarSection(
-              'Discover',
-              [
-                _buildSidebarItem(
-                  icon: Icons.explore_rounded,
-                  label: 'Explore Recipes',
-                  onTap: () {},
-                ),
-                _buildSidebarItem(
-                  icon: Icons.trending_up_rounded,
-                  label: 'Trending Now',
-                  onTap: () {},
-                ),
-                _buildSidebarItem(
-                  icon: Icons.new_releases_rounded,
-                  label: 'New Recipes',
-                  onTap: () {},
-                ),
-              ],
-            ),
-            Divider(color: Colors.white.withOpacity(0.1)),
-            _buildSidebarSection(
-              'Meal Types',
-              [
-                _buildSidebarItem(
-                  icon: Icons.local_cafe_rounded,
-                  label: 'Breakfast & Brunch',
-                  onTap: () {},
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.amber[700]!,
-                      Colors.amber[700]!.withOpacity(0.7)
-                    ],
-                  ),
-                ),
-                _buildSidebarItem(
-                  icon: Icons.restaurant_rounded,
-                  label: 'Main Course',
-                  onTap: () {},
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.red[700]!,
-                      Colors.red[700]!.withOpacity(0.7)
-                    ],
-                  ),
-                ),
-                _buildSidebarItem(
-                  icon: Icons.local_pizza_rounded,
-                  label: 'Appetizers & Snacks',
-                  onTap: () {},
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.green[700]!,
-                      Colors.green[700]!.withOpacity(0.7)
-                    ],
-                  ),
-                ),
-                _buildSidebarItem(
-                  icon: Icons.icecream_rounded,
-                  label: 'Desserts',
-                  onTap: () {},
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.purple[700]!,
-                      Colors.purple[700]!.withOpacity(0.7)
-                    ],
-                  ),
-                ),
-                _buildSidebarItem(
-                  icon: Icons.local_bar_rounded,
-                  label: 'Drinks & Beverages',
-                  onTap: () {},
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.blue[700]!,
-                      Colors.blue[700]!.withOpacity(0.7)
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            Divider(color: Colors.white.withOpacity(0.1)),
-            _buildSidebarSection(
-              'Dietary',
-              [
-                _buildSidebarItem(
-                  icon: Icons.eco_rounded,
-                  label: 'Vegetarian',
-                  onTap: () {},
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.lightGreen[700]!,
-                      Colors.lightGreen[700]!.withOpacity(0.7)
-                    ],
-                  ),
-                ),
-                _buildSidebarItem(
-                  icon: Icons.spa_rounded,
-                  label: 'Vegan',
-                  onTap: () {},
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.teal[700]!,
-                      Colors.teal[700]!.withOpacity(0.7)
-                    ],
-                  ),
-                ),
-                _buildSidebarItem(
-                  icon: Icons.fitness_center_rounded,
-                  label: 'High Protein',
-                  onTap: () {},
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.deepOrange[700]!,
-                      Colors.deepOrange[700]!.withOpacity(0.7)
-                    ],
-                  ),
-                ),
-                _buildSidebarItem(
-                  icon: Icons.favorite_rounded,
-                  label: 'Heart Healthy',
-                  onTap: () {},
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.pink[700]!,
-                      Colors.pink[700]!.withOpacity(0.7)
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            // Add bottom padding to ensure last items are visible
-            SizedBox(height: Dimensions.paddingXL),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSidebarSection(String title, List<Widget> items) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 12,
-          ),
-          child: Text(
-            title,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
-        ...items,
-      ],
-    );
-  }
-
-  Widget _buildSidebarItem({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    Gradient? gradient,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 12,
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  gradient: gradient,
-                  color:
-                      gradient == null ? Colors.white.withOpacity(0.1) : null,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-              SizedBox(width: 12),
-              Text(
-                label,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
-                  fontSize: 14,
                 ),
               ),
             ],
