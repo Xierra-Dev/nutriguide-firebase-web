@@ -17,6 +17,11 @@ import 'core/constants/dimensions.dart';
 import 'core/constants/font_sizes.dart';
 import 'core/helpers/responsive_helper.dart';
 import 'widgets/skeleton_loading.dart';
+import 'core/constants/colors.dart';
+import 'core/constants/dimensions.dart';
+import 'core/constants/font_sizes.dart';
+import 'core/helpers/responsive_helper.dart';
+import 'widgets/skeleton_loading.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -75,8 +80,8 @@ class SlideUpRoute extends PageRouteBuilder {
           ) {
             return SlideTransition(
               position: Tween<Offset>(
-                begin: const Offset(0.0, 1.0),
-                end: Offset.zero,
+                begin: const Offset(0.0, 1.0), // Start from bottom
+                end: Offset.zero, // End at the center
               ).animate(CurvedAnimation(
                 parent: primaryAnimation,
                 curve: Curves.easeOutQuad,
@@ -88,34 +93,28 @@ class SlideUpRoute extends PageRouteBuilder {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Services
+  bool _isHovered = false;
+
   final TheMealDBService _mealDBService = TheMealDBService();
   final FirestoreService _firestoreService = FirestoreService();
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
   final CacheService _cacheService = CacheService();
-
-  // State variables
   Map<String, bool> savedStatus = {};
   Map<String, bool> plannedStatus = {};
-  Set<String> hoveredItems = {}; // Changed to Set for individual hover tracking
   List<Recipe> recommendedRecipes = [];
   List<Recipe> popularRecipes = [];
   List<Recipe> recentlyViewedRecipes = [];
   List<Recipe> feedRecipes = [];
-
-  // Loading states
   bool isLoading = true;
   bool _isRefreshing = false;
   bool _isLoadingRecentlyViewed = true;
   bool _isLoadingRecommended = true;
   bool _isLoadingPopular = true;
   bool _isLoadingFeed = true;
-
   String? errorMessage;
   int _currentIndex = 0;
 
-  // Planning dialog state
   DateTime _selectedDate = DateTime.now();
   String _selectedMeal = 'Dinner';
   List<bool> _daysSelected = List.generate(7, (index) => false);
@@ -123,45 +122,22 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _initializeData();
-  }
-
-  @override
-  void dispose() {
-    // Clean up any resources here if needed
-    super.dispose();
-  }
-
-  Future<void> _initializeData() async {
-    if (!mounted) return;
-
-    try {
-      await _loadRecipes();
-      if (mounted) {
-        await _loadRecentlyViewedRecipes();
-        _checkAllRecipeStatuses();
+    _loadRecipes().then((_) {
+      // After recipes are loaded, check saved status for each recipe
+      for (var recipe in recommendedRecipes) {
+        _checkIfSaved(recipe);
+        _checkIfPlanned(recipe);
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          errorMessage = e.toString();
-          isLoading = false;
-        });
+      for (var recipe in popularRecipes) {
+        _checkIfSaved(recipe);
+        _checkIfPlanned(recipe);
       }
-    }
-  }
-
-  void _checkAllRecipeStatuses() {
-    final allRecipes = [
-      ...recommendedRecipes,
-      ...popularRecipes,
-      ...feedRecipes,
-    ];
-
-    for (var recipe in allRecipes) {
-      _checkIfSaved(recipe);
-      _checkIfPlanned(recipe);
-    }
+      for (var recipe in feedRecipes) {
+        _checkIfSaved(recipe);
+        _checkIfPlanned(recipe);
+      }
+    });
+    _loadRecentlyViewedRecipes();
   }
 
   Color _getHealthScoreColor(double score) {
@@ -175,109 +151,97 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _checkIfSaved(Recipe recipe) async {
-    try {
-      final saved = await _firestoreService.isRecipeSaved(recipe.id);
-      if (mounted) {
-        setState(() {
-          savedStatus[recipe.id] = saved;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error checking save status: $e');
-    }
+    final saved = await _firestoreService.isRecipeSaved(recipe.id);
+    setState(() {
+      savedStatus[recipe.id] = saved;
+    });
   }
 
   Future<void> _checkIfPlanned(Recipe recipe) async {
-    try {
-      final planned = await _firestoreService.isRecipePlanned(recipe.id);
-      if (mounted) {
-        setState(() {
-          plannedStatus[recipe.id] = planned;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error checking plan status: $e');
-    }
+    final planned = await _firestoreService.isRecipePlanned(recipe.id);
+    setState(() {
+      plannedStatus[recipe.id] = planned;
+    });
   }
 
   Future<void> _toggleSave(Recipe recipe) async {
     try {
       final bool currentStatus = savedStatus[recipe.id] ?? false;
 
-      if (currentStatus) {
+      if (savedStatus[recipe.id] == true) {
         await _firestoreService.unsaveRecipe(recipe.id);
       } else {
         await _firestoreService.saveRecipe(recipe);
       }
-
-      if (mounted) {
-        setState(() {
-          savedStatus[recipe.id] = !currentStatus;
-        });
-
-        _showSnackBar(
-          icon: savedStatus[recipe.id] == true
-              ? Icons.bookmark_added
-              : Icons.delete_rounded,
-          message: savedStatus[recipe.id] == true
-              ? 'Recipe: "${recipe.title}" saved'
-              : 'Recipe: "${recipe.title}" removed from saved',
-          backgroundColor: AppColors.success,
-          iconColor:
-              savedStatus[recipe.id] == true ? Colors.deepOrange : Colors.red,
-        );
-      }
+      setState(() {
+        savedStatus[recipe.id] = !currentStatus;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                  savedStatus[recipe.id] == true
+                      ? Icons.bookmark_added
+                      : Icons.delete_rounded,
+                  color: savedStatus[recipe.id] == true
+                      ? Colors.deepOrange
+                      : Colors.red),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  savedStatus[recipe.id] == true
+                      ? 'Recipe: "${recipe.title}" saved'
+                      : 'Recipe: "${recipe.title}" removed from saved',
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
     } catch (e) {
-      if (mounted) {
-        _showSnackBar(
-          icon: Icons.error,
-          message: 'Error saving recipe: ${e.toString()}',
-          backgroundColor: AppColors.error,
-          iconColor: Colors.white,
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error, color: Colors.white),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('Error plan recipe: ${e.toString()}'),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
   Future<void> _togglePlan(Recipe recipe) async {
     try {
+      // Show the planning dialog without changing the planned status yet
       _showPlannedDialog(recipe);
     } catch (e) {
-      if (mounted) {
-        _showSnackBar(
-          icon: Icons.error,
-          message: 'Error planning recipe: ${e.toString()}',
-          backgroundColor: AppColors.error,
-          iconColor: Colors.white,
-        );
-      }
+      // Handle error and show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(
+                Icons.error,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('Error planning recipe: ${e.toString()}'),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
-  }
-
-  void _showSnackBar({
-    required IconData icon,
-    required String message,
-    required Color backgroundColor,
-    required Color iconColor,
-  }) {
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(icon, color: iconColor),
-            const SizedBox(width: 8),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: backgroundColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-    );
   }
 
   void _showMealSelectionDialog(
@@ -345,7 +309,9 @@ class _HomePageState extends State<HomePage> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
                         child: Text(
                           'Cancel',
                           style: TextStyle(
@@ -367,17 +333,21 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showPlannedDialog(Recipe recipe) {
+    // Reset selected days
     _daysSelected = List.generate(7, (index) => false);
+
+    // Get the start of week (Sunday)
     DateTime now = DateTime.now();
     _selectedDate = now.subtract(Duration(days: now.weekday % 7));
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.grey[900],
+      backgroundColor: Colors.grey[900], // Background untuk dark mode
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(16),
+        ),
       ),
-      isScrollControlled: true,
       builder: (BuildContext context) {
         return MediaQuery(
           data: MediaQuery.of(context)
@@ -385,16 +355,13 @@ class _HomePageState extends State<HomePage> {
           child: StatefulBuilder(
             builder: (BuildContext context, StateSetter setDialogState) {
               return Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                  left: 20,
-                  right: 20,
-                  top: 20,
-                ),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Header dengan navigasi antar minggu
                     const Text(
                       'Choose Day',
                       style: TextStyle(
@@ -409,15 +376,20 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         IconButton(
                           onPressed: () {
+                            // Pindah ke minggu sebelumnya
                             setDialogState(() {
                               _selectedDate = _selectedDate
                                   .subtract(const Duration(days: 7));
                             });
                           },
-                          icon: const Icon(Icons.arrow_left_rounded, size: 40),
+                          icon: const Icon(
+                            Icons.arrow_left_rounded,
+                            size: 40,
+                          ),
                           color: Colors.white,
                         ),
                         Text(
+                          // Menampilkan rentang tanggal minggu
                           '${DateFormat('MMM dd').format(_selectedDate)} - '
                           '${DateFormat('MMM dd').format(_selectedDate.add(const Duration(days: 6)))}',
                           style: const TextStyle(
@@ -428,12 +400,16 @@ class _HomePageState extends State<HomePage> {
                         ),
                         IconButton(
                           onPressed: () {
+                            // Pindah ke minggu berikutnya
                             setDialogState(() {
                               _selectedDate =
                                   _selectedDate.add(const Duration(days: 7));
                             });
                           },
-                          icon: const Icon(Icons.arrow_right_rounded, size: 40),
+                          icon: const Icon(
+                            Icons.arrow_right_rounded,
+                            size: 40,
+                          ),
                           color: Colors.white,
                         ),
                       ],
@@ -442,8 +418,11 @@ class _HomePageState extends State<HomePage> {
                       height: 60,
                       child: Center(
                         child: InkWell(
-                          onTap: () => _showMealSelectionDialog(
-                              context, setDialogState, recipe),
+                          onTap: () {
+                            // Open meal selection dialog
+                            _showMealSelectionDialog(
+                                context, setDialogState, recipe);
+                          },
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),
@@ -459,11 +438,15 @@ class _HomePageState extends State<HomePage> {
                                       ? 'Select Meal'
                                       : _selectedMeal,
                                   style: const TextStyle(
-                                      color: Colors.white, fontSize: 16),
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
                                 ),
                                 const SizedBox(width: 8),
-                                const Icon(Icons.arrow_drop_down,
-                                    color: Colors.white),
+                                const Icon(
+                                  Icons.arrow_drop_down,
+                                  color: Colors.white,
+                                ),
                               ],
                             ),
                           ),
@@ -471,6 +454,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     const SizedBox(height: 15),
+                    // Pilihan hari menggunakan ChoiceChip (dimulai dari Sunday)
                     Wrap(
                       spacing: 8,
                       children: [
@@ -480,7 +464,7 @@ class _HomePageState extends State<HomePage> {
                               DateFormat('EEE, dd').format(
                                 _selectedDate.add(Duration(
                                     days: i - _selectedDate.weekday % 7)),
-                              ),
+                              ), // Menampilkan hari dimulai dari Sunday
                             ),
                             selected: _daysSelected[i],
                             onSelected: (bool selected) {
@@ -498,38 +482,43 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                     const SizedBox(height: 16),
+                    // Tombol aksi
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('Cancel',
-                              style: TextStyle(color: Colors.red)),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(color: Colors.red),
+                          ),
                         ),
                         ElevatedButton(
+                          // Inside dialog's ElevatedButton onPressed
                           onPressed: () {
                             if (_selectedMeal.isEmpty ||
                                 !_daysSelected.contains(true)) {
-                              _showSnackBar(
-                                icon: Icons.warning,
-                                message:
-                                    'Please select at least one day and a meal type!',
-                                backgroundColor: AppColors.accent,
-                                iconColor: Colors.white,
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text(
+                                        'Please select at least one day and a meal type!')),
                               );
                               return;
                             }
-                            _saveSelectedPlan(recipe);
+                            _saveSelectedPlan(recipe); // Pass the recipe
                             Navigator.of(context).pop();
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepOrange,
-                            foregroundColor: Colors.white,
-                          ),
+                              backgroundColor: Colors.deepOrange,
+                              foregroundColor: Colors.white),
                           child: const Text(
                             'Done',
                             style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.bold),
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
@@ -544,6 +533,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+// Fungsi untuk menyimpan pilihan (sesuaikan dengan logika aplikasi Anda)
   Future<void> _saveSelectedPlan(Recipe recipe) async {
     try {
       List<DateTime> selectedDates = [];
@@ -568,41 +558,95 @@ class _HomePageState extends State<HomePage> {
         );
 
         if (!exists) {
-          await _firestoreService.addPlannedRecipe(recipe, _selectedMeal, date);
+          await _firestoreService.addPlannedRecipe(
+            recipe,
+            _selectedMeal,
+            date,
+          );
           successfullyPlannedDates.add(date);
         }
       }
 
       if (mounted) {
         if (successfullyPlannedDates.isNotEmpty) {
-          setState(() {
-            plannedStatus[recipe.id] = true;
-          });
-
-          _showSnackBar(
-            icon: Icons.add_task_rounded,
-            message:
-                'Recipe planned for ${successfullyPlannedDates.length} day(s)',
-            backgroundColor: AppColors.success,
-            iconColor: AppColors.text,
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(
+                    Icons.add_task_rounded,
+                    color: AppColors.text,
+                    size: Dimensions.iconM,
+                  ),
+                  SizedBox(width: Dimensions.paddingS),
+                  Text(
+                    'Recipe planned for ${successfullyPlannedDates.length} day(s)',
+                    style: TextStyle(
+                      fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                          context, FontSizes.body),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: AppColors.success,
+            ),
           );
         } else {
-          _showSnackBar(
-            icon: Icons.info,
-            message:
-                'No new plans were added. All selected plans already exist.',
-            backgroundColor: AppColors.info,
-            iconColor: AppColors.text,
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(
+                    Icons.info,
+                    color: AppColors.text,
+                    size: Dimensions.iconM,
+                  ),
+                  SizedBox(width: Dimensions.paddingS),
+                  Expanded(
+                    child: Text(
+                      'No new plans were added. All selected plans already exist.',
+                      style: TextStyle(
+                        fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                            context, FontSizes.body),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: AppColors.info,
+            ),
           );
         }
+
+        setState(() {
+          plannedStatus[recipe.id] = true;
+        });
       }
     } catch (e) {
       if (mounted) {
-        _showSnackBar(
-          icon: Icons.error,
-          message: 'Failed to save plan: $e',
-          backgroundColor: AppColors.error,
-          iconColor: AppColors.text,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  Icons.error,
+                  color: AppColors.text,
+                  size: Dimensions.iconM,
+                ),
+                SizedBox(width: Dimensions.paddingS),
+                Expanded(
+                  child: Text(
+                    'Failed to save plan: $e',
+                    style: TextStyle(
+                      fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                          context, FontSizes.body),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     }
@@ -611,91 +655,78 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadRecipes() async {
     try {
       if (_isRefreshing) {
-        final futures = await Future.wait([
-          _mealDBService.getRecommendedRecipes(),
-          _mealDBService.getPopularRecipes(),
-          _mealDBService.getFeedRecipes(),
-        ]);
+        // Load all recipes simultaneously for refresh
+        final recommended = await _mealDBService.getRecommendedRecipes();
+        final popular = await _mealDBService.getPopularRecipes();
+        final feed = await _mealDBService.getFeedRecipes();
+
+        await _cacheService.cacheRecipes(
+            CacheService.RECOMMENDED_CACHE_KEY, recommended);
+        await _cacheService.cacheRecipes(
+            CacheService.POPULAR_CACHE_KEY, popular);
+        await _cacheService.cacheRecipes(CacheService.FEED_CACHE_KEY, feed);
 
         if (mounted) {
           setState(() {
-            recommendedRecipes = futures[0];
-            popularRecipes = futures[1];
-            feedRecipes = futures[2];
+            recommendedRecipes = recommended;
+            popularRecipes = popular;
+            feedRecipes = feed;
             _isLoadingRecommended = false;
             _isLoadingPopular = false;
             _isLoadingFeed = false;
             isLoading = false;
           });
-
-          // Cache the results
-          await Future.wait([
-            _cacheService.cacheRecipes(
-                CacheService.RECOMMENDED_CACHE_KEY, futures[0]),
-            _cacheService.cacheRecipes(
-                CacheService.POPULAR_CACHE_KEY, futures[1]),
-            _cacheService.cacheRecipes(CacheService.FEED_CACHE_KEY, futures[2]),
-          ]);
         }
         return;
       }
 
-      // Try loading from cache first
-      final cachedResults = await Future.wait([
-        _cacheService.getCachedRecipes(CacheService.RECOMMENDED_CACHE_KEY),
-        _cacheService.getCachedRecipes(CacheService.POPULAR_CACHE_KEY),
-        _cacheService.getCachedRecipes(CacheService.FEED_CACHE_KEY),
-      ]);
+      // Try to load from cache first
+      final cachedRecommended = await _cacheService
+          .getCachedRecipes(CacheService.RECOMMENDED_CACHE_KEY);
+      final cachedPopular =
+          await _cacheService.getCachedRecipes(CacheService.POPULAR_CACHE_KEY);
+      final cachedFeed =
+          await _cacheService.getCachedRecipes(CacheService.FEED_CACHE_KEY);
 
-      bool needsNetworkCall = false;
+      // Load recently viewed recipes first
+      _loadRecentlyViewedRecipes();
 
+      // Load other recipes in parallel
+      if (cachedRecommended != null) {
+        setState(() {
+          recommendedRecipes = cachedRecommended;
+          _isLoadingRecommended = false;
+        });
+      } else {
+        _loadRecommendedRecipes();
+      }
+
+      if (cachedPopular != null) {
+        setState(() {
+          popularRecipes = cachedPopular;
+          _isLoadingPopular = false;
+        });
+      } else {
+        _loadPopularRecipes();
+      }
+
+      if (cachedFeed != null) {
+        setState(() {
+          feedRecipes = cachedFeed;
+          _isLoadingFeed = false;
+        });
+      } else {
+        _loadFeedRecipes();
+      }
+
+      // Update overall loading state
       if (mounted) {
         setState(() {
-          if (cachedResults[0] != null) {
-            recommendedRecipes = cachedResults[0]!;
-            _isLoadingRecommended = false;
-          } else {
-            needsNetworkCall = true;
-          }
-
-          if (cachedResults[1] != null) {
-            popularRecipes = cachedResults[1]!;
-            _isLoadingPopular = false;
-          } else {
-            needsNetworkCall = true;
-          }
-
-          if (cachedResults[2] != null) {
-            feedRecipes = cachedResults[2]!;
-            _isLoadingFeed = false;
-          } else {
-            needsNetworkCall = true;
-          }
-
           isLoading = _isLoadingRecentlyViewed ||
               _isLoadingRecommended ||
               _isLoadingPopular ||
               _isLoadingFeed;
         });
-      }
-
-      // Load missing data from network
-      if (needsNetworkCall) {
-        final futures = <Future>[];
-
-        if (cachedResults[0] == null) {
-          futures.add(_loadRecommendedRecipes());
-        }
-        if (cachedResults[1] == null) {
-          futures.add(_loadPopularRecipes());
-        }
-        if (cachedResults[2] == null) {
-          futures.add(_loadFeedRecipes());
-        }
-
-        if (futures.isNotEmpty) {
-          await Future.wait(futures);
-        }
       }
     } catch (e) {
       if (mounted) {
@@ -714,15 +745,17 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           recentlyViewedRecipes = recipes;
           _isLoadingRecentlyViewed = false;
-          _updateLoadingState();
+          isLoading =
+              _isLoadingRecommended || _isLoadingPopular || _isLoadingFeed;
         });
       }
     } catch (e) {
-      debugPrint('Error loading recently viewed recipes: $e');
+      print('Error loading recently viewed recipes: $e');
       if (mounted) {
         setState(() {
           _isLoadingRecentlyViewed = false;
-          _updateLoadingState();
+          isLoading =
+              _isLoadingRecommended || _isLoadingPopular || _isLoadingFeed;
         });
       }
     }
@@ -735,17 +768,19 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           recommendedRecipes = recipes;
           _isLoadingRecommended = false;
-          _updateLoadingState();
+          isLoading =
+              _isLoadingRecentlyViewed || _isLoadingPopular || _isLoadingFeed;
         });
         await _cacheService.cacheRecipes(
             CacheService.RECOMMENDED_CACHE_KEY, recipes);
       }
     } catch (e) {
-      debugPrint('Error loading recommended recipes: $e');
+      print('Error loading recommended recipes: $e');
       if (mounted) {
         setState(() {
           _isLoadingRecommended = false;
-          _updateLoadingState();
+          isLoading =
+              _isLoadingRecentlyViewed || _isLoadingPopular || _isLoadingFeed;
         });
       }
     }
@@ -758,17 +793,21 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           popularRecipes = recipes;
           _isLoadingPopular = false;
-          _updateLoadingState();
+          isLoading = _isLoadingRecentlyViewed ||
+              _isLoadingRecommended ||
+              _isLoadingFeed;
         });
         await _cacheService.cacheRecipes(
             CacheService.POPULAR_CACHE_KEY, recipes);
       }
     } catch (e) {
-      debugPrint('Error loading popular recipes: $e');
+      print('Error loading popular recipes: $e');
       if (mounted) {
         setState(() {
           _isLoadingPopular = false;
-          _updateLoadingState();
+          isLoading = _isLoadingRecentlyViewed ||
+              _isLoadingRecommended ||
+              _isLoadingFeed;
         });
       }
     }
@@ -781,31 +820,26 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           feedRecipes = recipes;
           _isLoadingFeed = false;
-          _updateLoadingState();
+          isLoading = _isLoadingRecentlyViewed ||
+              _isLoadingRecommended ||
+              _isLoadingPopular;
         });
         await _cacheService.cacheRecipes(CacheService.FEED_CACHE_KEY, recipes);
       }
     } catch (e) {
-      debugPrint('Error loading feed recipes: $e');
+      print('Error loading feed recipes: $e');
       if (mounted) {
         setState(() {
           _isLoadingFeed = false;
-          _updateLoadingState();
+          isLoading = _isLoadingRecentlyViewed ||
+              _isLoadingRecommended ||
+              _isLoadingPopular;
         });
       }
     }
   }
 
-  void _updateLoadingState() {
-    isLoading = _isLoadingRecentlyViewed ||
-        _isLoadingRecommended ||
-        _isLoadingPopular ||
-        _isLoadingFeed;
-  }
-
   Future<void> _handleRefresh() async {
-    if (!mounted) return;
-
     setState(() {
       _isRefreshing = true;
       errorMessage = null;
@@ -815,24 +849,34 @@ class _HomePageState extends State<HomePage> {
       _isLoadingFeed = true;
     });
 
-    await Future.wait([
-      _loadRecipes(),
-      _loadRecentlyViewedRecipes(),
-    ]);
+    await _loadRecipes();
+    await _loadRecentlyViewedRecipes();
 
-    if (mounted) {
-      setState(() {
-        _isRefreshing = false;
-      });
-    }
+    setState(() {
+      _isRefreshing = false;
+    });
   }
 
   Future<void> _handleNavigationTap(int index) async {
-    if (!mounted) return;
-
     if (_currentIndex == index) {
-      _refreshIndicatorKey.currentState?.show();
-      await _handleRefresh();
+      switch (index) {
+        case 0:
+          _refreshIndicatorKey.currentState?.show();
+          await _handleRefresh();
+          break;
+        case 1:
+          _refreshIndicatorKey.currentState?.show();
+          await _handleRefresh();
+          break;
+        case 2:
+          _refreshIndicatorKey.currentState?.show();
+          await _handleRefresh();
+          break;
+        case 3:
+          _refreshIndicatorKey.currentState?.show();
+          await _handleRefresh();
+          break;
+      }
     } else {
       setState(() {
         _currentIndex = index;
@@ -841,143 +885,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _viewRecipe(Recipe recipe) async {
-    try {
-      await _firestoreService.addToRecentlyViewed(recipe);
-      if (mounted) {
-        final result = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => RecipeDetailPage(recipe: recipe),
-          ),
-        );
-
-        if (result == true) {
-          await _loadRecentlyViewedRecipes();
-        }
-      }
-    } catch (e) {
-      debugPrint('Error viewing recipe: $e');
+    await _firestoreService.addToRecentlyViewed(recipe);
+    if (mounted) {
+      await Navigator.push(
+        context,
+        RecipePageRoute(recipe: recipe),
+      );
+      await _loadRecentlyViewedRecipes();
     }
-  }
-
-  Future<bool> _showExitDialog() async {
-    if (!mounted) return false;
-
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => Dialog(
-            backgroundColor: Colors.transparent,
-            child: Container(
-              padding: EdgeInsets.all(Dimensions.paddingL),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(Dimensions.paddingM),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.exit_to_app_rounded,
-                      color: AppColors.primary,
-                      size: Dimensions.iconXL,
-                    ),
-                  ),
-                  SizedBox(height: Dimensions.spacingL),
-                  Text(
-                    'Exit NutriGuide',
-                    style: TextStyle(
-                      color: AppColors.text,
-                      fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                          context, FontSizes.heading3),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: Dimensions.spacingM),
-                  Text(
-                    'Are you sure you want to exit the app?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                          context, FontSizes.body),
-                    ),
-                  ),
-                  SizedBox(height: Dimensions.spacingXL),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
-                              vertical: Dimensions.paddingM,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(Dimensions.radiusM),
-                              side: BorderSide(
-                                color: AppColors.primary.withOpacity(0.5),
-                              ),
-                            ),
-                          ),
-                          child: Text(
-                            'Cancel',
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                                  context, FontSizes.body),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: Dimensions.spacingM),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.of(context).pop(true),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            padding: EdgeInsets.symmetric(
-                              vertical: Dimensions.paddingM,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(Dimensions.radiusM),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: Text(
-                            'Exit',
-                            style: TextStyle(
-                              color: AppColors.surface,
-                              fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                                  context, FontSizes.body),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ) ??
-        false;
   }
 
   @override
@@ -985,7 +900,125 @@ class _HomePageState extends State<HomePage> {
     final isWeb = ResponsiveHelper.screenWidth(context) > 800;
 
     return WillPopScope(
-      onWillPop: _showExitDialog,
+      onWillPop: () async {
+        return await showDialog(
+              context: context,
+              builder: (context) => Dialog(
+                backgroundColor: Colors.transparent,
+                child: Container(
+                  padding: EdgeInsets.all(Dimensions.paddingL),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(Dimensions.paddingM),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.exit_to_app_rounded,
+                          color: AppColors.primary,
+                          size: Dimensions.iconXL,
+                        ),
+                      ),
+                      SizedBox(height: Dimensions.spacingL),
+                      Text(
+                        'Exit NutriGuide',
+                        style: TextStyle(
+                          color: AppColors.text,
+                          fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                              context, FontSizes.heading3),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: Dimensions.spacingM),
+                      Text(
+                        'Are you sure you want to exit the app?',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                              context, FontSizes.body),
+                        ),
+                      ),
+                      SizedBox(height: Dimensions.spacingXL),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: Dimensions.paddingM,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(Dimensions.radiusM),
+                                  side: BorderSide(
+                                    color: AppColors.primary.withOpacity(0.5),
+                                  ),
+                                ),
+                              ),
+                              child: Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize:
+                                      ResponsiveHelper.getAdaptiveTextSize(
+                                          context, FontSizes.body),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: Dimensions.spacingM),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                padding: EdgeInsets.symmetric(
+                                  vertical: Dimensions.paddingM,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(Dimensions.radiusM),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: Text(
+                                'Exit',
+                                style: TextStyle(
+                                  color: AppColors.surface,
+                                  fontSize:
+                                      ResponsiveHelper.getAdaptiveTextSize(
+                                          context, FontSizes.body),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ) ??
+            false;
+      },
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Column(
@@ -995,7 +1028,9 @@ class _HomePageState extends State<HomePage> {
               child: Row(
                 children: [
                   if (isWeb) _buildWebSidebar(),
-                  Expanded(child: _buildBody()),
+                  Expanded(
+                    child: _buildBody(),
+                  ),
                 ],
               ),
             ),
@@ -1024,76 +1059,60 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      child: SafeArea(
-        child: Row(
-          children: [
-            Row(
-              children: [
-                Image.asset(
-                  'assets/images/logo_NutriGuide.png',
-                  width: Dimensions.iconXL,
-                  height: Dimensions.iconXL,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    width: Dimensions.iconXL,
-                    height: Dimensions.iconXL,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.restaurant,
-                      color: Colors.white,
-                      size: Dimensions.iconM,
-                    ),
-                  ),
-                ),
-                SizedBox(width: Dimensions.paddingS),
-                Text(
-                  'NutriGuide',
-                  style: TextStyle(
-                    color: AppColors.text,
-                    fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                        context, FontSizes.heading2),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const Spacer(),
-            IconButton(
-              icon: Icon(
-                Icons.notifications_outlined,
-                color: AppColors.text,
-                size: Dimensions.iconM,
+      child: Row(
+        children: [
+          Row(
+            children: [
+              Image.asset(
+                'assets/images/logo_NutriGuide.png',
+                width: Dimensions.iconXL,
+                height: Dimensions.iconXL,
               ),
-              onPressed: () {
-                final RenderBox button =
-                    context.findRenderObject() as RenderBox;
-                final Offset offset = button.localToGlobal(Offset.zero);
-                final RelativeRect position = RelativeRect.fromLTRB(
-                  offset.dx,
-                  offset.dy + button.size.height,
-                  offset.dx + button.size.width,
-                  offset.dy + button.size.height,
-                );
-                NotificationsDialog.show(context, position);
-              },
-            ),
-            IconButton(
-              icon: Icon(
-                Icons.person,
-                color: AppColors.text,
-                size: Dimensions.iconM,
+              SizedBox(width: Dimensions.paddingS),
+              Text(
+                'NutriGuide',
+                style: TextStyle(
+                  color: AppColors.text,
+                  fontSize: ResponsiveHelper.getAdaptiveTextSize(
+                      context, FontSizes.heading2),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  SlideLeftRoute(page: const ProfilePage()),
-                );
-              },
+            ],
+          ),
+          const Spacer(),
+          IconButton(
+            icon: Icon(
+              Icons.notifications_outlined,
+              color: AppColors.text,
+              size: Dimensions.iconM,
             ),
-          ],
-        ),
+            onPressed: () {
+              final RenderBox button = context.findRenderObject() as RenderBox;
+              final Offset offset = button.localToGlobal(Offset.zero);
+              final RelativeRect position = RelativeRect.fromLTRB(
+                offset.dx,
+                offset.dy + button.size.height,
+                offset.dx + button.size.width,
+                offset.dy + button.size.height,
+              );
+              NotificationsDialog.show(context, position);
+            },
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.person,
+              color: AppColors.text,
+              size: Dimensions.iconM,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                SlideLeftRoute(page: const ProfilePage()),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -1148,7 +1167,10 @@ class _HomePageState extends State<HomePage> {
       child: PopupMenuButton<String>(
         padding: EdgeInsets.zero,
         iconSize: 18,
-        icon: const Icon(Icons.more_vert, color: Colors.white),
+        icon: Icon(
+          Icons.more_vert,
+          color: Colors.white,
+        ),
         onSelected: (String value) {
           if (value == 'Save Recipe') {
             _toggleSave(recipe);
@@ -1177,7 +1199,7 @@ class _HomePageState extends State<HomePage> {
                       ? AppColors.primary
                       : Colors.white,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Text(
                   savedStatus[recipe.id] == true ? 'Saved' : 'Save Recipe',
                   style: TextStyle(
@@ -1195,15 +1217,18 @@ class _HomePageState extends State<HomePage> {
             value: 'Plan Meal',
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.calendar_today_rounded,
                   size: 18,
                   color: Colors.white,
                 ),
-                const SizedBox(width: 8),
-                const Text(
+                SizedBox(width: 8),
+                Text(
                   'Plan Meal',
-                  style: TextStyle(fontSize: 14, color: Colors.white),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white,
+                  ),
                 ),
               ],
             ),
@@ -1211,6 +1236,10 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
+  }
+
+  Widget _buildMoreButtonFeed(Recipe recipe) {
+    return _buildMoreButton(recipe);
   }
 
   Widget _buildRecipeSection(String title, List<Recipe> recipes) {
@@ -1266,204 +1295,151 @@ class _HomePageState extends State<HomePage> {
             itemCount: recipes.length,
             itemBuilder: (context, index) {
               final recipe = recipes[index];
-              final itemId = '${title}_${recipe.id}';
-
               return MouseRegion(
                 cursor: SystemMouseCursors.click,
-                onEnter: (_) {
-                  setState(() {
-                    hoveredItems.add(itemId);
-                  });
-                },
-                onExit: (_) {
-                  setState(() {
-                    hoveredItems.remove(itemId);
-                  });
-                },
                 child: GestureDetector(
                   onTap: () => _viewRecipe(recipe),
-                  child: AnimatedScale(
-                    scale: hoveredItems.contains(itemId) ? 1.05 : 1.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Hero(
-                      tag: 'recipe-${recipe.id}',
-                      child: Container(
-                        width: isWeb
-                            ? 280
-                            : ResponsiveHelper.screenWidth(context) * 0.525,
-                        margin: EdgeInsets.symmetric(
-                          horizontal: isWeb
-                              ? Dimensions.paddingS
-                              : Dimensions.paddingXS,
-                          vertical: Dimensions.paddingXS,
+                  child: Hero(
+                    tag: 'recipe-${recipe.id}',
+                    child: Container(
+                      width: isWeb
+                          ? 280
+                          : ResponsiveHelper.screenWidth(context) * 0.525,
+                      margin: EdgeInsets.symmetric(
+                        horizontal:
+                            isWeb ? Dimensions.paddingS : Dimensions.paddingXS,
+                        vertical: Dimensions.paddingXS,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: Colors.black.withOpacity(0.3),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.1),
+                          width: 1,
                         ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          color: Colors.black.withOpacity(0.3),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.1),
-                            width: 1,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius:
-                                  hoveredItems.contains(itemId) ? 12 : 8,
-                              offset: Offset(
-                                  0, hoveredItems.contains(itemId) ? 6 : 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(16)),
-                              child: Stack(
-                                children: [
-                                  Image.network(
-                                    recipe.image,
-                                    height: isWeb ? 180 : 160,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            Container(
-                                      height: isWeb ? 180 : 160,
-                                      width: double.infinity,
-                                      color: Colors.grey[800],
-                                      child: const Icon(
-                                        Icons.restaurant,
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            borderRadius:
+                                BorderRadius.vertical(top: Radius.circular(16)),
+                            child: Stack(
+                              children: [
+                                Image.network(
+                                  recipe.image,
+                                  height: isWeb ? 180 : 160,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                                Positioned(
+                                  top: 8,
+                                  left: 8,
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.7),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.1),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      recipe.area ?? 'International',
+                                      style: TextStyle(
                                         color: Colors.white,
-                                        size: 50,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
-                                    loadingBuilder:
-                                        (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return Container(
-                                        height: isWeb ? 180 : 160,
-                                        width: double.infinity,
-                                        color: Colors.grey[800],
-                                        child: Center(
-                                          child: CircularProgressIndicator(
-                                            value: loadingProgress
-                                                        .expectedTotalBytes !=
-                                                    null
-                                                ? loadingProgress
-                                                        .cumulativeBytesLoaded /
-                                                    loadingProgress
-                                                        .expectedTotalBytes!
-                                                : null,
-                                            color: AppColors.primary,
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: _buildMoreButton(recipe),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: Container(
+                              padding: EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    recipe.title,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: isWeb ? 16 : 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const Spacer(),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.timer,
+                                            color:
+                                                Colors.white.withOpacity(0.7),
+                                            size: 16,
                                           ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  Positioned(
-                                    top: 8,
-                                    left: 8,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
+                                          SizedBox(width: 4),
+                                          Text(
+                                            '${recipe.preparationTime} min',
+                                            style: TextStyle(
+                                              color:
+                                                  Colors.white.withOpacity(0.7),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.7),
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                          color: Colors.white.withOpacity(0.1),
-                                          width: 1,
-                                        ),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.favorite,
+                                            color: _getHealthScoreColor(
+                                                recipe.healthScore),
+                                            size: 16,
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            recipe.healthScore
+                                                .toStringAsFixed(1),
+                                            style: TextStyle(
+                                              color: _getHealthScoreColor(
+                                                  recipe.healthScore),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      child: Text(
-                                        recipe.area ?? 'International',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 8,
-                                    right: 8,
-                                    child: _buildMoreButton(recipe),
+                                    ],
                                   ),
                                 ],
                               ),
                             ),
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      recipe.title,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: isWeb ? 16 : 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const Spacer(),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.timer,
-                                              color:
-                                                  Colors.white.withOpacity(0.7),
-                                              size: 16,
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              '${recipe.preparationTime} min',
-                                              style: TextStyle(
-                                                color: Colors.white
-                                                    .withOpacity(0.7),
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.favorite,
-                                              color: _getHealthScoreColor(
-                                                  recipe.healthScore),
-                                              size: 16,
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              recipe.healthScore
-                                                  .toStringAsFixed(1),
-                                              style: TextStyle(
-                                                color: _getHealthScoreColor(
-                                                    recipe.healthScore),
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -1515,24 +1491,14 @@ class _HomePageState extends State<HomePage> {
             itemCount: feedRecipes.length,
             itemBuilder: (context, index) {
               final recipe = feedRecipes[index];
-              final itemId = 'feed_${recipe.id}';
-
               return MouseRegion(
                 cursor: SystemMouseCursors.click,
-                onEnter: (_) {
-                  setState(() {
-                    hoveredItems.add(itemId);
-                  });
-                },
-                onExit: (_) {
-                  setState(() {
-                    hoveredItems.remove(itemId);
-                  });
-                },
+                onEnter: (_) => setState(() => _isHovered = true),
+                onExit: (_) => setState(() => _isHovered = false),
                 child: GestureDetector(
                   onTap: () => _viewRecipe(recipe),
                   child: AnimatedScale(
-                    scale: hoveredItems.contains(itemId) ? 1.03 : 1.0,
+                    scale: _isHovered ? 1.03 : 1.0,
                     duration: const Duration(milliseconds: 200),
                     child: Container(
                       decoration: BoxDecoration(
@@ -1545,9 +1511,8 @@ class _HomePageState extends State<HomePage> {
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.2),
-                            blurRadius: hoveredItems.contains(itemId) ? 12 : 8,
-                            offset: Offset(
-                                0, hoveredItems.contains(itemId) ? 6 : 4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
@@ -1560,39 +1525,6 @@ class _HomePageState extends State<HomePage> {
                               height: double.infinity,
                               width: double.infinity,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
-                                height: double.infinity,
-                                width: double.infinity,
-                                color: Colors.grey[800],
-                                child: const Icon(
-                                  Icons.restaurant,
-                                  color: Colors.white,
-                                  size: 50,
-                                ),
-                              ),
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Container(
-                                  height: double.infinity,
-                                  width: double.infinity,
-                                  color: Colors.grey[800],
-                                  child: Center(
-                                    child: CircularProgressIndicator(
-                                      value:
-                                          loadingProgress.expectedTotalBytes !=
-                                                  null
-                                              ? loadingProgress
-                                                      .cumulativeBytesLoaded /
-                                                  loadingProgress
-                                                      .expectedTotalBytes!
-                                              : null,
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                );
-                              },
                             ),
                             Container(
                               decoration: BoxDecoration(
@@ -1607,7 +1539,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.all(16),
+                              padding: EdgeInsets.all(16),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -1616,7 +1548,7 @@ class _HomePageState extends State<HomePage> {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Container(
-                                        padding: const EdgeInsets.symmetric(
+                                        padding: EdgeInsets.symmetric(
                                           horizontal: 12,
                                           vertical: 6,
                                         ),
@@ -1632,14 +1564,14 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                         child: Text(
                                           recipe.area ?? 'International',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 12,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                       ),
-                                      _buildMoreButton(recipe),
+                                      _buildMoreButtonFeed(recipe),
                                     ],
                                   ),
                                   const Spacer(),
@@ -1653,7 +1585,7 @@ class _HomePageState extends State<HomePage> {
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(height: 8),
+                                  SizedBox(height: 8),
                                   Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
@@ -1666,7 +1598,7 @@ class _HomePageState extends State<HomePage> {
                                                 Colors.white.withOpacity(0.7),
                                             size: 16,
                                           ),
-                                          const SizedBox(width: 4),
+                                          SizedBox(width: 4),
                                           Text(
                                             '${recipe.preparationTime} min',
                                             style: TextStyle(
@@ -1685,7 +1617,7 @@ class _HomePageState extends State<HomePage> {
                                                 recipe.healthScore),
                                             size: 16,
                                           ),
-                                          const SizedBox(width: 4),
+                                          SizedBox(width: 4),
                                           Text(
                                             recipe.healthScore
                                                 .toStringAsFixed(1),
@@ -1718,44 +1650,6 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildHomeContent() {
     final isWeb = ResponsiveHelper.screenWidth(context) > 800;
-
-    if (errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppColors.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Something went wrong',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.text,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              errorMessage!,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _handleRefresh,
-              child: const Text('Try Again'),
-            ),
-          ],
-        ),
-      );
-    }
-
     return ListView(
       children: [
         SizedBox(height: isWeb ? Dimensions.paddingL : Dimensions.paddingM),
@@ -1799,7 +1693,7 @@ class _HomePageState extends State<HomePage> {
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: 3,
                 itemBuilder: (context, index) {
-                  return const RecipeFeedSkeleton();
+                  return RecipeFeedSkeleton();
                 },
               ),
             ],
@@ -1876,37 +1770,39 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         child: SafeArea(
-          child: Container(
-            padding: EdgeInsets.symmetric(
-                horizontal: Dimensions.paddingM,
-                vertical: Dimensions.paddingXS),
-            height: 65,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Flexible(
-                  child: _buildNavItem(
-                      0, Icons.home_outlined, Icons.home_rounded, 'Home'),
-                ),
-                Flexible(
-                  child: _buildNavItem(
-                      1, Icons.search_outlined, Icons.search_rounded, 'Search'),
-                ),
-                SizedBox(width: Dimensions.paddingXS),
-                _buildCenterNavItem(),
-                SizedBox(width: Dimensions.paddingXS),
-                Flexible(
-                  child: _buildNavItem(2, Icons.calendar_today_outlined,
-                      Icons.calendar_today_rounded, 'Planner'),
-                ),
-                Flexible(
-                  child: _buildNavItem(3, Icons.bookmark_border_rounded,
-                      Icons.bookmark_rounded, 'Saved'),
-                ),
-              ],
-            ),
-          ),
+          child: LayoutBuilder(builder: (context, constraints) {
+            return Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: Dimensions.paddingM,
+                  vertical: Dimensions.paddingXS),
+              height: 65,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: _buildNavItem(
+                        0, Icons.home_outlined, Icons.home_rounded, 'Home'),
+                  ),
+                  Flexible(
+                    child: _buildNavItem(1, Icons.search_outlined,
+                        Icons.search_rounded, 'Search'),
+                  ),
+                  SizedBox(width: Dimensions.paddingXS),
+                  _buildCenterNavItem(),
+                  SizedBox(width: Dimensions.paddingXS),
+                  Flexible(
+                    child: _buildNavItem(2, Icons.calendar_today_outlined,
+                        Icons.calendar_today_rounded, 'Planner'),
+                  ),
+                  Flexible(
+                    child: _buildNavItem(3, Icons.bookmark_border_rounded,
+                        Icons.bookmark_rounded, 'Saved'),
+                  ),
+                ],
+              ),
+            );
+          }),
         ),
       ),
     );
@@ -1920,11 +1816,11 @@ class _HomePageState extends State<HomePage> {
         return Transform.scale(
           scale: 0.9 + (0.1 * value),
           child: Container(
-            width: 120,
+            width: 56,
             height: 56,
             decoration: BoxDecoration(
               color: AppColors.primary,
-              borderRadius: BorderRadius.circular(28),
+              shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
                   color: AppColors.primary.withOpacity(0.3),
@@ -1942,9 +1838,9 @@ class _HomePageState extends State<HomePage> {
                     SlideUpRoute(page: const AssistantPage()),
                   );
                 },
-                borderRadius: BorderRadius.circular(28),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                borderRadius: BorderRadius.circular(16),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       Icons.chat_bubble_rounded,
@@ -2040,6 +1936,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _setLoading(bool loading) {
+    setState(() {
+      isLoading = loading;
+    });
+  }
+
   Widget _buildWebNavbar() {
     return Container(
       padding: EdgeInsets.symmetric(
@@ -2068,14 +1970,13 @@ class _HomePageState extends State<HomePage> {
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
               onTap: () {
-                setState(() {
-                  _currentIndex = 0;
-                });
+                // Aksi saat diklik, misal navigasi ke Home
+                Navigator.push(context, SlideLeftRoute(page: const HomePage()));
               },
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -2084,15 +1985,10 @@ class _HomePageState extends State<HomePage> {
                       'assets/images/logo_NutriGuide.png',
                       width: 32,
                       height: 32,
-                      errorBuilder: (context, error, stackTrace) => Icon(
-                        Icons.restaurant,
-                        color: AppColors.primary,
-                        size: 32,
-                      ),
                     ),
                   ),
                   SizedBox(width: Dimensions.paddingM),
-                  const Text(
+                  Text(
                     'NutriGuide',
                     style: TextStyle(
                       color: Colors.white,
@@ -2107,7 +2003,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const Spacer(),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.3),
               borderRadius: BorderRadius.circular(20),
@@ -2128,7 +2024,7 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(width: Dimensions.paddingL),
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(8),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -2155,7 +2051,7 @@ class _HomePageState extends State<HomePage> {
                   );
                 },
                 borderRadius: BorderRadius.circular(16),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
@@ -2208,14 +2104,14 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildWebActionButton(IconData icon, VoidCallback onPressed) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
+      margin: EdgeInsets.symmetric(horizontal: 4),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onPressed,
           borderRadius: BorderRadius.circular(12),
           child: Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
@@ -2244,7 +2140,7 @@ class _HomePageState extends State<HomePage> {
         onTap: () => _handleNavigationTap(index),
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.symmetric(
+          padding: EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 8,
           ),
@@ -2263,7 +2159,7 @@ class _HomePageState extends State<HomePage> {
                     : Colors.white.withOpacity(0.7),
                 size: 20,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 label,
                 style: TextStyle(
@@ -2296,10 +2192,11 @@ class _HomePageState extends State<HomePage> {
       child: SingleChildScrollView(
         child: Column(
           children: [
+            // AI Assistant section - fixed at top
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20),
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -2318,7 +2215,7 @@ class _HomePageState extends State<HomePage> {
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withOpacity(0.2),
                         shape: BoxShape.circle,
@@ -2329,7 +2226,7 @@ class _HomePageState extends State<HomePage> {
                         size: 24,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2342,7 +2239,7 @@ class _HomePageState extends State<HomePage> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             'Get personalized recipe recommendations',
                             style: TextStyle(
@@ -2357,6 +2254,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+            // Scrollable sections
             _buildSidebarSection(
               'Discover',
               [
@@ -2488,6 +2386,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
+            // Add bottom padding to ensure last items are visible
             SizedBox(height: Dimensions.paddingXL),
           ],
         ),
@@ -2500,7 +2399,7 @@ class _HomePageState extends State<HomePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(
+          padding: EdgeInsets.symmetric(
             horizontal: 20,
             vertical: 12,
           ),
@@ -2530,14 +2429,14 @@ class _HomePageState extends State<HomePage> {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(
+          padding: EdgeInsets.symmetric(
             horizontal: 20,
             vertical: 12,
           ),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   gradient: gradient,
                   color:
@@ -2550,7 +2449,7 @@ class _HomePageState extends State<HomePage> {
                   size: 18,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Text(
                 label,
                 style: TextStyle(
