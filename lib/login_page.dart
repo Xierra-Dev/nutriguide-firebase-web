@@ -229,9 +229,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildLogo(true),
-                  SizedBox(height: 40),
+                  SizedBox(height: size.height * 0.04),
                   _buildBrandingContent(),
-                  SizedBox(height: 60),
+                  SizedBox(height: size.height * 0.06),
                   _buildFeaturesList(),
                 ],
               ),
@@ -241,7 +241,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           Expanded(
             flex: 4,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 60),
+              padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
               child: Center(
                 child: SingleChildScrollView(
                   child: _buildLoginForm(true),
@@ -257,7 +257,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   Widget _buildMobileLayout(Size size) {
     return Container(
       width: size.width * 0.9,
-      padding: EdgeInsets.all(30),
+      padding: EdgeInsets.all(size.width * 0.06),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.7),
         borderRadius: BorderRadius.circular(25),
@@ -278,7 +278,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _buildLogo(false),
-          SizedBox(height: 30),
+          SizedBox(height: size.height * 0.03),
           _buildLoginForm(false),
         ],
       ),
@@ -286,12 +286,16 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   Widget _buildLogo(bool isWeb) {
+    final size = MediaQuery.of(context).size;
+    final logoSize = isWeb ? size.width * 0.08 : size.width * 0.2;
+    final paddingSize = isWeb ? logoSize * 0.2 : logoSize * 0.2;
+    
     return Column(
       children: [
         Container(
-          width: isWeb ? 120 : 100,
-          height: isWeb ? 120 : 100,
-          padding: EdgeInsets.all(isWeb ? 25 : 20),
+          width: logoSize,
+          height: logoSize,
+          padding: EdgeInsets.all(paddingSize),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.white.withOpacity(0.15),
@@ -309,11 +313,11 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           ),
         ),
         if (isWeb) ...[
-          SizedBox(height: 20),
+          SizedBox(height: size.height * 0.02),
           Text(
             'NutriGuide',
             style: TextStyle(
-              fontSize: 32,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.heading2),
               fontWeight: FontWeight.bold,
               color: Colors.white,
               letterSpacing: 1.2,
@@ -325,25 +329,26 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   Widget _buildBrandingContent() {
+    final size = MediaQuery.of(context).size;
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 40),
+      padding: EdgeInsets.symmetric(horizontal: size.width * 0.03),
       child: Column(
         children: [
           Text(
             'Your Journey to\nHealthier Living',
             style: TextStyle(
-              fontSize: 36,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.heading1),
               fontWeight: FontWeight.bold,
               color: Colors.white,
               height: 1.2,
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 20),
+          SizedBox(height: size.height * 0.02),
           Text(
             'Join thousands of users who have transformed their lives with personalized nutrition guidance',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
               color: Colors.white.withOpacity(0.9),
               height: 1.5,
             ),
@@ -355,18 +360,19 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   Widget _buildFeaturesList() {
+    final size = MediaQuery.of(context).size;
     return Column(
       children: [
         _buildFeatureItem(
           icon: Icons.restaurant_menu,
           title: 'Smart Meal Planning',
         ),
-        SizedBox(height: 20),
+        SizedBox(height: size.height * 0.02),
         _buildFeatureItem(
           icon: Icons.trending_up,
           title: 'Progress Tracking',
         ),
-        SizedBox(height: 20),
+        SizedBox(height: size.height * 0.02),
         _buildFeatureItem(
           icon: Icons.psychology,
           title: 'AI-Powered Insights',
@@ -379,8 +385,12 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     required IconData icon,
     required String title,
   }) {
+    final size = MediaQuery.of(context).size;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: size.width * 0.015,
+        vertical: size.height * 0.012,
+      ),
       decoration: BoxDecoration(
         color: AppColors.primary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(15),
@@ -392,13 +402,17 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.primary, size: 24),
-          SizedBox(width: 12),
+          Icon(
+            icon,
+            color: AppColors.primary,
+            size: ResponsiveHelper.screenWidth(context) * 0.02,
+          ),
+          SizedBox(width: size.width * 0.01),
           Text(
             title,
             style: TextStyle(
               color: Colors.white,
-              fontSize: 16,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -408,6 +422,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   Widget _buildLoginForm(bool isWeb) {
+    final size = MediaQuery.of(context).size;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -415,43 +430,43 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           Text(
             'Welcome Back!',
             style: TextStyle(
-              fontSize: 28,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.heading3),
               fontWeight: FontWeight.bold,
-              color: Color(0xFF2C3E50),
+              color: Colors.white,
               letterSpacing: 0.5,
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 10),
+          SizedBox(height: size.height * 0.01),
           Text(
             'Sign in to continue your journey',
             style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
+              color: Colors.white70,
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 30),
+          SizedBox(height: size.height * 0.03),
         ],
         if (isWeb) ...[
           Text(
             'Sign In',
             style: TextStyle(
-              fontSize: 32,
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.heading2),
               fontWeight: FontWeight.bold,
-              color: Color.fromARGB(255, 255, 255, 255),
+              color: Colors.white,
               letterSpacing: 0.5,
             ),
           ),
-          SizedBox(height: 10),
+          SizedBox(height: size.height * 0.01),
           Text(
             'Welcome back! Please enter your details',
             style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
+              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
+              color: Colors.white70,
             ),
           ),
-          SizedBox(height: 40),
+          SizedBox(height: size.height * 0.04),
         ],
         Form(
           key: _formKey,
@@ -465,7 +480,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                 icon: Icons.email_outlined,
                 isWeb: isWeb,
               ),
-              SizedBox(height: 20),
+              SizedBox(height: size.height * 0.02),
               _buildTextField(
                 controller: _passwordController,
                 focusNode: _passwordFocusNode,
@@ -474,9 +489,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                 isPassword: true,
                 isWeb: isWeb,
               ),
-              SizedBox(height: isWeb ? 30 : 25),
+              SizedBox(height: isWeb ? size.height * 0.03 : size.height * 0.025),
               _buildLoginButton(isWeb),
-              SizedBox(height: 20),
+              SizedBox(height: size.height * 0.02),
               _buildRegisterLink(isWeb),
             ],
           ),
@@ -493,7 +508,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     bool isPassword = false,
     required bool isWeb,
   }) {
+    final size = MediaQuery.of(context).size;
     return Container(
+      height: isWeb ? size.height * 0.07 : size.height * 0.065,
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.5),
         borderRadius: BorderRadius.circular(15),
@@ -516,7 +533,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         focusNode: focusNode,
         obscureText: isPassword && !_isPasswordVisible,
         style: TextStyle(
-          fontSize: isWeb ? 16 : 15,
+          fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
           color: Colors.white,
         ),
         decoration: InputDecoration(
@@ -525,14 +542,14 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             color: focusNode.hasFocus 
                 ? AppColors.primary 
                 : Colors.white70,
-            fontSize: isWeb ? 16 : 15,
+            fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
           ),
           prefixIcon: Icon(
             icon,
             color: focusNode.hasFocus 
                 ? AppColors.primary 
                 : Colors.white70,
-            size: isWeb ? 24 : 22,
+            size: isWeb ? size.width * 0.015 : size.width * 0.05,
           ),
           suffixIcon: isPassword
               ? IconButton(
@@ -543,7 +560,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                     color: focusNode.hasFocus 
                         ? AppColors.primary 
                         : Colors.white70,
-                    size: isWeb ? 24 : 22,
+                    size: isWeb ? size.width * 0.015 : size.width * 0.05,
                   ),
                   onPressed: () {
                     setState(() {
@@ -554,8 +571,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               : null,
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: isWeb ? 20 : 18,
+            horizontal: size.width * 0.02,
+            vertical: size.height * 0.015,
           ),
         ),
       ),
@@ -563,8 +580,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   Widget _buildLoginButton(bool isWeb) {
+    final size = MediaQuery.of(context).size;
     return Container(
-      height: isWeb ? 56 : 50,
+      height: isWeb ? size.height * 0.07 : size.height * 0.065,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -594,8 +612,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           duration: Duration(milliseconds: 200),
           child: _isLoading
               ? SizedBox(
-                  height: 24,
-                  width: 24,
+                  height: size.height * 0.03,
+                  width: size.height * 0.03,
                   child: CircularProgressIndicator(
                     color: Colors.white,
                     strokeWidth: 2,
@@ -607,13 +625,13 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                     Icon(
                       Icons.login_rounded,
                       color: Colors.white,
-                      size: isWeb ? 24 : 22,
+                      size: isWeb ? size.width * 0.015 : size.width * 0.05,
                     ),
-                    SizedBox(width: 10),
+                    SizedBox(width: size.width * 0.01),
                     Text(
                       'Sign In',
                       style: TextStyle(
-                        fontSize: isWeb ? 18 : 16,
+                        fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.button),
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         letterSpacing: 0.5,
@@ -627,6 +645,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   Widget _buildRegisterLink(bool isWeb) {
+    final size = MediaQuery.of(context).size;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -634,7 +653,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           'Don\'t have an account? ',
           style: TextStyle(
             color: Colors.white70,
-            fontSize: isWeb ? 16 : 14,
+            fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
           ),
         ),
         MouseRegion(
@@ -647,7 +666,10 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               );
             },
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: EdgeInsets.symmetric(
+                horizontal: size.width * 0.008,
+                vertical: size.height * 0.005,
+              ),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
@@ -660,7 +682,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                 style: TextStyle(
                   color: AppColors.primary,
                   fontWeight: FontWeight.bold,
-                  fontSize: isWeb ? 16 : 14,
+                  fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
                 ),
               ),
             ),
