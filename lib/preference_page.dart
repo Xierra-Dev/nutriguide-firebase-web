@@ -6,7 +6,6 @@ import 'allergies_settings_page.dart';
 import 'core/constants/colors.dart';
 import 'core/constants/dimensions.dart';
 import 'core/constants/font_sizes.dart';
-import 'core/widgets/app_text.dart';
 import 'core/helpers/responsive_helper.dart';
 
 class PreferencePage extends StatefulWidget {

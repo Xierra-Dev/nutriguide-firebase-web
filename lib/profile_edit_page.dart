@@ -232,7 +232,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         'lastName': lastName,
         'username': username, // Can be empty string now
         'bio': _bioController.text.trim(),
-        'displayName': '$firstName ${lastName ?? ''}',
+        'displayName': '$firstName $lastName',
       };
 
       // If profile picture was deleted, explicitly set it to null in the update data
@@ -254,7 +254,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
       // Update display name in Firebase Auth
       await _authService.updateDisplayName(
-          '$firstName ${lastName ?? ''}'.trim()
+          '$firstName $lastName'.trim()
       );
 
       // Navigate back to profile page

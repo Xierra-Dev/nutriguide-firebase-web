@@ -4,12 +4,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'landing_page.dart';
 import 'home_page.dart';
 import 'services/assistant_services.dart';
-import 'services/firestore_service.dart';
 import 'services/timezone_service.dart';
 
 

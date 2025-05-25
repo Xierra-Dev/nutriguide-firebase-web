@@ -7,7 +7,6 @@ import 'package:flutter_gemini/flutter_gemini.dart';
 import '../services/firestore_service.dart';
 import 'package:dash_chat_2/dash_chat_2.dart' as dash;
 import 'core/constants/colors.dart';
-import 'core/constants/dimensions.dart';
 import 'core/constants/font_sizes.dart';
 import 'core/helpers/responsive_helper.dart';
 import 'package:intl/intl.dart';

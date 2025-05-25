@@ -89,7 +89,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     final isWeb = ResponsiveHelper.screenWidth(context) > 800;
 
     return MediaQuery(
@@ -410,14 +409,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDivider() {
-    return Divider(
-      color: AppColors.divider,
-      height: 1,
-      thickness: 0.5,
     );
   }
 }

@@ -150,42 +150,6 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
     return MediaQuery.of(context).size.width > 800;
   }
 
-  // Responsive text style method
-  TextStyle _responsiveTextStyle(BuildContext context, {
-    required double baseSize,
-    FontWeight fontWeight = FontWeight.bold,
-    List<Color>? gradientColors,
-  }) {
-    final mediaQuery = MediaQuery.of(context);
-    final screenWidth = mediaQuery.size.width;
-    final scaleFactor = screenWidth / 375.0; // Base design width
-
-    // Calculate responsive font size
-    double fontSize = baseSize * scaleFactor;
-    fontSize = fontSize.clamp(baseSize * 0.5, baseSize * 1.5);
-
-    return TextStyle(
-      fontSize: fontSize,
-      fontWeight: fontWeight,
-      fontFamily: 'Roboto',
-      foreground: Paint()
-        ..shader = LinearGradient(
-          colors: gradientColors ?? [
-            const Color(0xFFFF6A00),
-            const Color(0xFF00BFFF),
-          ],
-        ).createShader(
-          Rect.fromLTWH(0.0, 0.0, screenWidth, mediaQuery.size.height),
-        ),
-      shadows: [
-        Shadow(
-          offset: const Offset(2, 2),
-          blurRadius: 4,
-          color: Colors.black.withOpacity(0.4),
-        ),
-      ],
-    );
-  }
 
   @override
   Widget build(BuildContext context) {

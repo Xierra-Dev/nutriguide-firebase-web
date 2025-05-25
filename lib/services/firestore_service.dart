@@ -1115,13 +1115,13 @@ class FirestoreService {
       if (userId == null) throw Exception('No authenticated user found');
 
       // Check nutrition goals
-      final userDoc = await _firestore
+      await _firestore
           .collection('users')
           .doc(userId)
           .get();
 
       // Check made recipes
-      final madeRecipes = await _firestore
+      await _firestore
           .collection('users')
           .doc(userId)
           .collection('made_recipes')
@@ -1274,7 +1274,7 @@ class FirestoreService {
         'relatedId': relatedId,
       };
 
-      final docRef = await FirebaseFirestore.instance
+      await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .collection('notifications')

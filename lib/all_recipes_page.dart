@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'models/recipe.dart';
-import 'recipe_detail_page.dart';
 import 'services/firestore_service.dart';
 import 'package:intl/intl.dart';
-import 'core/constants/colors.dart';
 import 'core/constants/dimensions.dart';
-import 'core/constants/font_sizes.dart';
 import 'core/helpers/responsive_helper.dart';
 import 'search_page.dart';
 

@@ -56,9 +56,6 @@ class _PersonalizationPageState extends State<PersonalizationPage> with SingleTi
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final isSmallScreen = size.width < 600;
-
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -269,29 +266,6 @@ class _PersonalizationPageState extends State<PersonalizationPage> with SingleTi
     );
   }
 
-  Widget _buildProgressIndicator(Size size, bool isSmallScreen) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: size.width * 0.05,
-        vertical: Dimensions.paddingL,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(
-          3,
-          (index) => Container(
-            margin: EdgeInsets.symmetric(horizontal: 4),
-            width: isSmallScreen ? 10 : 12,
-            height: isSmallScreen ? 10 : 12,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: index + 1 == currentStep ? AppColors.primary : Colors.white24,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildBottomButtons() {
     return Container(

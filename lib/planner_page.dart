@@ -115,7 +115,6 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
   Future<void> _loadMadeStatus() async {
     try {
       print('Loading made status...');
-      Map<String, bool> status = {};
       
       weeklyMeals.forEach((date, meals) {
         for (var meal in meals) {
@@ -262,7 +261,6 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    final endOfWeek = currentSunday.add(const Duration(days: 6));
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(

@@ -553,10 +553,6 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
   Widget build(BuildContext context) {
     final mediaQueryData = MediaQuery.of(context);
     final isWeb = ResponsiveHelper.screenWidth(context) > 800;
-    final standardScaleFactor = MediaQuery(
-      data: mediaQueryData.copyWith(textScaler: TextScaler.linear(1.0)),
-      child: Container(),
-    );
 
     double appBarHeight = isWeb 
       ? MediaQuery.of(context).size.height * 0.5

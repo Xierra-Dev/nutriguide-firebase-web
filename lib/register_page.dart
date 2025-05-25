@@ -9,7 +9,6 @@ import 'core/constants/font_sizes.dart';
 import 'core/constants/dimensions.dart';
 import 'core/helpers/responsive_helper.dart';
 import 'landing_page.dart';
-import 'package:simple_animations/simple_animations.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -31,7 +30,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   final FocusNode _confirmPasswordFocusNode = FocusNode();
 
   late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
 
   bool _isLoading = false;
   bool _isPasswordVisible = false;
@@ -94,13 +92,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
       duration: const Duration(milliseconds: 1000),
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeIn,
-      ),
-    );
-
     _animationController.forward();
   }
 
@@ -126,38 +117,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
       _hasNumber = RegExp(r'[0-9]').hasMatch(value);
       _hasSymbol = RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value);
     });
-  }
-
-  Widget _buildEnhancedRequirementItem(bool isMet, String text, bool isWeb) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: isWeb ? 6 : 4),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(isWeb ? 3 : 2),
-            decoration: BoxDecoration(
-              color: isMet ? AppColors.success.withOpacity(0.8) : AppColors.error.withOpacity(0.5),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              isMet ? Icons.check : Icons.close,
-              size: isWeb ? 14 : 12,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(width: isWeb ? 12 : 8),
-          Text(
-            text,
-            style: TextStyle(
-              color: isMet ? AppColors.success : AppColors.error.withOpacity(0.7),
-              fontSize: isWeb 
-                  ? 14
-                  : ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.bodySmall),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _register() async {
@@ -498,67 +457,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           _buildRegistrationForm(false),
         ],
       ),
-    );
-  }
-
-  Widget _buildContent(Size size) {
-    final isWeb = _isWebPlatform();
-    return Stack(
-      children: [
-        Padding(
-          padding: EdgeInsets.all(size.width * 0.03),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(size),
-              SizedBox(height: size.height * 0.05),
-              _buildRegistrationForm(isWeb),
-              SizedBox(height: size.height * 0.05),
-              _buildLoginLink(isWeb),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHeader(Size size) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Center(
-          child: Container(
-            padding: EdgeInsets.all(size.width * 0.03),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withOpacity(0.2),
-                  blurRadius: 10,
-                  spreadRadius: 5,
-                ),
-              ],
-            ),
-            child: Image.asset(
-              'assets/images/logo_NutriGuide.png',
-              width: size.width * 0.08,
-              height: size.width * 0.08,
-            ),
-          ),
-        ),
-        SizedBox(height: size.height * 0.05),
-        Center(
-          child: Text(
-            'Create Account',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.heading2),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
     );
   }
 

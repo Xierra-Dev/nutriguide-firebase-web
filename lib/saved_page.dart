@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'core/helpers/responsive_helper.dart';
 import 'models/recipe.dart';
 import 'services/firestore_service.dart';
-import 'recipe_detail_page.dart';
 import 'core/constants/colors.dart';
 import 'core/constants/dimensions.dart';
 import 'core/constants/font_sizes.dart';
 import 'core/widgets/app_text.dart';
-import 'package:intl/intl.dart';
 import 'widgets/skeleton_loading.dart';
 import 'search_page.dart';
 

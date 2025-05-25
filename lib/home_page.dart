@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'models/recipe.dart';
 import 'services/themealdb_service.dart';
 import 'services/firestore_service.dart';
-import 'recipe_detail_page.dart';
 import 'all_recipes_page.dart';
 import 'search_page.dart';
 import 'saved_page.dart';
@@ -12,11 +11,6 @@ import 'package:intl/intl.dart';
 import 'services/cache_service.dart';
 import 'assistant_page.dart';
 import 'widgets/notifications_dialog.dart';
-import 'core/constants/colors.dart';
-import 'core/constants/dimensions.dart';
-import 'core/constants/font_sizes.dart';
-import 'core/helpers/responsive_helper.dart';
-import 'widgets/skeleton_loading.dart';
 import 'core/constants/colors.dart';
 import 'core/constants/dimensions.dart';
 import 'core/constants/font_sizes.dart';
@@ -912,7 +906,7 @@ class _HomePageState extends State<HomePage> {
                     borderRadius: BorderRadius.circular(Dimensions.radiusL),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withAlpha(51),
                         blurRadius: 10,
                         offset: const Offset(0, 5),
                       ),
@@ -967,7 +961,7 @@ class _HomePageState extends State<HomePage> {
                                   borderRadius:
                                       BorderRadius.circular(Dimensions.radiusM),
                                   side: BorderSide(
-                                    color: AppColors.primary.withOpacity(0.5),
+                                    color: AppColors.primary.withAlpha(51),
                                   ),
                                 ),
                               ),
@@ -1046,7 +1040,7 @@ class _HomePageState extends State<HomePage> {
         color: AppColors.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha(51),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -1151,9 +1145,9 @@ class _HomePageState extends State<HomePage> {
       height: 32,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.black.withOpacity(0.7),
+        color: Colors.black.withAlpha(77),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withAlpha(26),
           width: 1,
         ),
       ),
@@ -1171,7 +1165,7 @@ class _HomePageState extends State<HomePage> {
             _togglePlan(recipe);
           }
         },
-        color: Colors.black.withOpacity(0.9),
+        color: Colors.black.withAlpha(77),
         elevation: 4,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -1240,7 +1234,6 @@ class _HomePageState extends State<HomePage> {
     final size = MediaQuery.of(context).size;
     final cardWidth = isWeb ? 280.0 : size.width * 0.525;
     final cardHeight = isWeb ? 320.0 : size.height * 0.3;
-    final gridCount = isWeb ? (size.width ~/ cardWidth).clamp(1, 4) : 1;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1306,14 +1299,14 @@ class _HomePageState extends State<HomePage> {
                       ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withAlpha(77),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withAlpha(26),
                           width: 1,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withAlpha(51),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
@@ -1445,10 +1438,6 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildRecipeFeed() {
     final isWeb = ResponsiveHelper.screenWidth(context) > 800;
-    final size = MediaQuery.of(context).size;
-    final cardWidth = isWeb ? size.width * 0.3 : size.width * 0.9;
-    final cardHeight = isWeb ? size.height * 0.4 : size.height * 0.25;
-    final gridCount = isWeb ? 3 : 1;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1476,7 +1465,7 @@ class _HomePageState extends State<HomePage> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: gridCount,
+              crossAxisCount: 3,
               childAspectRatio: isWeb ? 1.5 : 1.6,
               crossAxisSpacing: isWeb ? Dimensions.paddingM : Dimensions.paddingS,
               mainAxisSpacing: isWeb ? Dimensions.paddingM : Dimensions.paddingS,
@@ -1496,14 +1485,14 @@ class _HomePageState extends State<HomePage> {
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withAlpha(77),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withAlpha(26),
                           width: 1,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withAlpha(51),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
@@ -1751,7 +1740,7 @@ class _HomePageState extends State<HomePage> {
           borderRadius: BorderRadius.circular(Dimensions.radiusXL),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withAlpha(51),
               blurRadius: 15,
               offset: const Offset(0, 5),
             ),
@@ -1797,7 +1786,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildCenterNavItem() {
-    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
     final isCompact = MediaQuery.of(context).size.width <= 1000;
 
     return TweenAnimationBuilder(
@@ -1937,12 +1925,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _setLoading(bool loading) {
-    setState(() {
-      isLoading = loading;
-    });
-  }
-
   Widget _buildWebNavbar() {
     final size = MediaQuery.of(context).size;
     final isCompact = size.width <= 1000;
@@ -1953,16 +1935,16 @@ class _HomePageState extends State<HomePage> {
         vertical: Dimensions.paddingM,
       ),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.7),
+        color: Colors.black.withAlpha(179), // 0.7 * 255 ≈ 179
         border: Border(
           bottom: BorderSide(
-            color: AppColors.primary.withOpacity(0.2),
+            color: AppColors.primary.withAlpha(51),
             width: 1,
           ),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withAlpha(51),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),

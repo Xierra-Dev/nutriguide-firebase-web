@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:nutriguide/landing_page.dart';
 import 'package:nutriguide/services/firestore_service.dart';
 import 'settings_page.dart';

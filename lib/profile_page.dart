@@ -6,7 +6,6 @@ import 'services/firestore_service.dart';
 import 'profile_edit_page.dart';
 import 'models/recipe.dart';
 import 'models/nutrition_goals.dart';
-import 'recipe_detail_page.dart';
 import 'widgets/nutrition_tracker.dart';
 import 'core/constants/colors.dart';
 import 'core/constants/dimensions.dart';
