@@ -93,6 +93,8 @@ class SlideUpRoute extends PageRouteBuilder {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool _isHovered = false;
+
   final TheMealDBService _mealDBService = TheMealDBService();
   final FirestoreService _firestoreService = FirestoreService();
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
@@ -1489,138 +1491,152 @@ class _HomePageState extends State<HomePage> {
             itemCount: feedRecipes.length,
             itemBuilder: (context, index) {
               final recipe = feedRecipes[index];
-              return GestureDetector(
-                onTap: () => _viewRecipe(recipe),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: Colors.black.withOpacity(0.3),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.1),
-                      width: 1,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
+              return MouseRegion(
+                cursor: SystemMouseCursors.click,
+                onEnter: (_) => setState(() => _isHovered = true),
+                onExit: (_) => setState(() => _isHovered = false),
+                child: GestureDetector(
+                  onTap: () => _viewRecipe(recipe),
+                  child: AnimatedScale(
+                    scale: _isHovered ? 1.03 : 1.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: Colors.black.withOpacity(0.3),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.1),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Stack(
-                      children: [
-                        Image.network(
-                          recipe.image,
-                          height: double.infinity,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Colors.black.withOpacity(0.8),
-                              ],
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Stack(
+                          children: [
+                            Image.network(
+                              recipe.image,
+                              height: double.infinity,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
                             ),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.7),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                        color: Colors.white.withOpacity(0.1),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      recipe.area ?? 'International',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                  _buildMoreButtonFeed(recipe),
-                                ],
-                              ),
-                              const Spacer(),
-                              Text(
-                                recipe.title,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: isWeb ? 18 : 16,
-                                  fontWeight: FontWeight.bold,
+                            Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.black.withOpacity(0.8),
+                                  ],
                                 ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
                               ),
-                              SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Icon(
-                                        Icons.timer,
-                                        color: Colors.white.withOpacity(0.7),
-                                        size: 16,
-                                      ),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        '${recipe.preparationTime} min',
-                                        style: TextStyle(
-                                          color: Colors.white.withOpacity(0.7),
-                                          fontSize: 12,
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.7),
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          border: Border.all(
+                                            color:
+                                                Colors.white.withOpacity(0.1),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          recipe.area ?? 'International',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                         ),
                                       ),
+                                      _buildMoreButtonFeed(recipe),
                                     ],
                                   ),
+                                  const Spacer(),
+                                  Text(
+                                    recipe.title,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: isWeb ? 18 : 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  SizedBox(height: 8),
                                   Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Icon(
-                                        Icons.favorite,
-                                        color: _getHealthScoreColor(
-                                            recipe.healthScore),
-                                        size: 16,
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.timer,
+                                            color:
+                                                Colors.white.withOpacity(0.7),
+                                            size: 16,
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            '${recipe.preparationTime} min',
+                                            style: TextStyle(
+                                              color:
+                                                  Colors.white.withOpacity(0.7),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        recipe.healthScore.toStringAsFixed(1),
-                                        style: TextStyle(
-                                          color: _getHealthScoreColor(
-                                              recipe.healthScore),
-                                          fontSize: 12,
-                                        ),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.favorite,
+                                            color: _getHealthScoreColor(
+                                                recipe.healthScore),
+                                            size: 16,
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            recipe.healthScore
+                                                .toStringAsFixed(1),
+                                            style: TextStyle(
+                                              color: _getHealthScoreColor(
+                                                  recipe.healthScore),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),

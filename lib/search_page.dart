@@ -11,9 +11,10 @@ import 'core/constants/font_sizes.dart';
 import 'core/helpers/responsive_helper.dart';
 import 'core/widgets/app_text.dart';
 import 'dart:async';
-import 'widgets/skeleton_loading.dart';
+
 import 'package:shimmer/shimmer.dart';
 
+//import 'widgets/skeleton_loading.dart';
 // Custom page route that animates from the tapped card
 class RecipePageRoute extends PageRouteBuilder {
   final Recipe recipe;
@@ -21,8 +22,8 @@ class RecipePageRoute extends PageRouteBuilder {
 
   RecipePageRoute({required this.recipe, this.beginRect})
       : super(
-          pageBuilder: (context, animation, secondaryAnimation) => 
-            RecipeDetailPage(recipe: recipe),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              RecipeDetailPage(recipe: recipe),
           transitionDuration: const Duration(milliseconds: 500),
           reverseTransitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -31,25 +32,25 @@ class RecipePageRoute extends PageRouteBuilder {
               curve: Curves.easeOutQuad,
               reverseCurve: Curves.easeInQuad,
             );
-            
+
             // Fade animation
             var fadeAnimation = Tween<double>(
               begin: 0.0,
               end: 1.0,
             ).animate(curve);
-            
+
             // Scale animation - starts from smaller size
             var scaleAnimation = Tween<double>(
               begin: 0.85,
               end: 1.0,
             ).animate(curve);
-            
+
             // Add a slight slide up effect
             var slideAnimation = Tween<Offset>(
               begin: const Offset(0.0, 0.1),
               end: Offset.zero,
             ).animate(curve);
-            
+
             return FadeTransition(
               opacity: fadeAnimation,
               child: SlideTransition(
@@ -122,11 +123,14 @@ class _SearchPageState extends State<SearchPage> {
   bool _showPopularSection = true;
   bool _isSearching = false;
   bool _isYouMightAlsoLikeSectionExpanded = true;
+
   double _currentScale = 1.0;
   DateTime _selectedDate = DateTime.now();
   String _selectedMeal = 'Dinner';
   List<bool> _daysSelected = List.generate(7, (index) => false);
-  
+// ⬇️ Tambahkan ini:
+  bool _isHovered = false;
+
   // Menambahkan Set untuk melacak ID resep yang sudah ditampilkan
   final Set<String> _displayedRecipeIds = {};
 
@@ -161,7 +165,7 @@ class _SearchPageState extends State<SearchPage> {
       final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
       final position = renderBox?.localToGlobal(Offset.zero);
       final size = renderBox?.size;
-      
+
       await Navigator.push(
         context,
         RecipePageRoute(
@@ -713,47 +717,47 @@ class _SearchPageState extends State<SearchPage> {
       recipes = []; // Reset the recipes list
       _displayedRecipeIds.clear(); // Clear the displayed recipes tracking
     });
-    
+
     try {
       // Use a stream-like approach to load recipes progressively
       int batchSize = 5;
       int totalToLoad = 30;
-      
+
       for (int i = 0; i < totalToLoad / batchSize; i++) {
         if (i > 0) {
-      setState(() {
+          setState(() {
             isLoadingMore = true;
           });
         }
-        
+
         final batchRecipes = await _mealDBService.getRandomRecipes(batchSize);
-        
+
         if (mounted) {
           setState(() {
             // Add new recipes to the end of the list instead of resorting
             recipes.addAll(batchRecipes);
-            
+
             // Only sort on the first batch to establish initial order
             if (i == 0) {
-        _sortRecipes();
+              _sortRecipes();
             }
-            
+
             // Add all new recipe IDs to the displayed set
             for (var recipe in batchRecipes) {
               _displayedRecipeIds.add(recipe.id);
             }
-            
+
             // Mark as not loading after first batch to show content while loading more
             if (i == 0) {
-        isLoading = false;
+              isLoading = false;
             }
-            
+
             // If this is the last batch, mark isLoadingMore as false
             if (i == (totalToLoad / batchSize) - 1) {
               isLoadingMore = false;
             }
           });
-          
+
           // Check saved status for the batch of recipes
           for (var recipe in batchRecipes) {
             _checkIfSaved(recipe);
@@ -764,10 +768,10 @@ class _SearchPageState extends State<SearchPage> {
     } catch (e) {
       print('Error loading recipes: $e');
       if (mounted) {
-      setState(() {
-        isLoading = false;
+        setState(() {
+          isLoading = false;
           isLoadingMore = false;
-      });
+        });
       }
     }
   }
@@ -786,10 +790,13 @@ class _SearchPageState extends State<SearchPage> {
       // If no cache, fetch from API
       final ingredients = await _mealDBService.getPopularIngredients();
       // Convert List<String> to List<Map<String, String>>
-      final mappedIngredients = ingredients.map((name) => {
-        'name': name,
-        'image': 'https://www.themealdb.com/images/ingredients/$name.png',
-      }).toList();
+      final mappedIngredients = ingredients
+          .map((name) => {
+                'name': name,
+                'image':
+                    'https://www.themealdb.com/images/ingredients/$name.png',
+              })
+          .toList();
       await _cacheService.cacheIngredients(mappedIngredients);
       setState(() {
         popularIngredients = mappedIngredients;
@@ -841,10 +848,10 @@ class _SearchPageState extends State<SearchPage> {
         final allResults = await _mealDBService.searchRecipes(query);
 
         if (allResults.isEmpty) {
-        if (mounted) {
-          setState(() {
-            isLoading = false;
-          });
+          if (mounted) {
+            setState(() {
+              isLoading = false;
+            });
           }
           return;
         }
@@ -852,51 +859,52 @@ class _SearchPageState extends State<SearchPage> {
         // Process results in batches
         int batchSize = 5;
         int totalResults = allResults.length;
-        
+
         for (int i = 0; i < totalResults; i += batchSize) {
           if (i > 0) {
             setState(() {
               isLoadingMore = true;
             });
           }
-          
+
           // Get a subset of recipes
-          final int endIndex = (i + batchSize < totalResults) ? i + batchSize : totalResults;
+          final int endIndex =
+              (i + batchSize < totalResults) ? i + batchSize : totalResults;
           final resultsBatch = allResults.sublist(i, endIndex);
-          
+
           if (mounted) {
             setState(() {
               // Add new search results at the end without resorting
               searchResults.addAll(resultsBatch);
-              
+
               // Add new recipe IDs to the displayed set
               for (var recipe in resultsBatch) {
                 _displayedRecipeIds.add(recipe.id);
               }
-              
+
               // Only sort on the first batch to establish initial order
               if (i == 0) {
                 // For search results, we could apply a similar sorting if needed
                 // or keep them in the order returned by the API
               }
-              
+
               // Mark as not loading after first batch
               if (i == 0) {
                 isLoading = false;
               }
-              
+
               // If this is the last batch, mark isLoadingMore as false
               if (endIndex == totalResults) {
                 isLoadingMore = false;
               }
             });
-            
+
             // Check saved status for each recipe in the batch
             for (var recipe in resultsBatch) {
-            _checkIfSaved(recipe);
-            _checkIfPlanned(recipe);
+              _checkIfSaved(recipe);
+              _checkIfPlanned(recipe);
             }
-            
+
             // Add a small delay to simulate progressive loading
             if (i + batchSize < totalResults) {
               await Future.delayed(const Duration(milliseconds: 300));
@@ -913,7 +921,7 @@ class _SearchPageState extends State<SearchPage> {
         }
       }
     });
-    
+
     return Future.value();
   }
 
@@ -929,54 +937,56 @@ class _SearchPageState extends State<SearchPage> {
       _searchController.text = ingredient;
       _isYouMightAlsoLikeSectionExpanded = false; // Minimize the section
     });
-    
+
     try {
-      final allRecipes = await _mealDBService.getRecipesByIngredient(ingredient);
-      
+      final allRecipes =
+          await _mealDBService.getRecipesByIngredient(ingredient);
+
       if (allRecipes.isEmpty) {
-      setState(() {
-        isLoading = false;
+        setState(() {
+          isLoading = false;
           searchResults = [];
         });
         return;
       }
-      
+
       // Process in batches
       int batchSize = 5;
       int totalRecipes = allRecipes.length;
-      
+
       for (int i = 0; i < totalRecipes; i += batchSize) {
         if (i > 0) {
           setState(() {
             isLoadingMore = true;
           });
         }
-        
-        final int endIndex = (i + batchSize < totalRecipes) ? i + batchSize : totalRecipes;
+
+        final int endIndex =
+            (i + batchSize < totalRecipes) ? i + batchSize : totalRecipes;
         final recipeBatch = allRecipes.sublist(i, endIndex);
-        
+
         if (mounted) {
-      setState(() {
+          setState(() {
             searchResults.addAll(recipeBatch);
-            
+
             for (var recipe in recipeBatch) {
               _displayedRecipeIds.add(recipe.id);
             }
-            
+
             if (i == 0) {
-        isLoading = false;
+              isLoading = false;
             }
-            
+
             if (endIndex == totalRecipes) {
               isLoadingMore = false;
             }
           });
-          
+
           for (var recipe in recipeBatch) {
             _checkIfSaved(recipe);
             _checkIfPlanned(recipe);
           }
-          
+
           if (i + batchSize < totalRecipes) {
             await Future.delayed(const Duration(milliseconds: 300));
           }
@@ -1009,7 +1019,7 @@ class _SearchPageState extends State<SearchPage> {
   void _sortRecipes() {
     setState(() {
       final listToSort = _isSearching ? searchResults : recipes;
-      
+
       switch (sortBy) {
         case 'Newest':
           listToSort.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -1109,76 +1119,92 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                     SizedBox(
                       height: 120,
-                      child: popularIngredients.isEmpty 
-                      ? Center(
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                          ),
-                        )
-                      : ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: EdgeInsets.symmetric(
-                            horizontal: Dimensions.paddingM),
-                        itemCount: popularIngredients.length,
-                        itemBuilder: (context, index) {
-                          final ingredient = popularIngredients[index];
-                          return StatefulBuilder(
-                            builder: (context, setState) {
-                              return GestureDetector(
-                                onTapDown: (_) =>
-                                    setState(() => _currentScale = 0.95),
-                                onTapUp: (_) {
-                                  setState(() => _currentScale = 1.0);
-                                  _searchRecipesByIngredient(
-                                      ingredient['name']!);
-                                },
-                                onTapCancel: () =>
-                                    setState(() => _currentScale = 1.0),
-                                child: AnimatedScale(
-                                  scale: _currentScale,
-                                  duration: const Duration(milliseconds: 150),
-                                  child: Container(
-                                    width: 100,
-                                    margin: EdgeInsets.only(right: 6),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(
-                                          Dimensions.radiusM),
-                                      image: DecorationImage(
-                                        image:
-                                            NetworkImage(ingredient['image']!),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(
-                                            Dimensions.radiusM),
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            Colors.transparent,
-                                            Colors.black.withOpacity(0.7),
-                                          ],
+                      child: popularIngredients.isEmpty
+                          ? Center(
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppColors.primary),
+                              ),
+                            )
+                          : ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: Dimensions.paddingM),
+                              itemCount: popularIngredients.length,
+                              itemBuilder: (context, index) {
+                                final ingredient = popularIngredients[index];
+                                return StatefulBuilder(
+                                  builder: (context, setState) {
+                                    return MouseRegion(
+                                      cursor: SystemMouseCursors.click,
+                                      onEnter: (_) =>
+                                          setState(() => _isHovered = true),
+                                      onExit: (_) =>
+                                          setState(() => _isHovered = false),
+                                      child: GestureDetector(
+                                        onTapDown: (_) => setState(
+                                            () => _currentScale = 0.95),
+                                        onTapUp: (_) {
+                                          setState(() => _currentScale = 1.0);
+                                          _searchRecipesByIngredient(
+                                              ingredient['name']!);
+                                        },
+                                        onTapCancel: () =>
+                                            setState(() => _currentScale = 1.0),
+                                        child: AnimatedScale(
+                                          // ⬇️ Pakai _isHovered
+                                          scale:
+                                              _isHovered ? 1.05 : _currentScale,
+                                          duration:
+                                              const Duration(milliseconds: 150),
+                                          child: Container(
+                                            width: 100,
+                                            margin:
+                                                const EdgeInsets.only(right: 6),
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      Dimensions.radiusM),
+                                              image: DecorationImage(
+                                                image: NetworkImage(
+                                                    ingredient['image']!),
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        Dimensions.radiusM),
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.topCenter,
+                                                  end: Alignment.bottomCenter,
+                                                  colors: [
+                                                    Colors.transparent,
+                                                    Colors.black
+                                                        .withOpacity(0.7),
+                                                  ],
+                                                ),
+                                              ),
+                                              alignment: Alignment.bottomCenter,
+                                              padding: EdgeInsets.all(
+                                                  Dimensions.paddingS),
+                                              child: AppText(
+                                                ingredient['name']!
+                                                    .toUpperCase(),
+                                                fontSize: FontSizes.caption,
+                                                color: AppColors.text,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                      alignment: Alignment.bottomCenter,
-                                      padding:
-                                          EdgeInsets.all(Dimensions.paddingS),
-                                      child: AppText(
-                                        ingredient['name']!.toUpperCase(),
-                                        fontSize: FontSizes.caption,
-                                        color: AppColors.text,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
                     ),
                   ],
                 ),
@@ -1249,10 +1275,10 @@ class _SearchPageState extends State<SearchPage> {
                 );
               },
               child: (isLoading && !_isSearching)
-                ? _buildRecipeGridSkeleton(key: ValueKey('skeleton'))
-                : (_isSearching || selectedIngredient.isNotEmpty)
-                  ? _buildSearchResults(key: ValueKey('search_results'))
-                  : _buildRecipeGrid(recipes, key: ValueKey('recipe_grid')),
+                  ? _buildRecipeGridSkeleton(key: ValueKey('skeleton'))
+                  : (_isSearching || selectedIngredient.isNotEmpty)
+                      ? _buildSearchResults(key: ValueKey('search_results'))
+                      : _buildRecipeGrid(recipes, key: ValueKey('recipe_grid')),
             ),
           ),
         ],
@@ -1306,7 +1332,8 @@ class _SearchPageState extends State<SearchPage> {
                             height: 24,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(Dimensions.radiusS),
+                              borderRadius:
+                                  BorderRadius.circular(Dimensions.radiusS),
                             ),
                           ),
                           Container(
@@ -1335,7 +1362,8 @@ class _SearchPageState extends State<SearchPage> {
                           width: width * 0.3,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(Dimensions.radiusS),
+                            borderRadius:
+                                BorderRadius.circular(Dimensions.radiusS),
                           ),
                         ),
                         SizedBox(height: Dimensions.paddingXS),
@@ -1344,7 +1372,8 @@ class _SearchPageState extends State<SearchPage> {
                           width: width * 0.25,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(Dimensions.radiusS),
+                            borderRadius:
+                                BorderRadius.circular(Dimensions.radiusS),
                           ),
                         ),
                         SizedBox(height: Dimensions.paddingS),
@@ -1367,7 +1396,8 @@ class _SearchPageState extends State<SearchPage> {
                                   height: 10,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    borderRadius: BorderRadius.circular(Dimensions.radiusS),
+                                    borderRadius: BorderRadius.circular(
+                                        Dimensions.radiusS),
                                   ),
                                 ),
                               ],
@@ -1388,7 +1418,8 @@ class _SearchPageState extends State<SearchPage> {
                                   height: 10,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    borderRadius: BorderRadius.circular(Dimensions.radiusS),
+                                    borderRadius: BorderRadius.circular(
+                                        Dimensions.radiusS),
                                   ),
                                 ),
                               ],
@@ -1447,10 +1478,10 @@ class _SearchPageState extends State<SearchPage> {
                     isLoading = true;
                     _displayedRecipeIds.clear();
                   });
-                  
+
                   await _loadInitialRecipes();
                   await _loadPopularIngredients();
-                  
+
                   if (mounted) {
                     setState(() {
                       _isYouMightAlsoLikeSectionExpanded = true;
@@ -1469,7 +1500,6 @@ class _SearchPageState extends State<SearchPage> {
             ],
           ),
         ),
-
         Container(
           margin: EdgeInsets.only(
             left: Dimensions.paddingM,
@@ -1484,8 +1514,8 @@ class _SearchPageState extends State<SearchPage> {
             controller: _searchController,
             style: TextStyle(
               color: AppColors.text,
-              fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                  context, FontSizes.body),
+              fontSize:
+                  ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
             ),
             decoration: InputDecoration(
               hintText: 'Search Recipes...',
@@ -1511,9 +1541,7 @@ class _SearchPageState extends State<SearchPage> {
             },
           ),
         ),
-
         SizedBox(height: Dimensions.paddingS),
-
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1548,10 +1576,9 @@ class _SearchPageState extends State<SearchPage> {
                 )
               else ...[
                 Expanded(
-                  child: isLoading 
-                    ? _buildSearchResultsSkeleton()
-                    : _buildRecipeGrid(searchResults)
-                ),
+                    child: isLoading
+                        ? _buildSearchResultsSkeleton()
+                        : _buildRecipeGrid(searchResults)),
                 Padding(
                   padding: EdgeInsets.only(
                     top: Dimensions.paddingXS,
@@ -1584,7 +1611,6 @@ class _SearchPageState extends State<SearchPage> {
                     ],
                   ),
                 ),
-
                 if (_isYouMightAlsoLikeSectionExpanded)
                   SizedBox(
                     height: ResponsiveHelper.screenHeight(context) * 0.245,
@@ -1643,7 +1669,8 @@ class _SearchPageState extends State<SearchPage> {
                             height: 24,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(Dimensions.radiusS),
+                              borderRadius:
+                                  BorderRadius.circular(Dimensions.radiusS),
                             ),
                           ),
                           Container(
@@ -1672,7 +1699,8 @@ class _SearchPageState extends State<SearchPage> {
                           width: ResponsiveHelper.screenWidth(context) * 0.3,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(Dimensions.radiusS),
+                            borderRadius:
+                                BorderRadius.circular(Dimensions.radiusS),
                           ),
                         ),
                         SizedBox(height: Dimensions.paddingXS),
@@ -1681,7 +1709,8 @@ class _SearchPageState extends State<SearchPage> {
                           width: ResponsiveHelper.screenWidth(context) * 0.25,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(Dimensions.radiusS),
+                            borderRadius:
+                                BorderRadius.circular(Dimensions.radiusS),
                           ),
                         ),
                         SizedBox(height: Dimensions.paddingS),
@@ -1704,7 +1733,8 @@ class _SearchPageState extends State<SearchPage> {
                                   height: 10,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    borderRadius: BorderRadius.circular(Dimensions.radiusS),
+                                    borderRadius: BorderRadius.circular(
+                                        Dimensions.radiusS),
                                   ),
                                 ),
                               ],
@@ -1725,7 +1755,8 @@ class _SearchPageState extends State<SearchPage> {
                                   height: 10,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    borderRadius: BorderRadius.circular(Dimensions.radiusS),
+                                    borderRadius: BorderRadius.circular(
+                                        Dimensions.radiusS),
                                   ),
                                 ),
                               ],
@@ -1747,148 +1778,140 @@ class _SearchPageState extends State<SearchPage> {
   Widget _buildRecipeCard(Recipe recipe) {
     final isWeb = ResponsiveHelper.screenWidth(context) > 800;
 
-    return GestureDetector(
-      onTap: () => _viewRecipe(recipe),
-      child: Hero(
-        tag: 'recipe-${recipe.id}',
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: Colors.black.withOpacity(0.3),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Expanded(
-                flex: 7,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                  child: Stack(
-                    children: [
-                      Image.network(
-                        recipe.image,
-                        width: double.infinity,
-                        height: double.infinity,
-                        fit: BoxFit.cover,
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withOpacity(0.2),
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.3),
-                            ],
-                            stops: [0.0, 0.3, 1.0],
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 8,
-                        left: 8,
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.7),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            recipe.area ?? 'International',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: _buildMoreButton(recipe),
-                      ),
-                    ],
-                  ),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: () => _viewRecipe(recipe),
+        child: AnimatedScale(
+          scale: _isHovered ? 1.03 : 1.0,
+          duration: const Duration(milliseconds: 200),
+          child: Hero(
+            tag: 'recipe-${recipe.id}',
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.black.withOpacity(0.3),
+                border: Border.all(
+                  color: _isHovered
+                      ? Colors.white.withOpacity(0.3)
+                      : Colors.white.withOpacity(0.1),
+                  width: 1,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(_isHovered ? 0.4 : 0.2),
+                    blurRadius: _isHovered ? 12 : 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      recipe.title,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: isWeb ? 14 : 12,
-                        fontWeight: FontWeight.bold,
+              child: Column(
+                children: [
+                  Expanded(
+                    flex: 7,
+                    child: ClipRRect(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(12)),
+                      child: Stack(
+                        children: [
+                          Image.network(
+                            recipe.image,
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.black.withOpacity(0.2),
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(0.3),
+                                ],
+                                stops: [0.0, 0.3, 1.0],
+                              ),
+                            ),
+                          ),
+
+                          // Ini posisi tombol More Button di pojok kanan atas
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: _buildMoreButton(recipe),
+                          ),
+                        ],
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  ),
+
+                  // Bagian bawah card tetap seperti biasa
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.timer,
-                              color: Colors.white.withOpacity(0.7),
-                              size: 14,
-                            ),
-                            SizedBox(width: 4),
-                            Text(
-                              '${recipe.preparationTime} min',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.7),
-                                fontSize: 10,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          recipe.title,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: isWeb ? 14 : 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
+                        SizedBox(height: 4),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Icon(
-                              Icons.favorite,
-                              color: _getHealthScoreColor(recipe.healthScore),
-                              size: 14,
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.timer,
+                                  color: Colors.white.withOpacity(0.7),
+                                  size: 14,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  '${recipe.preparationTime} min',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.7),
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
                             ),
-                            SizedBox(width: 4),
-                            Text(
-                              recipe.healthScore.toStringAsFixed(1),
-                              style: TextStyle(
-                                color: _getHealthScoreColor(recipe.healthScore),
-                                fontSize: 10,
-                              ),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.favorite,
+                                  color:
+                                      _getHealthScoreColor(recipe.healthScore),
+                                  size: 14,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  recipe.healthScore.toStringAsFixed(1),
+                                  style: TextStyle(
+                                    color: _getHealthScoreColor(
+                                        recipe.healthScore),
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -1993,12 +2016,10 @@ class _SearchPageState extends State<SearchPage> {
           scrollDirection: scrollDirection,
           padding: EdgeInsets.all(12),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: scrollDirection == Axis.vertical 
-              ? (isWeb ? 4 : 2)
-              : 1,
-            childAspectRatio: scrollDirection == Axis.vertical
-              ? (isWeb ? 0.95 : 0.9)
-              : 1.2,
+            crossAxisCount:
+                scrollDirection == Axis.vertical ? (isWeb ? 4 : 2) : 1,
+            childAspectRatio:
+                scrollDirection == Axis.vertical ? (isWeb ? 0.95 : 0.9) : 1.2,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
           ),
@@ -2009,16 +2030,17 @@ class _SearchPageState extends State<SearchPage> {
             final int col = index % (isWeb ? 4 : 2);
             final int staggerIndex = row * (isWeb ? 4 : 2) + col;
             final bool isNewRecipe = !_displayedRecipeIds.contains(recipe.id);
-            
+
             if (!isNewRecipe) {
               return _buildRecipeCard(recipe);
             }
-            
+
             return FutureBuilder(
               future: Future.delayed(Duration(milliseconds: staggerIndex * 80)),
               builder: (context, snapshot) {
-                final bool shouldAnimate = snapshot.connectionState == ConnectionState.done;
-                
+                final bool shouldAnimate =
+                    snapshot.connectionState == ConnectionState.done;
+
                 return AnimatedOpacity(
                   duration: Duration(milliseconds: 400),
                   opacity: shouldAnimate ? 1.0 : 0.0,
@@ -2051,7 +2073,8 @@ class _SearchPageState extends State<SearchPage> {
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(AppColors.primary),
                       ),
                     ),
                     SizedBox(width: 8),

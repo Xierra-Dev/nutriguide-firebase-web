@@ -23,39 +23,40 @@ class SlideUpRoute extends PageRouteBuilder {
 
   SlideUpRoute({required this.page})
       : super(
-    pageBuilder: (
-        BuildContext context,
-        Animation<double> primaryAnimation,
-        Animation<double> secondaryAnimation,
-        ) =>
-    page,
-    transitionsBuilder: (
-        BuildContext context,
-        Animation<double> primaryAnimation,
-        Animation<double> secondaryAnimation,
-        Widget child,
-        ) {
-      return SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0.0, 1.0),  // Start from bottom
-          end: Offset.zero,  // End at the center
-        ).animate(CurvedAnimation(
-          parent: primaryAnimation,
-          curve: Curves.easeOutQuad,
-        )),
-        child: child,
-      );
-    },
-  );
+          pageBuilder: (
+            BuildContext context,
+            Animation<double> primaryAnimation,
+            Animation<double> secondaryAnimation,
+          ) =>
+              page,
+          transitionsBuilder: (
+            BuildContext context,
+            Animation<double> primaryAnimation,
+            Animation<double> secondaryAnimation,
+            Widget child,
+          ) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0.0, 1.0), // Start from bottom
+                end: Offset.zero, // End at the center
+              ).animate(CurvedAnimation(
+                parent: primaryAnimation,
+                curve: Curves.easeOutQuad,
+              )),
+              child: child,
+            );
+          },
+        );
 }
 
-class _SavedPageState extends State<SavedPage> with SingleTickerProviderStateMixin {
+class _SavedPageState extends State<SavedPage>
+    with SingleTickerProviderStateMixin {
   final FirestoreService _firestoreService = FirestoreService();
   List<Recipe> savedRecipes = [];
   bool isLoading = true;
   String? errorMessage;
   String sortBy = 'Date Added';
-  
+
   AnimationController? _animationController;
   Animation<double> _fadeAnimation = const AlwaysStoppedAnimation(1.0);
 
@@ -71,7 +72,7 @@ class _SavedPageState extends State<SavedPage> with SingleTickerProviderStateMix
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    
+
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -79,7 +80,7 @@ class _SavedPageState extends State<SavedPage> with SingleTickerProviderStateMix
       parent: _animationController!,
       curve: Curves.easeInOut,
     ));
-    
+
     _animationController!.forward();
   }
 
@@ -146,7 +147,8 @@ class _SavedPageState extends State<SavedPage> with SingleTickerProviderStateMix
           savedRecipes.sort((a, b) => b.healthScore.compareTo(a.healthScore));
           break;
         case 'Time':
-          savedRecipes.sort((a, b) => a.preparationTime.compareTo(b.preparationTime));
+          savedRecipes
+              .sort((a, b) => a.preparationTime.compareTo(b.preparationTime));
           break;
         case 'Date Added':
         default:
@@ -159,7 +161,7 @@ class _SavedPageState extends State<SavedPage> with SingleTickerProviderStateMix
   Future<void> _removeSavedRecipe(Recipe recipe) async {
     try {
       await _firestoreService.removeFromSavedRecipes(recipe);
-      
+
       if (mounted) {
         setState(() {
           savedRecipes.removeWhere((r) => r.id == recipe.id);
@@ -169,7 +171,8 @@ class _SavedPageState extends State<SavedPage> with SingleTickerProviderStateMix
           SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle, color: AppColors.text, size: Dimensions.iconM),
+                Icon(Icons.check_circle,
+                    color: AppColors.text, size: Dimensions.iconM),
                 SizedBox(width: Dimensions.paddingS),
                 AppText(
                   'Recipe removed from saved',
@@ -232,11 +235,11 @@ class _SavedPageState extends State<SavedPage> with SingleTickerProviderStateMix
             _buildHeader(),
             Expanded(
               child: isLoading
-                ? const SavedSkeleton()
-                : FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: _buildBody(),
-                  ),
+                  ? const SavedSkeleton()
+                  : FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: _buildBody(),
+                    ),
             ),
           ],
         ),
@@ -419,185 +422,194 @@ class _SavedPageState extends State<SavedPage> with SingleTickerProviderStateMix
     );
   }
 
+  Widget _buildRecipeCard(Recipe recipe) {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+
+    return Hero(
+      tag: 'recipe-${recipe.id}',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _viewRecipe(recipe),
+          borderRadius: BorderRadius.circular(12),
+          hoverColor: Colors.white.withOpacity(0.05), // efek hover (web)
+          splashColor: Colors.white.withOpacity(0.1), // efek tap
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.black.withOpacity(0.3),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Expanded(
+                  flex: 7,
+                  child: ClipRRect(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(12)),
+                    child: Stack(
+                      children: [
+                        GestureDetector(
+                          onTap: () =>
+                              _viewRecipe(recipe), // klik hanya di gambar
+                          child: Image.network(
+                            recipe.image,
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.2),
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.3),
+                              ],
+                              stops: [0.0, 0.3, 1.0],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 8,
+                          left: 8,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.7),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.1),
+                                width: 1,
+                              ),
+                            ),
+                            child: AppText(
+                              recipe.area ?? 'International',
+                              fontSize: 10,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.black.withOpacity(0.7),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.1),
+                                width: 1,
+                              ),
+                            ),
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              iconSize: 16,
+                              icon: Icon(Icons.delete_outline,
+                                  color: AppColors.text),
+                              onPressed: () => _removeSavedRecipe(recipe),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AppText(
+                        recipe.title,
+                        fontSize: isWeb ? 14 : 12,
+                        color: AppColors.text,
+                        fontWeight: FontWeight.bold,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.timer,
+                                color: AppColors.primary,
+                                size: 14,
+                              ),
+                              SizedBox(width: 4),
+                              AppText(
+                                '${recipe.preparationTime} min',
+                                fontSize: 10,
+                                color: AppColors.textSecondary,
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.favorite,
+                                color: _getHealthScoreColor(recipe.healthScore),
+                                size: 14,
+                              ),
+                              SizedBox(width: 4),
+                              AppText(
+                                recipe.healthScore.toStringAsFixed(1),
+                                fontSize: 10,
+                                color: _getHealthScoreColor(recipe.healthScore),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildRecipeGrid() {
     return GridView.builder(
       padding: EdgeInsets.all(Dimensions.paddingS),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: ResponsiveHelper.screenWidth(context) > 800 ? 4 : 2,
-        childAspectRatio: ResponsiveHelper.screenWidth(context) > 800 ? 0.95 : 0.9,
+        childAspectRatio:
+            ResponsiveHelper.screenWidth(context) > 800 ? 0.95 : 0.9,
         crossAxisSpacing: Dimensions.paddingS,
         mainAxisSpacing: Dimensions.paddingS,
       ),
       itemCount: savedRecipes.length,
       itemBuilder: (context, index) {
         final recipe = savedRecipes[index];
-        return GestureDetector(
-          onTap: () => _viewRecipe(recipe),
-          child: _buildRecipeCard(recipe),
-        );
+        return _buildRecipeCard(recipe); // pastikan memanggil fungsi ini
       },
     );
   }
 
-  Widget _buildRecipeCard(Recipe recipe) {
-    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
-    
-    return Hero(
-      tag: 'recipe-${recipe.id}',
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.black.withOpacity(0.3),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.1),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Expanded(
-              flex: 7,
-              child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                child: Stack(
-                  children: [
-                    Image.network(
-                      recipe.image,
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withOpacity(0.2),
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.3),
-                          ],
-                          stops: [0.0, 0.3, 1.0],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.1),
-                            width: 1,
-                          ),
-                        ),
-                        child: AppText(
-                          recipe.area ?? 'International',
-                          fontSize: 10,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.black.withOpacity(0.7),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.1),
-                            width: 1,
-                          ),
-                        ),
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          iconSize: 16,
-                          icon: Icon(Icons.delete_outline, color: AppColors.text),
-                          onPressed: () => _removeSavedRecipe(recipe),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AppText(
-                    recipe.title,
-                    fontSize: isWeb ? 14 : 12,
-                    color: AppColors.text,
-                    fontWeight: FontWeight.bold,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.timer,
-                            color: AppColors.primary,
-                            size: 14,
-                          ),
-                          SizedBox(width: 4),
-                          AppText(
-                            '${recipe.preparationTime} min',
-                            fontSize: 10,
-                            color: AppColors.textSecondary,
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.favorite,
-                            color: _getHealthScoreColor(recipe.healthScore),
-                            size: 14,
-                          ),
-                          SizedBox(width: 4),
-                          AppText(
-                            recipe.healthScore.toStringAsFixed(1),
-                            fontSize: 10,
-                            color: _getHealthScoreColor(recipe.healthScore),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildBody() {
-    return savedRecipes.isEmpty
-        ? _buildEmptyState()
-        : _buildRecipeGrid();
+    return savedRecipes.isEmpty ? _buildEmptyState() : _buildRecipeGrid();
   }
 }
