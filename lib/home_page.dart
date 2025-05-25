@@ -1797,6 +1797,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildCenterNavItem() {
+    final isWeb = ResponsiveHelper.screenWidth(context) > 800;
+    final isCompact = MediaQuery.of(context).size.width <= 1000;
+
     return TweenAnimationBuilder(
       tween: Tween<double>(begin: 0, end: 1),
       duration: const Duration(milliseconds: 300),
@@ -1804,11 +1807,12 @@ class _HomePageState extends State<HomePage> {
         return Transform.scale(
           scale: 0.9 + (0.1 * value),
           child: Container(
-            width: 56,
+            width: isCompact ? 56 : null,
             height: 56,
             decoration: BoxDecoration(
               color: AppColors.primary,
-              shape: BoxShape.circle,
+              shape: isCompact ? BoxShape.circle : BoxShape.rectangle,
+              borderRadius: isCompact ? null : BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
                   color: AppColors.primary.withOpacity(0.3),
@@ -1827,24 +1831,33 @@ class _HomePageState extends State<HomePage> {
                   );
                 },
                 borderRadius: BorderRadius.circular(16),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.chat_bubble_rounded,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'AI Assistant',
-                      style: TextStyle(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isCompact ? 0 : 16,
+                    vertical: isCompact ? 0 : 8,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.chat_bubble_rounded,
                         color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                        size: 20,
                       ),
-                    ),
-                  ],
+                      if (!isCompact) ...[
+                        SizedBox(width: 8),
+                        Text(
+                          'AI Assistant',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1931,6 +1944,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildWebNavbar() {
+    final size = MediaQuery.of(context).size;
+    final isCompact = size.width <= 1000;
+
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: Dimensions.paddingXL,
@@ -1958,7 +1974,6 @@ class _HomePageState extends State<HomePage> {
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
               onTap: () {
-                // Aksi saat diklik, misal navigasi ke Home
                 Navigator.push(context, SlideLeftRoute(page: const HomePage()));
               },
               child: Row(
@@ -1975,16 +1990,18 @@ class _HomePageState extends State<HomePage> {
                       height: 32,
                     ),
                   ),
-                  SizedBox(width: Dimensions.paddingM),
-                  Text(
-                    'NutriGuide',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
+                  if (!isCompact) ...[
+                    SizedBox(width: Dimensions.paddingM),
+                    Text(
+                      'NutriGuide',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -2047,15 +2064,17 @@ class _HomePageState extends State<HomePage> {
                       color: Colors.white,
                       size: 20,
                     ),
-                    SizedBox(width: 8),
-                    Text(
-                      'AI Assistant',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                    if (!isCompact) ...[
+                      SizedBox(width: 8),
+                      Text(
+                        'AI Assistant',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -2121,6 +2140,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildWebNavItem(int index, IconData icon, String label) {
     final isSelected = _currentIndex == index;
+    final size = MediaQuery.of(context).size;
+    final isCompact = size.width <= 1000;
 
     return Material(
       color: Colors.transparent,
@@ -2129,7 +2150,7 @@ class _HomePageState extends State<HomePage> {
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: EdgeInsets.symmetric(
-            horizontal: 16,
+            horizontal: isCompact ? 12 : 16,
             vertical: 8,
           ),
           decoration: BoxDecoration(
@@ -2147,17 +2168,19 @@ class _HomePageState extends State<HomePage> {
                     : Colors.white.withOpacity(0.7),
                 size: 20,
               ),
-              SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  color: isSelected
-                      ? AppColors.primary
-                      : Colors.white.withOpacity(0.7),
-                  fontSize: 14,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              if (!isCompact) ...[
+                SizedBox(width: 8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected
+                        ? AppColors.primary
+                        : Colors.white.withOpacity(0.7),
+                    fontSize: 14,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),
