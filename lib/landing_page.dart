@@ -439,22 +439,22 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                                   ),
                                   child: Image.asset(
                                     'assets/images/logo_NutriGuide.png',
-                                    width: 120,
-                                    height: 120,
+                                    width: screenWidth * 0.08,
+                                    height: screenWidth * 0.08,
                                     fit: BoxFit.contain,
                                   ),
                                 ),
-                                SizedBox(height: 40),
+                                SizedBox(height: screenHeight * 0.04),
                                 
                                 // App Name with Shimmer
                                 _buildShimmerTitle(),
-                                SizedBox(height: 20),
+                                SizedBox(height: screenHeight * 0.02),
                                 
                                 // Tagline
                                 Container(
                                   padding: EdgeInsets.symmetric(
-                                    horizontal: 30,
-                                    vertical: 12,
+                                    horizontal: screenWidth * 0.02,
+                                    vertical: screenHeight * 0.012,
                                   ),
                                   decoration: BoxDecoration(
                                     color: Colors.black.withOpacity(0.3),
@@ -463,7 +463,7 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                                   child: Text(
                                     'Your Personal Nutrition Assistant',
                                     style: TextStyle(
-                                      fontSize: 20,
+                                      fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
                                       color: Colors.white.withOpacity(0.9),
                                       letterSpacing: 0.5,
                                       shadows: [
@@ -478,17 +478,17 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                                   ),
                                 ),
                                 
-                                SizedBox(height: 60),
+                                SizedBox(height: screenHeight * 0.06),
                                 
                                 // Buttons with fixed width for web
                                 SizedBox(
-                                  width: 320,
+                                  width: screenWidth * 0.2,
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.stretch,
                                     children: [
                                       // Register Button
                                       Container(
-                                        height: 60,
+                                        height: screenHeight * 0.06,
                                         decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(30),
                                           gradient: LinearGradient(
@@ -524,13 +524,13 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                                                   Icon(
                                                     Icons.person_add_rounded,
                                                     color: Colors.white,
-                                                    size: 24,
+                                                    size: screenWidth * 0.015,
                                                   ),
-                                                  SizedBox(width: 12),
+                                                  SizedBox(width: screenWidth * 0.008),
                                                   Text(
                                                     'Register',
                                                     style: TextStyle(
-                                                      fontSize: 18,
+                                                      fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
                                                       fontWeight: FontWeight.bold,
                                                       letterSpacing: 0.5,
                                                       color: Colors.white,
@@ -543,11 +543,11 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                                         ),
                                       ),
 
-                                      SizedBox(height: 20),
+                                      SizedBox(height: screenHeight * 0.02),
 
                                       // Login Button
                                       Container(
-                                        height: 60,
+                                        height: screenHeight * 0.06,
                                         decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(30),
                                           border: Border.all(
@@ -580,13 +580,13 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                                                   Icon(
                                                     Icons.login_rounded,
                                                     color: Colors.white,
-                                                    size: 24,
+                                                    size: screenWidth * 0.015,
                                                   ),
-                                                  SizedBox(width: 12),
+                                                  SizedBox(width: screenWidth * 0.008),
                                                   Text(
                                                     'Sign In',
                                                     style: TextStyle(
-                                                      fontSize: 18,
+                                                      fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
                                                       fontWeight: FontWeight.w600,
                                                       letterSpacing: 0.5,
                                                       color: Colors.white,
@@ -620,13 +620,13 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                             duration: const Duration(milliseconds: 800),
                             opacity: _isLoading ? 0.0 : 1.0,
                             child: Padding(
-                              padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.15),
+                              padding: EdgeInsets.only(top: screenHeight * 0.1),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   // Enhanced App Logo
                                   Container(
-                                    padding: EdgeInsets.all(Dimensions.paddingL),
+                                    padding: EdgeInsets.all(screenWidth * 0.05),
                                     decoration: BoxDecoration(
                                       color: Colors.white.withOpacity(0.15),
                                       shape: BoxShape.circle,
@@ -640,22 +640,22 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                                     ),
                                     child: Image.asset(
                                       'assets/images/logo_NutriGuide.png',
-                                      width: Dimensions.iconXXL,
-                                      height: Dimensions.iconXXL,
+                                      width: screenWidth * 0.2,
+                                      height: screenWidth * 0.2,
                                       fit: BoxFit.contain,
                                     ),
                                   ),
-                                  SizedBox(height: Dimensions.spacingL),
+                                  SizedBox(height: screenHeight * 0.03),
                                   
                                   // Enhanced App Name with Gradient
                                   _buildShimmerTitle(),
-                                  SizedBox(height: Dimensions.spacingM),
+                                  SizedBox(height: screenHeight * 0.02),
                                   
                                   // Enhanced Tagline
                                   Container(
                                     padding: EdgeInsets.symmetric(
-                                      horizontal: Dimensions.paddingL,
-                                      vertical: Dimensions.paddingS,
+                                      horizontal: screenWidth * 0.06,
+                                      vertical: screenHeight * 0.01,
                                     ),
                                     decoration: BoxDecoration(
                                       color: Colors.black.withOpacity(0.3),
@@ -690,8 +690,8 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                         flex: 2,
                         child: Padding(
                           padding: EdgeInsets.symmetric(
-                            horizontal: Dimensions.paddingL,
-                            vertical: Dimensions.paddingXS,
+                            horizontal: screenWidth * 0.08,
+                            vertical: screenHeight * 0.02,
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.end,
@@ -702,7 +702,7 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                                 duration: const Duration(milliseconds: 800),
                                 opacity: _isLoading ? 0.0 : 1.0,
                                 child: Container(
-                                  height: 56,
+                                  height: screenHeight * 0.07,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(Dimensions.radiusL),
                                     gradient: LinearGradient(
@@ -733,7 +733,7 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                                       borderRadius: BorderRadius.circular(Dimensions.radiusL),
                                       child: Container(
                                         padding: EdgeInsets.symmetric(
-                                          horizontal: Dimensions.paddingXL,
+                                          horizontal: screenWidth * 0.04,
                                         ),
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
@@ -741,13 +741,13 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                                             Icon(
                                               Icons.person_add_rounded,
                                               color: Colors.white,
-                                              size: 24,
+                                              size: screenWidth * 0.06,
                                             ),
-                                            SizedBox(width: Dimensions.paddingS),
+                                            SizedBox(width: screenWidth * 0.02),
                                             Text(
                                               'Register',
                                               style: TextStyle(
-                                                fontSize: 16,
+                                                fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
                                                 fontWeight: FontWeight.bold,
                                                 letterSpacing: 0.5,
                                                 color: Colors.white,
@@ -761,14 +761,14 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                                 ),
                               ),
 
-                              SizedBox(height: Dimensions.spacingL),
+                              SizedBox(height: screenHeight * 0.02),
 
                               // Enhanced Login Button
                               AnimatedOpacity(
                                 duration: const Duration(milliseconds: 800),
                                 opacity: _isLoading ? 0.0 : 1.0,
                                 child: Container(
-                                  height: 56,
+                                  height: screenHeight * 0.07,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(Dimensions.radiusL),
                                     border: Border.all(
@@ -796,7 +796,7 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                                       borderRadius: BorderRadius.circular(Dimensions.radiusL),
                                       child: Container(
                                         padding: EdgeInsets.symmetric(
-                                          horizontal: Dimensions.paddingXL,
+                                          horizontal: screenWidth * 0.04,
                                         ),
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
@@ -804,13 +804,13 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                                             Icon(
                                               Icons.login_rounded,
                                               color: Colors.white,
-                                              size: 24,
+                                              size: screenWidth * 0.06,
                                             ),
-                                            SizedBox(width: Dimensions.paddingS),
+                                            SizedBox(width: screenWidth * 0.02),
                                             Text(
                                               'Sign In',
                                               style: TextStyle(
-                                                fontSize: 16,
+                                                fontSize: ResponsiveHelper.getAdaptiveTextSize(context, FontSizes.body),
                                                 fontWeight: FontWeight.w600,
                                                 letterSpacing: 0.5,
                                                 color: Colors.white,
@@ -824,7 +824,7 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                                 ),
                               ),
 
-                              SizedBox(height: Dimensions.spacingXL),
+                              SizedBox(height: screenHeight * 0.04),
                             ],
                           ),
                         ),
