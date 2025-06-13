@@ -87,8 +87,7 @@ class SlideUpRoute extends PageRouteBuilder {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool _isHovered = false;
-
+  String? _hoveredRecipeId;
   final TheMealDBService _mealDBService = TheMealDBService();
   final FirestoreService _firestoreService = FirestoreService();
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
@@ -1294,7 +1293,8 @@ class _HomePageState extends State<HomePage> {
                     child: Container(
                       width: cardWidth,
                       margin: EdgeInsets.symmetric(
-                        horizontal: isWeb ? Dimensions.paddingS : Dimensions.paddingXS,
+                        horizontal:
+                            isWeb ? Dimensions.paddingS : Dimensions.paddingXS,
                         vertical: Dimensions.paddingXS,
                       ),
                       decoration: BoxDecoration(
@@ -1316,7 +1316,8 @@ class _HomePageState extends State<HomePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ClipRRect(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                            borderRadius:
+                                BorderRadius.vertical(top: Radius.circular(16)),
                             child: Stack(
                               children: [
                                 Image.network(
@@ -1345,8 +1346,9 @@ class _HomePageState extends State<HomePage> {
                                       recipe.area ?? 'International',
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                                            context, FontSizes.caption),
+                                        fontSize: ResponsiveHelper
+                                            .getAdaptiveTextSize(
+                                                context, FontSizes.caption),
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -1370,8 +1372,12 @@ class _HomePageState extends State<HomePage> {
                                     recipe.title,
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                                          context, isWeb ? FontSizes.body : FontSizes.bodySmall),
+                                      fontSize:
+                                          ResponsiveHelper.getAdaptiveTextSize(
+                                              context,
+                                              isWeb
+                                                  ? FontSizes.body
+                                                  : FontSizes.bodySmall),
                                       fontWeight: FontWeight.bold,
                                     ),
                                     maxLines: 2,
@@ -1379,22 +1385,26 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   const Spacer(),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Row(
                                         children: [
                                           Icon(
                                             Icons.timer,
-                                            color: Colors.white.withOpacity(0.7),
+                                            color:
+                                                Colors.white.withOpacity(0.7),
                                             size: isWeb ? 16 : 14,
                                           ),
                                           SizedBox(width: 4),
                                           Text(
                                             '${recipe.preparationTime} min',
                                             style: TextStyle(
-                                              color: Colors.white.withOpacity(0.7),
-                                              fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                                                  context, FontSizes.caption),
+                                              color:
+                                                  Colors.white.withOpacity(0.7),
+                                              fontSize: ResponsiveHelper
+                                                  .getAdaptiveTextSize(context,
+                                                      FontSizes.caption),
                                             ),
                                           ),
                                         ],
@@ -1403,16 +1413,20 @@ class _HomePageState extends State<HomePage> {
                                         children: [
                                           Icon(
                                             Icons.favorite,
-                                            color: _getHealthScoreColor(recipe.healthScore),
+                                            color: _getHealthScoreColor(
+                                                recipe.healthScore),
                                             size: isWeb ? 16 : 14,
                                           ),
                                           SizedBox(width: 4),
                                           Text(
-                                            recipe.healthScore.toStringAsFixed(1),
+                                            recipe.healthScore
+                                                .toStringAsFixed(1),
                                             style: TextStyle(
-                                              color: _getHealthScoreColor(recipe.healthScore),
-                                              fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                                                  context, FontSizes.caption),
+                                              color: _getHealthScoreColor(
+                                                  recipe.healthScore),
+                                              fontSize: ResponsiveHelper
+                                                  .getAdaptiveTextSize(context,
+                                                      FontSizes.caption),
                                             ),
                                           ),
                                         ],
@@ -1467,20 +1481,26 @@ class _HomePageState extends State<HomePage> {
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
               childAspectRatio: isWeb ? 1.5 : 1.6,
-              crossAxisSpacing: isWeb ? Dimensions.paddingM : Dimensions.paddingS,
-              mainAxisSpacing: isWeb ? Dimensions.paddingM : Dimensions.paddingS,
+              crossAxisSpacing:
+                  isWeb ? Dimensions.paddingM : Dimensions.paddingS,
+              mainAxisSpacing:
+                  isWeb ? Dimensions.paddingM : Dimensions.paddingS,
             ),
             itemCount: feedRecipes.length,
             itemBuilder: (context, index) {
               final recipe = feedRecipes[index];
               return MouseRegion(
                 cursor: SystemMouseCursors.click,
-                onEnter: (_) => setState(() => _isHovered = true),
-                onExit: (_) => setState(() => _isHovered = false),
+                onEnter: (_) => setState(() => _hoveredRecipeId =
+                    recipe.id), // Set ID recipe yang sedang di-hover
+                onExit: (_) => setState(
+                    () => _hoveredRecipeId = null), // Reset hover state
                 child: GestureDetector(
                   onTap: () => _viewRecipe(recipe),
                   child: AnimatedScale(
-                    scale: _isHovered ? 1.03 : 1.0,
+                    scale: _hoveredRecipeId == recipe.id
+                        ? 1.03
+                        : 1.0, // Hanya scale jika ID cocok
                     duration: const Duration(milliseconds: 200),
                     child: Container(
                       decoration: BoxDecoration(
@@ -1526,7 +1546,8 @@ class _HomePageState extends State<HomePage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Container(
                                         padding: EdgeInsets.symmetric(
@@ -1535,9 +1556,11 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: Colors.black.withOpacity(0.7),
-                                          borderRadius: BorderRadius.circular(20),
+                                          borderRadius:
+                                              BorderRadius.circular(20),
                                           border: Border.all(
-                                            color: Colors.white.withOpacity(0.1),
+                                            color:
+                                                Colors.white.withOpacity(0.1),
                                             width: 1,
                                           ),
                                         ),
@@ -1545,8 +1568,9 @@ class _HomePageState extends State<HomePage> {
                                           recipe.area ?? 'International',
                                           style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                                                context, FontSizes.caption),
+                                            fontSize: ResponsiveHelper
+                                                .getAdaptiveTextSize(
+                                                    context, FontSizes.caption),
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -1559,8 +1583,12 @@ class _HomePageState extends State<HomePage> {
                                     recipe.title,
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                                          context, isWeb ? FontSizes.body : FontSizes.bodySmall),
+                                      fontSize:
+                                          ResponsiveHelper.getAdaptiveTextSize(
+                                              context,
+                                              isWeb
+                                                  ? FontSizes.body
+                                                  : FontSizes.bodySmall),
                                       fontWeight: FontWeight.bold,
                                     ),
                                     maxLines: 2,
@@ -1568,22 +1596,26 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   SizedBox(height: 8),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Row(
                                         children: [
                                           Icon(
                                             Icons.timer,
-                                            color: Colors.white.withOpacity(0.7),
+                                            color:
+                                                Colors.white.withOpacity(0.7),
                                             size: isWeb ? 16 : 14,
                                           ),
                                           SizedBox(width: 4),
                                           Text(
                                             '${recipe.preparationTime} min',
                                             style: TextStyle(
-                                              color: Colors.white.withOpacity(0.7),
-                                              fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                                                  context, FontSizes.caption),
+                                              color:
+                                                  Colors.white.withOpacity(0.7),
+                                              fontSize: ResponsiveHelper
+                                                  .getAdaptiveTextSize(context,
+                                                      FontSizes.caption),
                                             ),
                                           ),
                                         ],
@@ -1592,16 +1624,20 @@ class _HomePageState extends State<HomePage> {
                                         children: [
                                           Icon(
                                             Icons.favorite,
-                                            color: _getHealthScoreColor(recipe.healthScore),
+                                            color: _getHealthScoreColor(
+                                                recipe.healthScore),
                                             size: isWeb ? 16 : 14,
                                           ),
                                           SizedBox(width: 4),
                                           Text(
-                                            recipe.healthScore.toStringAsFixed(1),
+                                            recipe.healthScore
+                                                .toStringAsFixed(1),
                                             style: TextStyle(
-                                              color: _getHealthScoreColor(recipe.healthScore),
-                                              fontSize: ResponsiveHelper.getAdaptiveTextSize(
-                                                  context, FontSizes.caption),
+                                              color: _getHealthScoreColor(
+                                                  recipe.healthScore),
+                                              fontSize: ResponsiveHelper
+                                                  .getAdaptiveTextSize(context,
+                                                      FontSizes.caption),
                                             ),
                                           ),
                                         ],
@@ -2159,7 +2195,8 @@ class _HomePageState extends State<HomePage> {
                         ? AppColors.primary
                         : Colors.white.withOpacity(0.7),
                     fontSize: 14,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
               ],

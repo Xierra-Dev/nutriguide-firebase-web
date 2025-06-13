@@ -123,13 +123,13 @@ class _SearchPageState extends State<SearchPage> {
   bool _showPopularSection = true;
   bool _isSearching = false;
   bool _isYouMightAlsoLikeSectionExpanded = true;
-
+  String? _hoveredRecipeId;
   double _currentScale = 1.0;
   DateTime _selectedDate = DateTime.now();
   String _selectedMeal = 'Dinner';
   List<bool> _daysSelected = List.generate(7, (index) => false);
 // ⬇️ Tambahkan ini:
-  bool _isHovered = false;
+  String? _hoveredIngredient; // Tambahkan variabel ini untuk ingredient hover
 
   // Menambahkan Set untuk melacak ID resep yang sudah ditampilkan
   final Set<String> _displayedRecipeIds = {};
@@ -1137,10 +1137,12 @@ class _SearchPageState extends State<SearchPage> {
                                   builder: (context, setState) {
                                     return MouseRegion(
                                       cursor: SystemMouseCursors.click,
-                                      onEnter: (_) =>
-                                          setState(() => _isHovered = true),
-                                      onExit: (_) =>
-                                          setState(() => _isHovered = false),
+                                      onEnter: (_) => setState(() =>
+                                          _hoveredIngredient = ingredient[
+                                              'name']), // Set nama ingredient yang di-hover
+                                      onExit: (_) => setState(() =>
+                                          _hoveredIngredient =
+                                              null), // Reset hover state
                                       child: GestureDetector(
                                         onTapDown: (_) => setState(
                                             () => _currentScale = 0.95),
@@ -1152,9 +1154,11 @@ class _SearchPageState extends State<SearchPage> {
                                         onTapCancel: () =>
                                             setState(() => _currentScale = 1.0),
                                         child: AnimatedScale(
-                                          // ⬇️ Pakai _isHovered
-                                          scale:
-                                              _isHovered ? 1.05 : _currentScale,
+                                          // ⬇️ Hanya scale jika ingredient ini yang sedang di-hover
+                                          scale: _hoveredIngredient ==
+                                                  ingredient['name']
+                                              ? 1.05
+                                              : _currentScale,
                                           duration:
                                               const Duration(milliseconds: 150),
                                           child: Container(
@@ -1780,12 +1784,16 @@ class _SearchPageState extends State<SearchPage> {
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+      onEnter: (_) => setState(
+          () => _hoveredRecipeId = recipe.id), // Set ID recipe yang di-hover
+      onExit: (_) =>
+          setState(() => _hoveredRecipeId = null), // Reset hover state
       child: GestureDetector(
         onTap: () => _viewRecipe(recipe),
         child: AnimatedScale(
-          scale: _isHovered ? 1.03 : 1.0,
+          scale: _hoveredRecipeId == recipe.id
+              ? 1.03
+              : 1.0, // Hanya scale jika ID cocok
           duration: const Duration(milliseconds: 200),
           child: Hero(
             tag: 'recipe-${recipe.id}',
@@ -1794,15 +1802,16 @@ class _SearchPageState extends State<SearchPage> {
                 borderRadius: BorderRadius.circular(12),
                 color: Colors.black.withOpacity(0.3),
                 border: Border.all(
-                  color: _isHovered
+                  color: _hoveredRecipeId == recipe.id
                       ? Colors.white.withOpacity(0.3)
                       : Colors.white.withOpacity(0.1),
                   width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(_isHovered ? 0.4 : 0.2),
-                    blurRadius: _isHovered ? 12 : 8,
+                    color: Colors.black
+                        .withOpacity(_hoveredRecipeId == recipe.id ? 0.4 : 0.2),
+                    blurRadius: _hoveredRecipeId == recipe.id ? 12 : 8,
                     offset: const Offset(0, 4),
                   ),
                 ],
