@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -30,6 +31,26 @@ class StorageService {
           imageFile.path,
           folder: 'profile_pictures',
           publicId: uniquePublicId,  // Gunakan publicId yang unik
+        ),
+      );
+      
+      return response.secureUrl;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<String> uploadProfilePictureFromBytes(Uint8List imageBytes, String userId) async {
+    try {
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final uniquePublicId = '${userId}_$timestamp';
+      
+      CloudinaryResponse response = await cloudinary.uploadFile(
+        CloudinaryFile.fromBytesData(
+          imageBytes,
+          folder: 'profile_pictures',
+          publicId: uniquePublicId,
+          identifier: 'upload_$uniquePublicId',
         ),
       );
       

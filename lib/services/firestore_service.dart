@@ -8,6 +8,8 @@ import '../models/planned_recipe.dart';
 import '../models/nutrition_goals.dart';
 import 'package:dash_chat_2/dash_chat_2.dart' as dash;
 import '../models/notification.dart';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -457,14 +459,25 @@ class FirestoreService {
     }
   }
 
-  Future<void> uploadProfilePicture(File imageFile) async {
-    String? userId = _auth.currentUser?.uid;
-    if (userId != null) {
-      final imageUrl =
-          await _storageService.uploadProfilePicture(imageFile, userId);
-      await _firestore.collection('users').doc(userId).update({
-        'profilePictureUrl': imageUrl,
-      });
+  Future<void> uploadProfilePicture(XFile imageFile) async {
+    try {
+      String? userId = _auth.currentUser?.uid;
+      if (userId != null) {
+        String profilePictureUrl;
+        if (kIsWeb) {
+          profilePictureUrl = await _storageService.uploadProfilePictureFromBytes(await imageFile.readAsBytes(), userId);
+        } else {
+          profilePictureUrl = await _storageService.uploadProfilePicture(File(imageFile.path), userId);
+        }
+
+        await _firestore.collection('users').doc(userId).update({
+          'profilePictureUrl': profilePictureUrl,
+        });
+      } else {
+        throw Exception('No authenticated user found');
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 

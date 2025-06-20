@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'services/auth_service.dart';
@@ -8,6 +9,7 @@ import 'core/constants/dimensions.dart';
 import 'core/constants/font_sizes.dart';
 import 'core/widgets/app_text.dart';
 import 'dart:io';
+import 'dart:typed_data'; // Import for Uint8List
 
 class ProfileEditPage extends StatefulWidget {
   const ProfileEditPage({super.key});
@@ -26,7 +28,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
 
-  File? _imageFile;
+  XFile? _imageXFile; // Use XFile instead of File
+  Uint8List? _imageBytes; // For web preview
   String? _currentProfilePictureUrl;
   bool _isLoading = false;
   bool _hasChanges = false;
@@ -51,7 +54,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               _lastNameController.text != (_currentUserData?['lastName'] ?? '') ||
               _usernameController.text != (_currentUserData?['username'] ?? '') ||
               _bioController.text != (_currentUserData?['bio'] ?? '') ||
-              _imageFile != null ||
+              _imageXFile != null ||
               _profilePictureDeleted;
     });
   }
@@ -168,7 +171,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   Future<void> _deleteProfilePicture() async {
     setState(() {
-      _imageFile = null;
+      _imageXFile = null;
+      _imageBytes = null; // Clear web bytes too
       _profilePictureDeleted = true; // Set flag to true
       _hasChanges = true;
     });
@@ -180,11 +184,21 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
       if (pickedFile != null) {
-        setState(() {
-          _imageFile = File(pickedFile.path);
-          _profilePictureDeleted = false; // Reset delete flag when picking a new image
-          _hasChanges = true;
-        });
+        if (kIsWeb) {
+          final bytes = await pickedFile.readAsBytes();
+          setState(() {
+            _imageXFile = pickedFile;
+            _imageBytes = bytes;
+            _profilePictureDeleted = false;
+            _hasChanges = true;
+          });
+        } else {
+          setState(() {
+            _imageXFile = pickedFile;
+            _profilePictureDeleted = false;
+            _hasChanges = true;
+          });
+        }
       }
     } catch (e) {
       // Handle error silently
@@ -245,8 +259,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       }
 
       // If there's a new profile picture, upload it
-      if (_imageFile != null) {
-        await _firestoreService.uploadProfilePicture(_imageFile!);
+      if (_imageXFile != null) {
+        await _firestoreService.uploadProfilePicture(_imageXFile!);
       }
 
       // Update profile data in Firestore
@@ -389,6 +403,23 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   Widget build(BuildContext context) {
     final isWeb = MediaQuery.of(context).size.width > 800;
     
+    // Determine the image for the avatar
+    Widget avatarImage;
+    if (_imageBytes != null && kIsWeb) {
+      avatarImage = Image.memory(_imageBytes!, fit: BoxFit.cover);
+    } else if (_imageXFile != null && !kIsWeb) {
+      avatarImage = Image.file(File(_imageXFile!.path), fit: BoxFit.cover);
+    } else if (_currentProfilePictureUrl != null && !_profilePictureDeleted) {
+      avatarImage = Image.network(_currentProfilePictureUrl!, fit: BoxFit.cover);
+    } else {
+      // Default avatar
+      avatarImage = Icon(
+        Icons.person,
+        size: isWeb ? 80 : 60,
+        color: AppColors.textSecondary,
+      );
+    }
+
     return MediaQuery.withClampedTextScaling(
       minScaleFactor: 1.0,
       maxScaleFactor: 1.0,
@@ -448,37 +479,15 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                                     ],
                                   ),
                                   child: ClipOval(
-                                    child: _imageFile != null
-                                        ? Image.file(_imageFile!, fit: BoxFit.cover)
-                                        : (_currentProfilePictureUrl != null && !_profilePictureDeleted)
-                                            ? Image.network(
-                                                _currentProfilePictureUrl!,
-                                                fit: BoxFit.cover,
-                                                loadingBuilder: (context, child, loadingProgress) {
-                                                  if (loadingProgress == null) return child;
-                                                  return Center(
-                                                    child: CircularProgressIndicator(
-                                                      color: AppColors.primary,
-                                                    ),
-                                                  );
-                                                },
-                                                errorBuilder: (context, error, stackTrace) {
-                                                  return Icon(
-                                                    Icons.person,
-                                                    size: 80,
-                                                    color: AppColors.text,
-                                                  );
-                                                },
-                                              )
-                                            : Icon(
-                                                Icons.person,
-                                                size: 80,
-                                                color: AppColors.text,
-                                              ),
+                                    child: SizedBox(
+                                      width: 200,
+                                      height: 200,
+                                      child: avatarImage,
+                                    ),
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: (_imageFile != null || (_currentProfilePictureUrl != null && !_profilePictureDeleted))
+                                  onTap: (_imageXFile != null || (_currentProfilePictureUrl != null && !_profilePictureDeleted))
                                       ? _showProfilePictureOptions
                                       : _pickImage,
                                   child: Container(
@@ -542,37 +551,15 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                                       color: AppColors.surface,
                                     ),
                                     child: ClipOval(
-                                      child: _imageFile != null
-                                          ? Image.file(_imageFile!, fit: BoxFit.cover)
-                                          : (_currentProfilePictureUrl != null && !_profilePictureDeleted)
-                                              ? Image.network(
-                                                  _currentProfilePictureUrl!,
-                                                  fit: BoxFit.cover,
-                                                  loadingBuilder: (context, child, loadingProgress) {
-                                                    if (loadingProgress == null) return child;
-                                                    return Center(
-                                                      child: CircularProgressIndicator(
-                                                        color: AppColors.primary,
-                                                      ),
-                                                    );
-                                                  },
-                                                  errorBuilder: (context, error, stackTrace) {
-                                                    return Icon(
-                                                      Icons.person,
-                                                      size: Dimensions.iconXL,
-                                                      color: AppColors.text,
-                                                    );
-                                                  },
-                                                )
-                                              : Icon(
-                                                  Icons.person,
-                                                  size: Dimensions.iconXL,
-                                                  color: AppColors.text,
-                                                ),
+                                      child: SizedBox(
+                                        width: 100,
+                                        height: 100,
+                                        child: avatarImage,
+                                      ),
                                     ),
                                   ),
                                   GestureDetector(
-                                    onTap: (_imageFile != null || (_currentProfilePictureUrl != null && !_profilePictureDeleted))
+                                    onTap: (_imageXFile != null || (_currentProfilePictureUrl != null && !_profilePictureDeleted))
                                         ? _showProfilePictureOptions
                                         : _pickImage,
                                     child: Container(
