@@ -1,1 +1,1 @@
-const String GEMINI_API_KEY = "AIzaSyDw9o6y-1mK72_MXFnpsYNZKLPrR45dgh4";
+// File can be empty since we're not using any constants here anymore

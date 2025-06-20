@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
 import 'landing_page.dart';
 import 'home_page.dart';
@@ -16,6 +17,9 @@ import 'services/timezone_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
+
   // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -26,7 +30,7 @@ void main() async {
 
   // Initialize Gemini
   Gemini.init(
-    apiKey: GEMINI_API_KEY,
+    apiKey: dotenv.env['GEMINI_API_KEY'] ?? '',
   );
   runApp(const MealPlannerApp());
 }
