@@ -83,6 +83,7 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
+    - .env
     - assets/images/landing_page.jpg
     - assets/images/register_page.jpg
     - assets/images/regist_page.jpg
