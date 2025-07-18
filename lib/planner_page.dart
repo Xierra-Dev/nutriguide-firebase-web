@@ -114,43 +114,27 @@ class _PlannerPageState extends State<PlannerPage> with SingleTickerProviderStat
 
   Future<void> _loadMadeStatus() async {
     try {
-      if (!mounted) return;
       print('Loading made status...');
       
-      final newMadeStatus = Map<String, bool>.from(madeStatus);
-      final List<Future<void>> futures = [];
-
       weeklyMeals.forEach((date, meals) {
         for (var meal in meals) {
           final mealKey = '${meal.recipe.id}_${meal.mealType}_${meal.dateKey}';
-          if (!newMadeStatus.containsKey(mealKey)) { // Check only if not already loaded
-            futures.add(
-              _firestoreService.isRecipeMade(mealKey).then((isMade) {
-                if (mounted) {
-                  newMadeStatus[mealKey] = isMade;
-                  print('Made status for $mealKey: $isMade');
-                }
-              })
-            );
-          }
-        }
-      });
-
-      if (futures.isNotEmpty) {
-        await Future.wait(futures);
-        if (mounted) {
-          setState(() {
-            madeStatus = newMadeStatus;
+          _firestoreService.isRecipeMade(mealKey).then((isMade) {
+            if (mounted) {
+              setState(() {
+                madeStatus[mealKey] = isMade;
+                print('Made status for $mealKey: $isMade');
+              });
+            }
           });
         }
-      }
+      });
     } catch (e) {
       print('Error loading made status: $e');
     }
   }
 
   Future<void> _loadPlannedMeals() async {
-    if (!mounted) return;
     setState(() => isLoading = true);
     try {
       final meals = await _firestoreService.getPlannedMeals();
